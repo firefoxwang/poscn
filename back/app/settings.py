@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     stripe_publishable_key: str = Field(
         default="", validation_alias="STRIPE_PUBLISHABLE_KEY"
     )
-    stripe_currency: str = Field(default="eur", validation_alias="STRIPE_CURRENCY")
+    stripe_currency: str = Field(default="cny", validation_alias="STRIPE_CURRENCY")
 
     # Platform SaaS paywall (restaurant signup monetization — not guest order Stripe keys)
     saas_paywall_enabled: bool = Field(
@@ -75,7 +75,7 @@ class Settings(BaseSettings):
         validation_alias="SAAS_PLAN_PRICE_CENTS",
         description="Displayed monthly plan price in cents (e.g. 4900 = €49)",
     )
-    saas_plan_currency: str = Field(default="eur", validation_alias="SAAS_PLAN_CURRENCY")
+    saas_plan_currency: str = Field(default="cny", validation_alias="SAAS_PLAN_CURRENCY")
     saas_stripe_price_id: str = Field(
         default="",
         validation_alias="SAAS_STRIPE_PRICE_ID",

@@ -15931,7 +15931,7 @@ def create_revolut_order(
             status_code=400, detail="Revolut is not configured for this tenant"
         )
 
-    currency = "EUR"
+    currency = "CNY"
     if tenant.currency_code and isinstance(tenant.currency_code, str):
         currency = tenant.currency_code.strip().upper()
     else:

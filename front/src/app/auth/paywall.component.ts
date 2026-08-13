@@ -267,7 +267,7 @@ export class PaywallComponent implements OnInit {
     try {
       return new Intl.NumberFormat(undefined, {
         style: 'currency',
-        currency: (currency || 'EUR').toUpperCase(),
+        currency: (currency || 'CNY').toUpperCase(),
         maximumFractionDigits: 0,
       }).format(cents / 100);
     } catch {

@@ -3022,7 +3022,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   prepaymentMinorUnits = 0;
 
   getPrepaymentMinorDigits(): number {
-    const raw = (this.formData.currency_code || 'EUR').trim().toUpperCase();
+    const raw = (this.formData.currency_code || 'CNY').trim().toUpperCase();
     if (!raw || raw.length !== 3) {
       return 2;
     }
@@ -3047,8 +3047,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   getPrepaymentCurrencySymbol(): string {
-    const raw = (this.formData.currency_code || 'EUR').trim().toUpperCase();
-    const code = raw.length === 3 ? raw : 'EUR';
+    const raw = (this.formData.currency_code || 'CNY').trim().toUpperCase();
+    const code = raw.length === 3 ? raw : 'CNY';
     try {
       const parts = new Intl.NumberFormat(undefined, {
         style: 'currency',
@@ -3061,8 +3061,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   getPrepaymentCurrencyLabel(): string {
-    const raw = (this.formData.currency_code || 'EUR').trim().toUpperCase();
-    const code = raw.length === 3 ? raw : 'EUR';
+    const raw = (this.formData.currency_code || 'CNY').trim().toUpperCase();
+    const code = raw.length === 3 ? raw : 'CNY';
     const sym = this.getPrepaymentCurrencySymbol();
     return sym && sym !== code ? `${code} (${sym})` : code;
   }
@@ -3293,7 +3293,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     ccc: null,
     default_tax_id: null,
     opening_hours: null,
-    currency_code: 'EUR',
+    currency_code: 'CNY',
     stripe_secret_key: null,
     stripe_publishable_key: null,
     revolut_merchant_secret: null,
@@ -3422,7 +3422,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           ccc: settings.ccc || null,
           default_tax_id: settings.default_tax_id ?? null,
           opening_hours: settings.opening_hours || null,
-          currency_code: settings.currency_code || 'EUR',
+          currency_code: settings.currency_code || 'CNY',
           stripe_secret_key: null,
           stripe_publishable_key: settings.stripe_publishable_key || null,
           revolut_merchant_secret: null,

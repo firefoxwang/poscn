@@ -70,7 +70,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   tenantAddress = signal<string | null>(null);
   tenantWebsite = signal<string | null>(null);
   tenantCurrency = signal<string>('€');
-  tenantCurrencyCode = signal<string>('EUR');
+  tenantCurrencyCode = signal<string>('CNY');
   immediatePaymentRequired = signal(false);
   tenantPublicBackgroundColor = signal<string | null>(null);
   tenantRevolutConfigured = signal(false);
@@ -289,7 +289,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.tenantWhatsapp.set(data.tenant_whatsapp || null);
         this.tenantAddress.set(data.tenant_address || null);
         this.tenantWebsite.set(data.tenant_website || null);
-        const code = (data.tenant_currency_code || 'EUR').toUpperCase();
+        const code = (data.tenant_currency_code || 'CNY').toUpperCase();
         this.tenantCurrencyCode.set(code);
         this.tenantCurrency.set(data.tenant_currency || '€');
         this.immediatePaymentRequired.set(data.tenant_immediate_payment_required || false);
@@ -931,7 +931,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   formatPrice(priceCents: number): string {
-    const currencyCode = this.tenantCurrencyCode() || 'EUR';
+    const currencyCode = this.tenantCurrencyCode() || 'CNY';
     const locale = navigator.language || 'en-US';
     return new Intl.NumberFormat(locale, {
       style: 'currency',
