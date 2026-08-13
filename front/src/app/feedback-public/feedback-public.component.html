@@ -54,7 +54,7 @@
         </div>
         <div class="hero-info">
           <h1 class="restaurant-name">{{ tenant()?.name }}</h1>
-          @if (tenant()?.address?.trim() || googleMapsUrl() || openstreetmapUrl()) {
+          @if (tenant()?.address?.trim() || mapLinks().length) {
             <div class="restaurant-location">
               @if (tenant()?.address?.trim()) {
                 <p class="restaurant-address">
@@ -62,26 +62,16 @@
                   {{ tenant()!.address }}
                 </p>
               }
-              @if (googleMapsUrl() || openstreetmapUrl()) {
+              @if (mapLinks().length) {
                 <div class="book-maps-actions">
-                  @if (googleMapsUrl()) {
+                  @for (link of mapLinks(); track link.url) {
                     <a
-                      [href]="googleMapsUrl()!"
+                      [href]="link.url"
                       target="_blank"
                       rel="noopener noreferrer"
                       class="btn btn-secondary book-maps-btn"
                     >
-                      {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
-                    </a>
-                  }
-                  @if (openstreetmapUrl()) {
-                    <a
-                      [href]="openstreetmapUrl()!"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="btn btn-secondary book-maps-btn"
-                    >
-                      {{ 'BOOK.OPEN_IN_OPENSTREETMAP' | translate }}
+                      {{ link.label }}
                     </a>
                   }
                 </div>
@@ -101,14 +91,9 @@
               {{ 'FEEDBACK.OPEN_GOOGLE_REVIEW' | translate }}
             </a>
           }
-          @if (googleMapsUrl()) {
-            <a [href]="googleMapsUrl()!" target="_blank" rel="noopener noreferrer" class="btn btn-secondary feedback-maps-btn">
-              {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
-            </a>
-          }
-          @if (openstreetmapUrl()) {
-            <a [href]="openstreetmapUrl()!" target="_blank" rel="noopener noreferrer" class="btn btn-secondary feedback-maps-btn">
-              {{ 'BOOK.OPEN_IN_OPENSTREETMAP' | translate }}
+          @for (link of mapLinks(); track link.url) {
+            <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="btn btn-secondary feedback-maps-btn">
+              {{ link.label }}
             </a>
           }
         </div>
@@ -138,7 +123,7 @@
           <div class="table-pill book-pill">
             <span>{{ 'FEEDBACK.TITLE' | translate }}</span>
           </div>
-          @if (tenant()?.address?.trim() || googleMapsUrl() || openstreetmapUrl()) {
+          @if (tenant()?.address?.trim() || mapLinks().length) {
             <div class="restaurant-location">
               @if (tenant()?.address?.trim()) {
                 <p class="restaurant-address">
@@ -146,26 +131,16 @@
                   {{ tenant()!.address }}
                 </p>
               }
-              @if (googleMapsUrl() || openstreetmapUrl()) {
+              @if (mapLinks().length) {
                 <div class="book-maps-actions">
-                  @if (googleMapsUrl()) {
+                  @for (link of mapLinks(); track link.url) {
                     <a
-                      [href]="googleMapsUrl()!"
+                      [href]="link.url"
                       target="_blank"
                       rel="noopener noreferrer"
                       class="btn btn-secondary book-maps-btn"
                     >
-                      {{ 'BOOK.OPEN_IN_GOOGLE_MAPS' | translate }}
-                    </a>
-                  }
-                  @if (openstreetmapUrl()) {
-                    <a
-                      [href]="openstreetmapUrl()!"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="btn btn-secondary book-maps-btn"
-                    >
-                      {{ 'BOOK.OPEN_IN_OPENSTREETMAP' | translate }}
+                      {{ link.label }}
                     </a>
                   }
                 </div>

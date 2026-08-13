@@ -40,6 +40,39 @@ def test_assign_maps_url_google():
     assert tenant.public_openstreetmap_url is None
 
 
+def test_assign_maps_url_amap():
+    tenant = models.Tenant(name="Maps Test")
+    assign_maps_url(tenant, "https://uri.amap.com/marker?position=116.397,39.909&name=测试")
+    assert tenant.public_amap_url.startswith("https://uri.amap.com/marker")
+    assert tenant.public_google_maps_url is None
+
+
+def test_assign_maps_url_tencent():
+    tenant = models.Tenant(name="Maps Test")
+    assign_maps_url(tenant, "https://map.qq.com/l/abc")
+    assert tenant.public_tencent_maps_url == "https://map.qq.com/l/abc"
+    assert tenant.public_google_maps_url is None
+
+
+def test_assign_maps_url_baidu():
+    tenant = models.Tenant(name="Maps Test")
+    assign_maps_url(tenant, "https://j.map.baidu.com/xyz")
+    assert tenant.public_baidu_maps_url == "https://j.map.baidu.com/xyz"
+    assert tenant.public_google_maps_url is None
+
+
+def test_classify_maps_url_china_providers():
+    from app.onboarding import classify_maps_url
+
+    assert classify_maps_url("https://ditu.amap.com/place/B000A7") == "amap"
+    assert classify_maps_url("https://www.amap.com/search?query=测试") == "amap"
+    assert classify_maps_url("https://www.map.qq.com/m/place/index?loc=1") == "tencent"
+    assert classify_maps_url("https://map.baidu.com/search/测试") == "baidu"
+    assert classify_maps_url("https://j.map.baidu.com/abc") == "baidu"
+    assert classify_maps_url("https://maps.google.com/?q=test") == "google"
+    assert classify_maps_url("https://www.openstreetmap.org/node/1") == "openstreetmap"
+
+
 def test_seed_starter_products_idempotent():
     with Session(engine) as session:
         user = _create_owner(session, f"onboarding-seed-{uuid.uuid4().hex}@test.local")

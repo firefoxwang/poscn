@@ -15,16 +15,45 @@ STARTER_PRODUCTS: dict[str, tuple[int, str]] = {
 }
 
 
+# Map provider -> tenant field that stores the public share link.
+_MAPS_FIELD_BY_KIND: dict[str, str] = {
+    "google": "public_google_maps_url",
+    "openstreetmap": "public_openstreetmap_url",
+    "amap": "public_amap_url",
+    "tencent": "public_tencent_maps_url",
+    "baidu": "public_baidu_maps_url",
+}
+
+
+def classify_maps_url(url: str) -> str:
+    """Return the map provider kind for a share/directions URL.
+
+    Providers are distinguished by hostname; the Chinese map services use
+    distinct parent domains so a keyword match on the host is reliable:
+      - amap:       *.amap.com        (www.amap.com, uri.amap.com, ditu.amap.com, surl.amap.com)
+      - tencent:    *.map.qq.com      (map.qq.com, j.map.qq.com, apis.map.qq.com)
+      - baidu:      *.map.baidu.com   (map.baidu.com, j.map.baidu.com, api.map.baidu.com)
+    Unknown hosts fall back to "google".
+    """
+    lower = str(url).lower()
+    if "openstreetmap" in lower:
+        return "openstreetmap"
+    if "amap.com" in lower:
+        return "amap"
+    if "map.qq.com" in lower:
+        return "tencent"
+    if "map.baidu.com" in lower:
+        return "baidu"
+    return "google"
+
+
 def assign_maps_url(tenant, maps_url: str | None) -> None:
-    """Store a single maps share link on the tenant (Google or OpenStreetMap)."""
+    """Store a single maps share link on the tenant under the matching provider field."""
     if not maps_url or not str(maps_url).strip():
         return
     url = str(maps_url).strip()
-    lower = url.lower()
-    if "openstreetmap" in lower:
-        tenant.public_openstreetmap_url = url
-    else:
-        tenant.public_google_maps_url = url
+    kind = classify_maps_url(url)
+    setattr(tenant, _MAPS_FIELD_BY_KIND[kind], url)
 
 
 def seed_starter_products(

@@ -665,6 +665,10 @@ export interface TenantSummary {
   reservation_dress_code?: string | null;
   /** OpenStreetMap share URL (openstreetmap.org). */
   public_openstreetmap_url?: string | null;
+  /** China map share links (高德 Amap / 腾讯地图 Tencent / 百度地图 Baidu). */
+  public_amap_url?: string | null;
+  public_tencent_maps_url?: string | null;
+  public_baidu_maps_url?: string | null;
   /** Restaurant website (http(s), from tenant settings). */
   website?: string | null;
   /** Effective legal URLs (tenant-specific or server default). */
@@ -1789,6 +1793,9 @@ export interface TenantSettings {
   guest_birthday_consent_text?: string | null;
   public_google_maps_url?: string | null;
   public_openstreetmap_url?: string | null;
+  public_amap_url?: string | null;
+  public_tencent_maps_url?: string | null;
+  public_baidu_maps_url?: string | null;
   public_terms_of_service_url?: string | null;
   public_privacy_policy_url?: string | null;
   /** Up to 4 tip percentages for POS checkout; empty array disables tips; omit/null = default 5/10/15/20 */

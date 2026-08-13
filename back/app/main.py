@@ -838,6 +838,10 @@ class TenantSummary(_BaseModel):
     public_google_review_url: str | None = None
     public_google_maps_url: str | None = None
     public_openstreetmap_url: str | None = None
+    # China map share links (高德 Amap / 腾讯地图 Tencent / 百度地图 Baidu)
+    public_amap_url: str | None = None
+    public_tencent_maps_url: str | None = None
+    public_baidu_maps_url: str | None = None
     # Restaurant website (http(s) only; normalized)
     website: str | None = None
     # Effective legal links: tenant URL if set, else PUBLIC_* from server config
@@ -1095,6 +1099,9 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
         public_google_review_url=t.public_google_review_url,
         public_google_maps_url=t.public_google_maps_url,
         public_openstreetmap_url=t.public_openstreetmap_url,
+        public_amap_url=t.public_amap_url,
+        public_tencent_maps_url=t.public_tencent_maps_url,
+        public_baidu_maps_url=t.public_baidu_maps_url,
         website=_normalize_public_http_url(t.website),
         terms_of_service_url=tos,
         privacy_policy_url=priv,
@@ -1188,6 +1195,9 @@ def get_public_tenant(
         "public_google_review_url": summary.public_google_review_url,
         "public_google_maps_url": summary.public_google_maps_url,
         "public_openstreetmap_url": summary.public_openstreetmap_url,
+        "public_amap_url": summary.public_amap_url,
+        "public_tencent_maps_url": summary.public_tencent_maps_url,
+        "public_baidu_maps_url": summary.public_baidu_maps_url,
         "website": summary.website,
         "terms_of_service_url": summary.terms_of_service_url,
         "privacy_policy_url": summary.privacy_policy_url,
@@ -4318,6 +4328,16 @@ def update_tenant_settings(
     if tenant_update.public_openstreetmap_url is not None:
         tenant.public_openstreetmap_url = _normalize_public_http_url(
             tenant_update.public_openstreetmap_url
+        )
+    if tenant_update.public_amap_url is not None:
+        tenant.public_amap_url = _normalize_public_http_url(tenant_update.public_amap_url)
+    if tenant_update.public_tencent_maps_url is not None:
+        tenant.public_tencent_maps_url = _normalize_public_http_url(
+            tenant_update.public_tencent_maps_url
+        )
+    if tenant_update.public_baidu_maps_url is not None:
+        tenant.public_baidu_maps_url = _normalize_public_http_url(
+            tenant_update.public_baidu_maps_url
         )
     if tenant_update.public_terms_of_service_url is not None:
         tenant.public_terms_of_service_url = _normalize_public_http_url(

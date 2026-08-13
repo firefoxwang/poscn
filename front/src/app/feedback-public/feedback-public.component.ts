@@ -64,6 +64,23 @@ export class FeedbackPublicComponent implements OnInit, OnDestroy {
   googleReviewUrl = computed(() => this.tenant()?.public_google_review_url?.trim() || null);
   googleMapsUrl = computed(() => this.tenant()?.public_google_maps_url?.trim() || null);
   openstreetmapUrl = computed(() => this.tenant()?.public_openstreetmap_url?.trim() || null);
+  amapUrl = computed(() => this.tenant()?.public_amap_url?.trim() || null);
+  tencentMapsUrl = computed(() => this.tenant()?.public_tencent_maps_url?.trim() || null);
+  baiduMapsUrl = computed(() => this.tenant()?.public_baidu_maps_url?.trim() || null);
+  mapLinks = computed<{ url: string; label: string }[]>(() => {
+    const links: { url: string; label: string }[] = [];
+    const add = (url: string | null, labelKey: string) => {
+      if (url) {
+        links.push({ url, label: this.translate.instant(labelKey) });
+      }
+    };
+    add(this.googleMapsUrl(), 'BOOK.OPEN_IN_GOOGLE_MAPS');
+    add(this.openstreetmapUrl(), 'BOOK.OPEN_IN_OPENSTREETMAP');
+    add(this.amapUrl(), 'BOOK.OPEN_IN_AMAP');
+    add(this.tencentMapsUrl(), 'BOOK.OPEN_IN_TENCENT_MAPS');
+    add(this.baiduMapsUrl(), 'BOOK.OPEN_IN_BAIDU_MAPS');
+    return links;
+  });
   termsOfServiceUrl = computed(() => this.tenant()?.terms_of_service_url?.trim() || null);
   privacyPolicyUrl = computed(() => this.tenant()?.privacy_policy_url?.trim() || null);
 

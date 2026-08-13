@@ -39,6 +39,9 @@ ALLOWED_PLACEHOLDERS: frozenset[str] = frozenset(
         "reservation_link_block_html",
         "google_maps_link_block_html",
         "openstreetmap_link_block_html",
+        "amap_link_block_html",
+        "tencent_maps_link_block_html",
+        "baidu_maps_link_block_html",
         "cancellation_policy",
         "prepayment_text",
         "prepayment_notice",
@@ -57,6 +60,9 @@ _TRUSTED_HTML_PLACEHOLDERS: frozenset[str] = frozenset(
         "restaurant_contact_block_html",
         "google_maps_link_block_html",
         "openstreetmap_link_block_html",
+        "amap_link_block_html",
+        "tencent_maps_link_block_html",
+        "baidu_maps_link_block_html",
     }
 )
 
@@ -90,10 +96,13 @@ def default_confirmation_body_template(lang: str = "en") -> str:
 
 {{{{reservation_link_block_html}}}}
 
-{{{{google_maps_link_block_html}}}}
-{{{{openstreetmap_link_block_html}}}}
+ {{{{google_maps_link_block_html}}}}
+ {{{{openstreetmap_link_block_html}}}}
+ {{{{amap_link_block_html}}}}
+ {{{{tencent_maps_link_block_html}}}}
+ {{{{baidu_maps_link_block_html}}}}
 
-{{{{restaurant_contact_block_html}}}}
+ {{{{restaurant_contact_block_html}}}}
 
 {closing}
 
@@ -184,6 +193,36 @@ def openstreetmap_link_block_html(tenant: Tenant, lang: str = "en") -> str:
     return _map_link_html(label, getattr(tenant, "public_openstreetmap_url", None))
 
 
+def amap_link_block_plain(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_amap", lang)
+    return _map_link_plain(label, getattr(tenant, "public_amap_url", None))
+
+
+def amap_link_block_html(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_amap", lang)
+    return _map_link_html(label, getattr(tenant, "public_amap_url", None))
+
+
+def tencent_maps_link_block_plain(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_tencent", lang)
+    return _map_link_plain(label, getattr(tenant, "public_tencent_maps_url", None))
+
+
+def tencent_maps_link_block_html(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_tencent", lang)
+    return _map_link_html(label, getattr(tenant, "public_tencent_maps_url", None))
+
+
+def baidu_maps_link_block_plain(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_baidu", lang)
+    return _map_link_plain(label, getattr(tenant, "public_baidu_maps_url", None))
+
+
+def baidu_maps_link_block_html(tenant: Tenant, lang: str = "en") -> str:
+    label = get_message("email_reservation_maps_baidu", lang)
+    return _map_link_html(label, getattr(tenant, "public_baidu_maps_url", None))
+
+
 def _tel_uri(display_phone: str) -> str | None:
     """Build a tel: href from a human-entered number; None if no dialable digits."""
     compact = "".join(c for c in display_phone.strip() if c.isdigit() or c == "+")
@@ -256,6 +295,9 @@ def build_value_maps(
         "reservation_link_block_html": _link_block_plain(view_url, lang),
         "google_maps_link_block_html": google_maps_link_block_plain(tenant, lang),
         "openstreetmap_link_block_html": openstreetmap_link_block_plain(tenant, lang),
+        "amap_link_block_html": amap_link_block_plain(tenant, lang),
+        "tencent_maps_link_block_html": tencent_maps_link_block_plain(tenant, lang),
+        "baidu_maps_link_block_html": baidu_maps_link_block_plain(tenant, lang),
         "cancellation_policy": (tenant.reservation_cancellation_policy or "").strip(),
         "prepayment_text": (tenant.reservation_prepayment_text or "").strip(),
         "prepayment_notice": _prepayment_notice(tenant, lang),
@@ -273,6 +315,9 @@ def build_value_maps(
     html_map["reservation_link_block_html"] = _link_block_html(view_url, lang)
     html_map["google_maps_link_block_html"] = google_maps_link_block_html(tenant, lang)
     html_map["openstreetmap_link_block_html"] = openstreetmap_link_block_html(tenant, lang)
+    html_map["amap_link_block_html"] = amap_link_block_html(tenant, lang)
+    html_map["tencent_maps_link_block_html"] = tencent_maps_link_block_html(tenant, lang)
+    html_map["baidu_maps_link_block_html"] = baidu_maps_link_block_html(tenant, lang)
     html_map["restaurant_contact_block_html"] = contact_block_html(tenant, lang)
     return plain, html_map
 
@@ -494,15 +539,23 @@ def render_reminder_email(
     maps_html = ""
     maps_plain = ""
     if tenant:
-        maps_html = google_maps_link_block_html(tenant, lang) + openstreetmap_link_block_html(
-            tenant, lang
+        maps_html = (
+            google_maps_link_block_html(tenant, lang)
+            + openstreetmap_link_block_html(tenant, lang)
+            + amap_link_block_html(tenant, lang)
+            + tencent_maps_link_block_html(tenant, lang)
+            + baidu_maps_link_block_html(tenant, lang)
         )
-        gp = google_maps_link_block_plain(tenant, lang)
-        op = openstreetmap_link_block_plain(tenant, lang)
-        if gp:
-            maps_plain += f"\n{gp}\n"
-        if op:
-            maps_plain += f"\n{op}\n"
+        for block in (
+            google_maps_link_block_plain,
+            openstreetmap_link_block_plain,
+            amap_link_block_plain,
+            tencent_maps_link_block_plain,
+            baidu_maps_link_block_plain,
+        ):
+            part = block(tenant, lang)
+            if part:
+                maps_plain += f"\n{part}\n"
 
     contact_html = contact_block_html(tenant, lang) if tenant else ""
     contact_plain = contact_block_plain(tenant, lang) if tenant else ""

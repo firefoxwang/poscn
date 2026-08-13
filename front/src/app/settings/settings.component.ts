@@ -1015,6 +1015,42 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                   </div>
 
                   <div class="form-group">
+                    <label for="public_amap_url">{{ 'SETTINGS.PUBLIC_AMAP_URL' | translate }}</label>
+                    <input
+                      type="url"
+                      id="public_amap_url"
+                      [(ngModel)]="formData.public_amap_url"
+                      name="public_amap_url"
+                      [placeholder]="'SETTINGS.PUBLIC_AMAP_PLACEHOLDER' | translate"
+                    />
+                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_AMAP_HINT' | translate }}</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="public_tencent_maps_url">{{ 'SETTINGS.PUBLIC_TENCENT_MAPS_URL' | translate }}</label>
+                    <input
+                      type="url"
+                      id="public_tencent_maps_url"
+                      [(ngModel)]="formData.public_tencent_maps_url"
+                      name="public_tencent_maps_url"
+                      [placeholder]="'SETTINGS.PUBLIC_TENCENT_MAPS_PLACEHOLDER' | translate"
+                    />
+                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_TENCENT_MAPS_HINT' | translate }}</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="public_baidu_maps_url">{{ 'SETTINGS.PUBLIC_BAIDU_MAPS_URL' | translate }}</label>
+                    <input
+                      type="url"
+                      id="public_baidu_maps_url"
+                      [(ngModel)]="formData.public_baidu_maps_url"
+                      name="public_baidu_maps_url"
+                      [placeholder]="'SETTINGS.PUBLIC_BAIDU_MAPS_PLACEHOLDER' | translate"
+                    />
+                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_BAIDU_MAPS_HINT' | translate }}</small>
+                  </div>
+
+                  <div class="form-group">
                     <label for="public_terms_of_service_url">{{ 'SETTINGS.PUBLIC_TERMS_OF_SERVICE_URL' | translate }}</label>
                     <input
                       type="url"
@@ -3294,6 +3330,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     public_google_review_url: null,
     public_google_maps_url: null,
     public_openstreetmap_url: null,
+    public_amap_url: null,
+    public_tencent_maps_url: null,
+    public_baidu_maps_url: null,
     public_terms_of_service_url: null,
     public_privacy_policy_url: null,
     tip_tax_rate_percent: 0,
@@ -3420,6 +3459,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           public_google_review_url: settings.public_google_review_url ?? null,
           public_google_maps_url: settings.public_google_maps_url ?? null,
           public_openstreetmap_url: settings.public_openstreetmap_url ?? null,
+          public_amap_url: settings.public_amap_url ?? null,
+          public_tencent_maps_url: settings.public_tencent_maps_url ?? null,
+          public_baidu_maps_url: settings.public_baidu_maps_url ?? null,
           public_terms_of_service_url: settings.public_terms_of_service_url ?? null,
           public_privacy_policy_url: settings.public_privacy_policy_url ?? null,
           tip_tax_rate_percent: settings.tip_tax_rate_percent ?? 0,

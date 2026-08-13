@@ -201,6 +201,10 @@ class Tenant(SQLModel, table=True):
     public_google_maps_url: str | None = Field(default=None, max_length=2048)
     # Public pages: optional OpenStreetMap URL (share link from openstreetmap.org)
     public_openstreetmap_url: str | None = Field(default=None, max_length=2048)
+    # Public pages: optional China map share links (高德 Amap / 腾讯地图 Tencent / 百度地图 Baidu)
+    public_amap_url: str | None = Field(default=None, max_length=2048)
+    public_tencent_maps_url: str | None = Field(default=None, max_length=2048)
+    public_baidu_maps_url: str | None = Field(default=None, max_length=2048)
     # Public pages: optional legal document URLs (fallback: PUBLIC_* in config.env)
     public_terms_of_service_url: str | None = Field(default=None, max_length=2048)
     public_privacy_policy_url: str | None = Field(default=None, max_length=2048)
@@ -1885,6 +1889,10 @@ class TenantUpdate(SQLModel):
     # Google Maps place or directions URL (book, reservation view, feedback)
     public_google_maps_url: str | None = None
     public_openstreetmap_url: str | None = None
+    # China map share links (高德 / 腾讯地图 / 百度地图)
+    public_amap_url: str | None = None
+    public_tencent_maps_url: str | None = None
+    public_baidu_maps_url: str | None = None
     public_terms_of_service_url: str | None = None
     public_privacy_policy_url: str | None = None
 
