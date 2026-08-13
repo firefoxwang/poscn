@@ -165,9 +165,6 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
             class="tab" 
             [class.active]="activeSection() === 'taxes'"
             (click)="activeSection.set('taxes'); loadTaxesAll()">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-            </svg>
             <span>{{ 'SETTINGS.TAXES' | translate }}</span>
           </button>
           @if (settingsModuleTabVisible('kitchen_bar')) {
