@@ -1169,7 +1169,9 @@
     "TSE_SERIAL": "TSE serial",
     "TSE_COUNTER": "Signature counter",
     "TSE_TIME": "TSE timestamp",
-    "TSE_DISCLAIMER": "Test/stub TSE record — not a claim of BSI TR-03153 certification."
+    "TSE_DISCLAIMER": "Test/stub TSE record — not a claim of BSI TR-03153 certification.",
+    "INVOICE_QR_LABEL": "Scan to invoice",
+    "INVOICE_QR_HINT": "Scan the QR code below to issue an electronic invoice"
   },
   "CUSTOMERS": {
     "TITLE": "Customers (Invoice)",
@@ -1193,7 +1195,14 @@
     "DELETE_CONFIRM": "Delete {{name}}? Orders already linked will keep the saved data.",
     "PRINT_FACTURA": "Print invoice",
     "SELECT_FOR_FACTURA": "Select customer for invoice",
-    "BILL_TO": "Bill to"
+    "BILL_TO": "Bill to",
+    "INVOICE_TITLE_TYPE": "Invoice title type",
+    "INVOICE_TITLE_UNIT": "Unit (company)",
+    "INVOICE_TITLE_PERSONAL": "Personal",
+    "BANK_NAME": "Bank name",
+    "BANK_ACCOUNT": "Bank account",
+    "INVOICE_PHONE": "Invoice phone",
+    "INVOICE_PHONE_HINT": "Phone to receive electronic invoice"
   },
   "ORDER_STATUS": {
     "pending": "Pending",

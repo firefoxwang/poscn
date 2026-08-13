@@ -159,6 +159,28 @@ import { TranslateModule } from '@ngx-translate/core';
                 <input id="cust-birth" type="date" [(ngModel)]="form.birth_date" name="birth_date" />
                 <p class="field-hint">{{ 'CUSTOMERS.BIRTH_DATE_HINT' | translate }}</p>
               </div>
+              @if (isCnInvoice()) {
+                <div class="form-group">
+                  <label>{{ 'CUSTOMERS.INVOICE_TITLE_TYPE' | translate }}</label>
+                  <select [(ngModel)]="form.invoice_title_type" name="invoice_title_type">
+                    <option value="">—</option>
+                    <option value="unit">{{ 'CUSTOMERS.INVOICE_TITLE_UNIT' | translate }}</option>
+                    <option value="personal">{{ 'CUSTOMERS.INVOICE_TITLE_PERSONAL' | translate }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="cust-bank-name">{{ 'CUSTOMERS.BANK_NAME' | translate }}</label>
+                  <input id="cust-bank-name" type="text" [(ngModel)]="form.bank_name" name="bank_name" />
+                </div>
+                <div class="form-group">
+                  <label for="cust-bank-acct">{{ 'CUSTOMERS.BANK_ACCOUNT' | translate }}</label>
+                  <input id="cust-bank-acct" type="text" [(ngModel)]="form.bank_account" name="bank_account" />
+                </div>
+                <div class="form-group">
+                  <label for="cust-invoice-phone">{{ 'CUSTOMERS.INVOICE_PHONE' | translate }}</label>
+                  <input id="cust-invoice-phone" type="text" [(ngModel)]="form.invoice_phone" name="invoice_phone" [placeholder]="'CUSTOMERS.INVOICE_PHONE_HINT' | translate" />
+                </div>
+              }
               <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">{{ 'COMMON.CANCEL' | translate }}</button>
                 <button type="submit" class="btn btn-primary" [disabled]="!form.name.trim() || saving()">
@@ -224,6 +246,10 @@ export class CustomersComponent implements OnInit {
     email: string;
     phone: string;
     birth_date: string;
+    invoice_title_type: string;
+    bank_name: string;
+    bank_account: string;
+    invoice_phone: string;
   } = {
     name: '',
     company_name: '',
@@ -231,8 +257,15 @@ export class CustomersComponent implements OnInit {
     address: '',
     email: '',
     phone: '',
-    birth_date: ''
+    birth_date: '',
+    invoice_title_type: '',
+    bank_name: '',
+    bank_account: '',
+    invoice_phone: ''
   };
+
+  /** China invoice fields visible only when tenant.fiscal_country == 'CN' */
+  isCnInvoice = signal(false);
 
   canWrite(): boolean {
     return this.permissions.hasPermission(this.api.getCurrentUser(), 'billing_customer:write');
@@ -240,6 +273,10 @@ export class CustomersComponent implements OnInit {
 
   ngOnInit() {
     this.load();
+    this.api.getTenantSettings().subscribe({
+      next: s => this.isCnInvoice.set((s.fiscal_country || '').trim().toUpperCase() === 'CN'),
+      error: () => this.isCnInvoice.set(false),
+    });
   }
 
   load() {
@@ -260,7 +297,11 @@ export class CustomersComponent implements OnInit {
         address: c.address ?? '',
         email: c.email ?? '',
         phone: c.phone ?? '',
-        birth_date: c.birth_date ?? ''
+        birth_date: c.birth_date ?? '',
+        invoice_title_type: c.invoice_title_type ?? '',
+        bank_name: c.bank_name ?? '',
+        bank_account: c.bank_account ?? '',
+        invoice_phone: c.invoice_phone ?? ''
       };
     } else {
       this.form = {
@@ -270,7 +311,11 @@ export class CustomersComponent implements OnInit {
         address: '',
         email: '',
         phone: '',
-        birth_date: ''
+        birth_date: '',
+        invoice_title_type: '',
+        bank_name: '',
+        bank_account: '',
+        invoice_phone: ''
       };
     }
     this.showModal.set(true);
@@ -292,13 +337,21 @@ export class CustomersComponent implements OnInit {
       email?: string;
       phone?: string;
       birth_date?: string | null;
+      invoice_title_type?: string;
+      bank_name?: string;
+      bank_account?: string;
+      invoice_phone?: string;
     } = {
       name: this.form.name.trim(),
       company_name: this.form.company_name?.trim() || undefined,
       tax_id: this.form.tax_id?.trim() || undefined,
       address: this.form.address?.trim() || undefined,
       email: this.form.email?.trim() || undefined,
-      phone: this.form.phone?.trim() || undefined
+      phone: this.form.phone?.trim() || undefined,
+      invoice_title_type: this.form.invoice_title_type?.trim() || undefined,
+      bank_name: this.form.bank_name?.trim() || undefined,
+      bank_account: this.form.bank_account?.trim() || undefined,
+      invoice_phone: this.form.invoice_phone?.trim() || undefined
     };
     const editing = this.editing();
     if (editing) {

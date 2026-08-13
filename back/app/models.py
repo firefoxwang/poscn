@@ -1006,11 +1006,16 @@ class BillingCustomer(TenantMixin, table=True):
     tenant_id: int = Field(foreign_key="tenant.id", index=True)
     name: str = Field(index=True)  # Contact or company name
     company_name: str | None = Field(default=None, index=True)  # Legal / company name for invoice
-    tax_id: str | None = Field(default=None, index=True)  # CIF / NIF / VAT number
+    tax_id: str | None = Field(default=None, index=True)  # 统一社会信用代码 / CIF / NIF / VAT number
     address: str | None = None
     email: str | None = Field(default=None, index=True)
     phone: str | None = None
     birth_date: date | None = Field(default=None, sa_column=Column(Date, nullable=True))
+    # China invoice (发票) — used when tenant.fiscal_country == "CN"
+    invoice_title_type: str | None = Field(default=None, max_length=16)  # 单位 | 个人 (unit | personal)
+    bank_name: str | None = Field(default=None, max_length=128)
+    bank_account: str | None = Field(default=None, max_length=64)
+    invoice_phone: str | None = Field(default=None, max_length=32)  # 手机号 (电子发票接收)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     orders: list["Order"] = Relationship(back_populates="billing_customer")
@@ -1789,6 +1794,10 @@ class BillingCustomerCreate(SQLModel):
     email: str | None = None
     phone: str | None = None
     birth_date: date | None = None
+    invoice_title_type: str | None = None
+    bank_name: str | None = None
+    bank_account: str | None = None
+    invoice_phone: str | None = None
 
 
 class BillingCustomerUpdate(SQLModel):
@@ -1799,6 +1808,10 @@ class BillingCustomerUpdate(SQLModel):
     email: str | None = None
     phone: str | None = None
     birth_date: date | None = None
+    invoice_title_type: str | None = None
+    bank_name: str | None = None
+    bank_account: str | None = None
+    invoice_phone: str | None = None
 
 
 class OrderItemStaffUpdate(SQLModel):

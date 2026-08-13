@@ -5102,15 +5102,25 @@ def list_taxes(
     current_only: bool = Query(True, description="If true, only return taxes valid today"),
 ) -> list[dict]:
     """List taxes for the current tenant. Optionally filter to those valid today."""
-    # Auto-seed default Spanish IVA taxes when a tenant has none yet.
+    # Auto-seed default taxes when a tenant has none yet (by fiscal_country).
+    # CN → Chinese VAT (增值税 6/3/0); otherwise default to Spanish IVA (10/21/0).
     # This prevents Settings dropdowns from rendering as an empty list.
     has_any = session.exec(
         select(models.Tax.id).where(models.Tax.tenant_id == current_user.tenant_id).limit(1)
     ).first()
     if not has_any:
-        from app.seeds.seed_spanish_taxes import seed_spanish_taxes
+        tenant = session.exec(
+            select(models.Tenant).where(models.Tenant.id == current_user.tenant_id)
+        ).first()
+        country = (getattr(tenant, "fiscal_country", None) or "").strip().upper()
+        if country == "CN":
+            from app.seeds.seed_chinese_taxes import seed_chinese_taxes
 
-        seed_spanish_taxes(tenant_id=current_user.tenant_id, set_default=True)
+            seed_chinese_taxes(tenant_id=current_user.tenant_id, set_default=True)
+        else:
+            from app.seeds.seed_spanish_taxes import seed_spanish_taxes
+
+            seed_spanish_taxes(tenant_id=current_user.tenant_id, set_default=True)
 
     query = select(models.Tax).where(models.Tax.tenant_id == current_user.tenant_id)
     if current_only:
@@ -14695,6 +14705,10 @@ def _billing_customer_dict(c: models.BillingCustomer, current_tenant_id: int) ->
         "email": c.email,
         "phone": c.phone,
         "birth_date": c.birth_date.isoformat() if c.birth_date else None,
+        "invoice_title_type": getattr(c, "invoice_title_type", None),
+        "bank_name": getattr(c, "bank_name", None),
+        "bank_account": getattr(c, "bank_account", None),
+        "invoice_phone": getattr(c, "invoice_phone", None),
         "created_at": c.created_at.isoformat(),
         "tenant_id": c.tenant_id,
         "is_shared": c.tenant_id != current_tenant_id,
@@ -14902,6 +14916,10 @@ def create_billing_customer(
         email=body.email,
         phone=body.phone,
         birth_date=body.birth_date,
+        invoice_title_type=body.invoice_title_type,
+        bank_name=body.bank_name,
+        bank_account=body.bank_account,
+        invoice_phone=body.invoice_phone,
     )
     session.add(customer)
     session.commit()
@@ -14948,6 +14966,14 @@ def update_billing_customer(
         customer.email = body.email
     if body.phone is not None:
         customer.phone = body.phone
+    if body.invoice_title_type is not None:
+        customer.invoice_title_type = body.invoice_title_type
+    if body.bank_name is not None:
+        customer.bank_name = body.bank_name
+    if body.bank_account is not None:
+        customer.bank_account = body.bank_account
+    if body.invoice_phone is not None:
+        customer.invoice_phone = body.invoice_phone
     _bc_upd = body.model_dump(exclude_unset=True)
     if "birth_date" in _bc_upd:
         customer.birth_date = _bc_upd["birth_date"]

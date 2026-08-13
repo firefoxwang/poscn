@@ -3944,7 +3944,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
         ? `
   <div class="fiscal-verifactu" style="margin-top: 20px; padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
     <p style="margin: 0 0 10px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #334155;">
-      ${this.escapeHtml(this.translate.instant('ORDERS.FISCAL_INVOICE_LABEL'))}
+      ${this.escapeHtml(this.translate.instant(fiscalMeta.invoice_mode === 'cn' ? 'ORDERS.INVOICE_QR_LABEL' : 'ORDERS.FISCAL_INVOICE_LABEL'))}
     </p>
     <p style="margin: 0 0 12px; font-size: 14px;">${fiscalNumberLine}</p>
     ${qrDataUrl ? `<div style="text-align:center;margin:8px 0;"><img src="${qrDataUrl}" alt="" width="180" height="180" /></div>` : ''}

@@ -36,6 +36,36 @@ AEAT_QR_TEST = "https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR"
 AEAT_QR_PROD = "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR"
 
 
+def _is_cn_tenant(tenant: models.Tenant) -> bool:
+    return (getattr(tenant, "fiscal_country", None) or "").strip().upper() == "CN"
+
+
+def _cn_invoice_qr_url(
+    tenant: models.Tenant,
+    order: models.Order,
+    full_number: str,
+    amount_cents: int,
+    billing_customer: models.BillingCustomer | None,
+) -> str:
+    """扫码开票链接 — 微信/支付宝电子发票入口（占位 URL，可按服务商替换）。
+
+    实际对接百望/航天信息/全电发票平台时，这里替换为服务商开票 URL 模板。
+    当前默认走微信电子发票通用入口示意（非真实开票，仅演示/占位）。
+    """
+    base = "https://invoice.weixin.qq.com/"
+    params: dict[str, str] = {
+        "fp": full_number,
+        "amt": f"{amount_cents / 100:.2f}",
+        "tn": (tenant.tax_id or tenant.cif or "").strip() or "",
+    }
+    if billing_customer:
+        params["buyer"] = (billing_customer.company_name or billing_customer.name or "").strip()
+        params["btax"] = (billing_customer.tax_id or "").strip()
+        if billing_customer.invoice_phone:
+            params["tel"] = billing_customer.invoice_phone.strip()
+    return f"{base}?{urlencode(params)}"
+
+
 def _issuer_nif(tenant: models.Tenant) -> str:
     raw = (tenant.tax_id or tenant.cif or "").strip().upper().replace(" ", "").replace("-", "")
     return raw[:9] if raw else "PENDING00"
@@ -311,6 +341,8 @@ def issue_or_get_fiscal_invoice(
     tenant: models.Tenant,
     order: models.Order,
 ) -> models.FiscalInvoice:
+    if _is_cn_tenant(tenant):
+        return _issue_cn_invoice(session, tenant, order)
     mode = (tenant.fiscal_mode or "off").strip().lower()
     if mode == "off":
         raise HTTPException(status_code=400, detail="Fiscal invoicing is disabled for this tenant")
@@ -432,6 +464,8 @@ def cancel_fiscal_invoice(
     order: models.Order,
 ) -> models.FiscalInvoice:
     """Issue anulación (credit-note cancel) for the order's active fiscal alta."""
+    if _is_cn_tenant(tenant):
+        return _cancel_cn_invoice(session, tenant, order)
     mode = (tenant.fiscal_mode or "off").strip().lower()
     if mode == "off":
         raise HTTPException(status_code=400, detail="Fiscal invoicing is disabled for this tenant")
@@ -532,7 +566,7 @@ def cancel_fiscal_invoice(
 
 
 def fiscal_invoice_public_dict(fi: models.FiscalInvoice) -> dict[str, Any]:
-    return {
+    d = {
         "id": fi.id,
         "order_id": fi.order_id,
         "series": fi.series,
@@ -555,3 +589,196 @@ def fiscal_invoice_public_dict(fi: models.FiscalInvoice) -> dict[str, Any]:
         ),
         "cancels_fiscal_invoice_id": getattr(fi, "cancels_fiscal_invoice_id", None),
     }
+    # Expose China invoice (扫码开票) metadata when present.
+    rp = fi.request_payload if isinstance(fi.request_payload, dict) else None
+    if rp and rp.get("schema") == "pos.fiscal_invoice.cn.v1":
+        d["invoice_mode"] = "cn"
+        d["invoice_qr_url"] = rp.get("invoice_qr_url")
+        d["invoice_title_type"] = rp.get("invoice_title_type")
+        d["invoice_buyer_name"] = rp.get("invoice_buyer_name")
+        d["invoice_buyer_tax_id"] = rp.get("invoice_buyer_tax_id")
+    else:
+        d["invoice_mode"] = "es"
+    return d
+
+
+# ============ China invoice (扫码开票) ============
+
+
+def _cn_issue_mode(tenant: models.Tenant) -> str:
+    """CN mode mirrors fiscal_mode (off → disabled; test/live → 开票)."""
+    return (tenant.fiscal_mode or "off").strip().lower()
+
+
+def _issue_cn_invoice(
+    session: Session,
+    tenant: models.Tenant,
+    order: models.Order,
+) -> models.FiscalInvoice:
+    """China 扫码开票 — 不做 AEAT 哈希链，生成开票二维码链接存入 FiscalInvoice。
+
+    - 不调用 AEAT/Fiskaly，仅本地持久化开票请求。
+    - 前端展示二维码供顾客扫码开电子发票。
+    - 取消(红冲)由 _cancel_cn_invoice 处理。
+    """
+    if _cn_issue_mode(tenant) == "off":
+        raise HTTPException(status_code=400, detail="开票功能未启用 (fiscal_mode=off)")
+
+    existing = get_fiscal_alta(session, tenant.id, order.id)
+    if existing:
+        return existing
+
+    if order.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status == models.OrderStatus.cancelled:
+        raise HTTPException(status_code=400, detail="Cannot issue invoice for a cancelled order")
+    if order.status not in _ISSUABLE_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail="订单需先付款或完成才能开票",
+        )
+
+    tenant_locked = session.exec(
+        select(models.Tenant).where(models.Tenant.id == tenant.id).with_for_update()
+    ).first()
+    if not tenant_locked:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    series = (tenant_locked.fiscal_invoice_series or "FD").strip() or "FD"  # FD = 发票
+    num = int(tenant_locked.fiscal_invoice_next_number or 1)
+    full_number = f"{series}-{num}"
+    issued_at = datetime.now(timezone.utc)
+    amount_cents = order_fiscal_amount_cents(session, order)
+
+    billing_customer = None
+    if order.billing_customer_id:
+        billing_customer = session.get(models.BillingCustomer, order.billing_customer_id)
+        if billing_customer and billing_customer.tenant_id != tenant.id:
+            billing_customer = None
+
+    invoice_qr_url = _cn_invoice_qr_url(tenant_locked, order, full_number, amount_cents, billing_customer)
+
+    req_payload = {
+        "schema": "pos.fiscal_invoice.cn.v1",
+        "record_type": "alta",
+        "full_number": full_number,
+        "order_id": order.id,
+        "tenant_id": tenant.id,
+        "amount_cents": amount_cents,
+        "invoice_qr_url": invoice_qr_url,
+        "invoice_title_type": (billing_customer.invoice_title_type if billing_customer else None),
+        "invoice_buyer_name": (
+            billing_customer.company_name or billing_customer.name if billing_customer else None
+        ),
+        "invoice_buyer_tax_id": (billing_customer.tax_id if billing_customer else None),
+        "invoice_buyer_phone": (
+            billing_customer.invoice_phone if billing_customer else None
+        ),
+        "disclaimer": "中国开票 — 扫码开票链接，非税务申报。实际开票由顾客扫码后通过微信/支付宝/全电发票平台完成。",
+    }
+    resp_payload = {
+        "status": "issued_local",
+        "note": "China 扫码开票 — 本地记录，顾客扫码开电子发票。",
+    }
+
+    fi = models.FiscalInvoice(
+        tenant_id=tenant.id,
+        order_id=order.id,
+        series=series,
+        doc_number=num,
+        full_number=full_number,
+        mode=_cn_issue_mode(tenant_locked),
+        status="issued",
+        issued_at=issued_at,
+        request_payload=req_payload,
+        response_payload=resp_payload,
+        verification_qr_content=invoice_qr_url,
+        verification_text="中国扫码开票 — 顾客扫描二维码后开电子发票。",
+        record_type="alta",
+        previous_hash="",
+        record_hash="",
+        amount_cents=amount_cents,
+        submission_status="local_only",
+    )
+    tenant_locked.fiscal_invoice_next_number = num + 1
+    session.add(fi)
+    session.add(tenant_locked)
+    session.flush()
+    return fi
+
+
+def _cancel_cn_invoice(
+    session: Session,
+    tenant: models.Tenant,
+    order: models.Order,
+) -> models.FiscalInvoice:
+    """China 红冲 (credit-note / 红字发票) — 本地标记取消，不调 AEAT。"""
+    if _cn_issue_mode(tenant) == "off":
+        raise HTTPException(status_code=400, detail="开票功能未启用 (fiscal_mode=off)")
+
+    alta = get_fiscal_alta(session, tenant.id, order.id)
+    if not alta:
+        raise HTTPException(status_code=404, detail="未找到发票")
+    if alta.status in ("cancelled", "void"):
+        existing_cancel = session.exec(
+            select(models.FiscalInvoice).where(
+                models.FiscalInvoice.tenant_id == tenant.id,
+                models.FiscalInvoice.cancels_fiscal_invoice_id == alta.id,
+                models.FiscalInvoice.record_type == "anulacion",
+            )
+        ).first()
+        if existing_cancel:
+            return existing_cancel
+        raise HTTPException(status_code=400, detail="发票已作废")
+
+    tenant_locked = session.exec(
+        select(models.Tenant).where(models.Tenant.id == tenant.id).with_for_update()
+    ).first()
+    if not tenant_locked:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    series = (tenant_locked.fiscal_invoice_series or "FD").strip() or "FD"
+    num = int(tenant_locked.fiscal_invoice_next_number or 1)
+    full_number = f"{series}-H{num}"  # H = 红冲
+    issued_at = datetime.now(timezone.utc)
+    amount_cents = int(alta.amount_cents or 0)
+
+    req_payload = {
+        "schema": "pos.fiscal_invoice.cn.v1",
+        "record_type": "anulacion",
+        "full_number": full_number,
+        "order_id": order.id,
+        "tenant_id": tenant.id,
+        "amount_cents": amount_cents,
+        "cancels_full_number": alta.full_number,
+        "cancels_fiscal_invoice_id": alta.id,
+        "disclaimer": "中国红冲 — 本地标记，实际红字发票由开票平台处理。",
+    }
+
+    cancel_fi = models.FiscalInvoice(
+        tenant_id=tenant.id,
+        order_id=order.id,
+        series=series,
+        doc_number=num,
+        full_number=full_number,
+        mode=_cn_issue_mode(tenant_locked),
+        status="issued",
+        issued_at=issued_at,
+        request_payload=req_payload,
+        response_payload={"status": "anulacion_local"},
+        verification_qr_content="",
+        verification_text="中国红冲 — 发票已作废，红字发票由开票平台处理。",
+        record_type="anulacion",
+        previous_hash="",
+        record_hash="",
+        cancels_fiscal_invoice_id=alta.id,
+        amount_cents=amount_cents,
+        submission_status="local_only",
+    )
+    alta.status = "cancelled"
+    tenant_locked.fiscal_invoice_next_number = num + 1
+    session.add(cancel_fi)
+    session.add(alta)
+    session.add(tenant_locked)
+    session.flush()
+    return cancel_fi

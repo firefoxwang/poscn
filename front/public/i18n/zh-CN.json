@@ -1135,7 +1135,9 @@
     "TSE_DISCLAIMER": "Test/stub TSE record — not a claim of BSI TR-03153 certification.",
     "SPLIT_BY_LINE": "或支付所选菜品",
     "SPLIT_BY_LINE_HINT": "为该付款人选择菜品。金额由所选行计算（或在下方输入金额）。",
-    "SPLIT_LINE_TOTAL": "所选菜品合计"
+    "SPLIT_LINE_TOTAL": "所选菜品合计",
+    "INVOICE_QR_LABEL": "扫码开票",
+    "INVOICE_QR_HINT": "扫描下方二维码开具电子发票"
   },
   "CUSTOMERS": {
     "TITLE": "客户（发票）",
@@ -1159,7 +1161,14 @@
     "DELETE_CONFIRM": "删除 {{name}}？已关联的订单将保留已保存的数据。",
     "PRINT_FACTURA": "打印发票",
     "SELECT_FOR_FACTURA": "选择发票客户",
-    "BILL_TO": "开票对象"
+    "BILL_TO": "开票对象",
+    "INVOICE_TITLE_TYPE": "发票抬头类型",
+    "INVOICE_TITLE_UNIT": "单位",
+    "INVOICE_TITLE_PERSONAL": "个人",
+    "BANK_NAME": "开户银行",
+    "BANK_ACCOUNT": "开户账号",
+    "INVOICE_PHONE": "开票手机号",
+    "INVOICE_PHONE_HINT": "用于接收电子发票"
   },
   "ORDER_STATUS": {
     "pending": "待处理",

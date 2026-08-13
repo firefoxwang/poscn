@@ -1430,7 +1430,7 @@ export interface OrderItem {
   kitchen_station_route?: string | null;
 }
 
-/** Server-issued fiscal invoice metadata (VeriFactu preparation). */
+/** Server-issued fiscal invoice metadata (VeriFactu / China 扫码开票). */
 export interface FiscalInvoicePublic {
   id: number;
   order_id: number;
@@ -1442,6 +1442,16 @@ export interface FiscalInvoicePublic {
   issued_at: string | null;
   verification_qr_content: string;
   verification_text: string;
+  /** China invoice (扫码开票) metadata — 'cn' when present, 'es' otherwise */
+  invoice_mode?: 'cn' | 'es';
+  /** 扫码开票 URL (China) */
+  invoice_qr_url?: string | null;
+  /** 抬头类型 单位/个人 (China) */
+  invoice_title_type?: string | null;
+  /** 购方名称 (China) */
+  invoice_buyer_name?: string | null;
+  /** 购方税号 (China) */
+  invoice_buyer_tax_id?: string | null;
 }
 
 /** German TSE transaction metadata (KassenSichV preparation — not a certification claim). */
@@ -1475,6 +1485,14 @@ export interface BillingCustomer {
   phone?: string | null;
   /** ISO date YYYY-MM-DD; optional CRM / occasions */
   birth_date?: string | null;
+  /** China invoice (发票): 单位 | 个人 (unit | personal) */
+  invoice_title_type?: string | null;
+  /** China invoice: 开户银行 */
+  bank_name?: string | null;
+  /** China invoice: 开户账号 */
+  bank_account?: string | null;
+  /** China invoice: 手机号 (电子发票接收) */
+  invoice_phone?: string | null;
   created_at: string;
   /** Present when listing group-shared customers from another location */
   tenant_id?: number;
@@ -3106,6 +3124,10 @@ export class ApiService {
     email?: string;
     phone?: string;
     birth_date?: string | null;
+    invoice_title_type?: string;
+    bank_name?: string;
+    bank_account?: string;
+    invoice_phone?: string;
   }): Observable<BillingCustomer> {
     return this.http.post<BillingCustomer>(`${this.apiUrl}/billing-customers`, data);
   }
