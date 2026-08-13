@@ -1400,6 +1400,15 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                     </select>
                   </div>
                   <div class="form-group">
+                    <label for="fiscal_country">{{ 'SETTINGS.FISCAL_COUNTRY' | translate }}</label>
+                    <select id="fiscal_country" class="form-select" [(ngModel)]="formData.fiscal_country" name="fiscal_country">
+                      <option value="CN">{{ 'SETTINGS.FISCAL_COUNTRY_CN' | translate }}</option>
+                      <option value="ES">{{ 'SETTINGS.FISCAL_COUNTRY_ES' | translate }}</option>
+                      <option value="DE">{{ 'SETTINGS.FISCAL_COUNTRY_DE' | translate }}</option>
+                    </select>
+                    <p class="hint">{{ 'SETTINGS.FISCAL_COUNTRY_HINT' | translate }}</p>
+                  </div>
+                  <div class="form-group">
                     <label for="fiscal_invoice_series">{{ 'SETTINGS.FISCAL_SERIES' | translate }}</label>
                     <input
                       type="text"
@@ -1427,19 +1436,6 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                   <div class="divider"></div>
                   <h3>{{ 'SETTINGS.TSE_TITLE' | translate }}</h3>
                   <p class="hint">{{ 'SETTINGS.TSE_DESC' | translate }}</p>
-                  <div class="form-group">
-                    <label for="fiscal_country">{{ 'SETTINGS.FISCAL_COUNTRY' | translate }}</label>
-                    <input
-                      type="text"
-                      id="fiscal_country"
-                      [(ngModel)]="formData.fiscal_country"
-                      name="fiscal_country"
-                      maxlength="2"
-                      class="input-small"
-                      placeholder="DE"
-                    />
-                    <p class="hint">{{ 'SETTINGS.FISCAL_COUNTRY_HINT' | translate }}</p>
-                  </div>
                   <div class="form-group">
                     <label for="tse_mode">{{ 'SETTINGS.TSE_MODE' | translate }}</label>
                     <select id="tse_mode" class="form-select" [(ngModel)]="formData.tse_mode" name="tse_mode">

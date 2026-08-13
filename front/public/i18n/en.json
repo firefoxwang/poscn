@@ -2383,8 +2383,8 @@
     "RESTAURANT_GROUP_STATUS_CANCELLED": "Cancelled",
     "TSE_TITLE": "German TSE (KassenSichV preparation)",
     "TSE_DESC": "Separate from Spain VeriFactu. In test mode, paid orders get a local stub TSE signature; receipts show serial, counter, time, and QR. Live mode stays locked until TSE_LIVE_UNLOCK and cloud TSE credentials (Fiskaly SIGN DE) are ready. Not certified by itself.",
-    "FISCAL_COUNTRY": "Fiscal country hint",
-    "FISCAL_COUNTRY_HINT": "Optional ISO code (e.g. DE or ES). Does not auto-enable TSE or VeriFactu.",
+    "FISCAL_COUNTRY": "Fiscal country",
+    "FISCAL_COUNTRY_HINT": "Select the tax/invoicing scheme: CN=Chinese VAT (6/3/0) + scan-to-invoice; ES=Spanish IVA (10/21/0) + VeriFactu; DE=German TSE. Saved on print.",
     "TSE_MODE": "TSE mode",
     "TSE_MODE_OFF": "Off (no TSE signing)",
     "TSE_MODE_TEST": "Test — local stub signature (not production compliance)",
@@ -2403,7 +2403,10 @@
     "LOYALTY_REFERRAL_INVITEE_HINT": "Units awarded to the new member who joins with a valid referral code (0 = off).",
     "LOYALTY_REFERRAL_CODE": "Referral code",
     "LOYALTY_WALLET_ENABLED": "Offer Apple / Google Wallet passes",
-    "LOYALTY_WALLET_ENABLED_HINT": "When platform certificates are configured, members can add a wallet pass on join. Disable to keep balance-card only."
+    "LOYALTY_WALLET_ENABLED_HINT": "When platform certificates are configured, members can add a wallet pass on join. Disable to keep balance-card only.",
+    "FISCAL_COUNTRY_CN": "China (CN) — VAT + scan-to-invoice",
+    "FISCAL_COUNTRY_ES": "Spain (ES) — IVA + VeriFactu",
+    "FISCAL_COUNTRY_DE": "Germany (DE) — TSE"
   },
   "PAYMENTS": {
     "PAYMENT": "Payment",

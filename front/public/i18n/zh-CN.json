@@ -2333,8 +2333,8 @@
     "PRINTING_DOCS_HINT": "手册：docs/0070-hardware-printing.md — python3 scripts/print-agent/print_agent.py",
     "TSE_TITLE": "German TSE (KassenSichV preparation)",
     "TSE_DESC": "Separate from Spain VeriFactu. In test mode, paid orders get a local stub TSE signature; receipts show serial, counter, time, and QR. Live mode stays locked until TSE_LIVE_UNLOCK and a cloud provider URL are set. Not certified by itself.",
-    "FISCAL_COUNTRY": "Fiscal country hint",
-    "FISCAL_COUNTRY_HINT": "Optional ISO code (e.g. DE or ES). Does not auto-enable TSE or VeriFactu.",
+    "FISCAL_COUNTRY": "税务地区",
+    "FISCAL_COUNTRY_HINT": "选择开票/税务方案：CN=中国增值税(6/3/0)+扫码开票；ES=西班牙IVA(10/21/0)+VeriFactu；DE=德国TSE。保存后打印发票按所选方案处理。",
     "TSE_MODE": "TSE mode",
     "TSE_MODE_OFF": "Off (no TSE signing)",
     "TSE_MODE_TEST": "Test — local stub signature (not production compliance)",
@@ -2369,7 +2369,10 @@
     "LOYALTY_MEMBERS_EMPTY_HINT": "分享公开加入链接，以便顾客注册。",
     "LOYALTY_REFERRAL_INVITEE_HINT": "使用有效推荐码加入的新会员获得的单位（0 = 关闭）。",
     "LOYALTY_WALLET_ENABLED": "提供 Apple / Google 钱包卡",
-    "LOYALTY_WALLET_ENABLED_HINT": "配置平台证书后，会员加入时可添加钱包卡。关闭则仅保留余额链接。"
+    "LOYALTY_WALLET_ENABLED_HINT": "配置平台证书后，会员加入时可添加钱包卡。关闭则仅保留余额链接。",
+    "FISCAL_COUNTRY_CN": "中国 (CN) — 增值税 + 扫码开票",
+    "FISCAL_COUNTRY_ES": "西班牙 (ES) — IVA + VeriFactu",
+    "FISCAL_COUNTRY_DE": "德国 (DE) — TSE"
   },
   "PAYMENTS": {
     "PAYMENT": "支付",
