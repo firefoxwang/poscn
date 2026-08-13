@@ -77,3 +77,6 @@ dist/
 # Local secrets (GitHub tokens, GA measurement ID, etc. — never commit)
 .secrets
 # Keep .secrets.example committed as the template
+
+# Playwright MCP test artifacts (local browser testing only)
+.playwright-mcp/
