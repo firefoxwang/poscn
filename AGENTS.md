@@ -203,6 +203,8 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 
 **Frontend (Angular):** Prettier config in `package.json` (`singleQuote: true`, `printWidth: 100`). Uses `@angular/ssr`; dev is typically client-side (handled by `run.sh`). Standard Angular CLI structure.
 
+**i18n (中文本地化映射):** 当用户以中文描述页面上的某个按钮/文案/界面，需要把它映射到英文文案或代码变量/函数时，优先在 **`front/public/i18n/zh-CN.json`** 中按中文原文搜索翻译条目（如 `"税费"` → key `SETTINGS.TAXES`），再在源码中按该 key 定位对应的组件/模板与后端字段。
+
 **Backend (FastAPI):** SQLModel (Pydantic + SQLAlchemy). DB driver: `psycopg[binary]` (v3). `from . import models` in `main.py` so models are registered before DB creation. Environment via `config.env`.
 
 **Testing:** Frontend: `ng test` (Karma/Jasmine). Backend: pytest. See `docs/testing.md` for Puppeteer tests.
