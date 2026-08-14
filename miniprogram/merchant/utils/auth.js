@@ -99,4 +99,8 @@ function logout() {
   wx.reLaunch({ url: '/pages/login/login' });
 }
 
-module.exports = { login, bindStaff, getPhone, logout, storeSession, clearSession };
+function isLoggedIn() {
+  return !!wx.getStorageSync('access_token');
+}
+
+module.exports = { login, bindStaff, getPhone, logout, storeSession, clearSession, isLoggedIn };

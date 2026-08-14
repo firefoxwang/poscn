@@ -1,4 +1,5 @@
 const api = require('../../utils/api.js');
+const auth = require('../../utils/auth.js');
 const { formatMoney } = require('../../utils/format.js');
 
 Page({
@@ -8,6 +9,10 @@ Page({
     cards: [],
   },
   onShow() {
+    if (!auth.isLoggedIn()) {
+      wx.reLaunch({ url: '/pages/login/login' });
+      return;
+    }
     this.loadSummary();
   },
   async loadSummary() {

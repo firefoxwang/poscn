@@ -20,6 +20,10 @@ Page({
     loading: true,
   },
   onShow() {
+    if (!auth.isLoggedIn()) {
+      wx.reLaunch({ url: '/pages/login/login' });
+      return;
+    }
     this.load();
   },
   onPullDownRefresh() {

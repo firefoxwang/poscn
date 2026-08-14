@@ -7,9 +7,7 @@ App({
   onLaunch() {
     const token = wx.getStorageSync('access_token');
     if (!token) {
-      setTimeout(() => {
-        wx.reLaunch({ url: '/pages/login/login' });
-      }, 0);
+      wx.reLaunch({ url: '/pages/login/login' });
     }
   },
 });
