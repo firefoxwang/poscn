@@ -45,11 +45,11 @@ Backend support lives in `back/app/`:
 
 ## 2. Local development chain
 
-1. Start the backend as usual (`./run.sh` or `docker compose up`); the backend listens on **`http://127.0.0.1:8020`**.
+1. Start the backend as usual (`./run.sh` or `docker compose up`). The FastAPI app (Uvicorn) listens on **`http://127.0.0.1:8020`**, but **only inside the Docker network** — port 8020 is not published to the host (`docker-compose.yml` exposes `8020` without a host mapping). From outside Docker the only path in is HAProxy: in dev, **`http://<host>:4202/api`** reverse-proxies `/api/*` to the backend (`haproxy.dev.cfg`, stripping the `/api` prefix; backend runs with `ROOT_PATH=/api`). So the mini programs must use **`http://<host>:4202/api`** (not `:8020`) as their `BASE_URL`.
 2. Open **微信开发者工具** (WeChat DevTools) → import project → select **`miniprogram/merchant/`** (or **`miniprogram/consumer/`**) as the project root.
 3. DevTools defaults to the **`touristappid`** placeholder AppID — fine for local development (with no registered AppID, `wx.login` still returns a code, and `code2session` is mocked/never reached in tests; in dev the backend calls the real WeChat API only if credentials are set).
-4. In DevTools go to **详情 → 本地设置 → 勾选「不校验合法域名」** (disable domain validation). This lets `wx.request` hit `http://127.0.0.1:8020` (and any LAN IP) without an ICP-filed HTTPS domain.
-5. Both mini programs read `BASE_URL` from `utils/config.js` — default `http://127.0.0.1:8020`. For a real phone in the same LAN, change it to the host machine's LAN IP (e.g. `http://192.168.x.x:8020`) and keep 不校验合法域名 enabled.
+4. In DevTools go to **详情 → 本地设置 → 勾选「不校验合法域名」** (disable domain validation). This lets `wx.request` hit `http://127.0.0.1:4202/api` (and any LAN IP) without an ICP-filed HTTPS domain.
+5. Both mini programs read `BASE_URL` from `utils/config.js` — set it to **`http://127.0.0.1:4202/api`** when DevTools runs on the same host, or to the host's LAN IP (e.g. `http://192.168.x.x:4202/api`) when DevTools runs in a Windows VM or on a real phone in the same LAN; keep 不校验合法域名 enabled. **Don't forget the `/api` prefix** — `api.js` appends paths like `/mp/auth/login` to `BASE_URL`, so omitting it returns 404.
 
 **Testing locally without a registered AppID:** the backend is fully unit-tested with mocked WeChat calls (`back/tests/test_mp_auth_flows.py`, `back/tests/test_mp_qrcode.py`, `back/tests/test_wechat_service.py`). With real credentials in `config.env`, the same flows work end-to-end in DevTools.
 
@@ -108,7 +108,7 @@ WeChat mini programs may only call **HTTPS** domains that are whitelisted in the
 
 1. **ICP-filed HTTPS domain** — point it at the POS backend (e.g. `https://pos.example.cn`, reverse-proxied to the backend).
 2. In **微信公众平台 → 开发管理 → 开发设置 → 服务器域名** add the domain under **request 合法域名** (both mini programs need it if both call the backend).
-3. Set **`BASE_URL`** in **both** `miniprogram/merchant/utils/config.js` and `miniprogram/consumer/utils/config.js` to that domain (replacing the `http://127.0.0.1:8020` dev default).
+3. Set **`BASE_URL`** in **both** `miniprogram/merchant/utils/config.js` and `miniprogram/consumer/utils/config.js` to that domain (replacing the `http://127.0.0.1:4202/api` dev default).
 4. If the WeChat API (`api.weixin.qq.com`) calls must be proxied (e.g. through a local gateway), set **`WECHAT_API_BASE`** in `config.env` accordingly. The WeChat API calls themselves are made **server-side** (backend → `api.weixin.qq.com`), so they do **not** need to be in the mini program's domain whitelist.
 5. Rebuild/re-upload both mini programs; the Web table 小程序码 keeps working (it is generated server-side with the merchant AppID).
 
@@ -136,7 +136,7 @@ Before submitting either mini program to review / releasing to production (云�
 - [ ] Replace **`touristappid`** with the **real platform AppID** in **both** `miniprogram/merchant/project.config.json` and `miniprogram/consumer/project.config.json` (and set the matching AppID in the DevTools project).
 - [ ] Fill the matching `WECHAT_MP_MERCHANT_APPID/SECRET` and `WECHAT_MP_CONSUMER_APPID/SECRET` in the production `config.env` (backend).
 - [ ] ICP-filed HTTPS domain whitelisted under 微信公众平台 request 合法域名 (both mini programs) — see [section 6](#6-合法域名白名单-production).
-- [ ] `BASE_URL` in both `utils/config.js` points at the production HTTPS domain (not `127.0.0.1:8020`).
+- [ ] `BASE_URL` in both `utils/config.js` points at the production HTTPS domain (not `127.0.0.1:4202/api`).
 - [ ] Bump the version in `project.config.json` (`version`) and per DevTools 版本号 before uploading; upload both as separate mini programs.
 - [ ] Re-generate table 小程序码 after deploy if `MP_QRCODE_PAGE`/`MP_QRCODE_ENV` changed (Web tables page → 小程序码 button downloads fresh pngs).
 
