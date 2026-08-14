@@ -61,7 +61,7 @@ def test_get_phone_number_success():
     assert out["phoneNumber"] == "13800138000"
     assert out["countryCode"] == "86"
     assert m.call_args.kwargs["json"] == {"code": "code"}
-    assert m.call_args.kwargs["headers"]["Authorization"] == "Bearer token"
+    assert m.call_args.kwargs["params"] == {"access_token": "token"}
 
 
 def test_get_phone_number_errcode_raises():
@@ -94,7 +94,7 @@ def test_get_unlimited_qrcode_success_returns_bytes():
         "width": 430,
         "check_path": False,
     }
-    assert m.call_args.kwargs["headers"]["Authorization"] == "Bearer token"
+    assert m.call_args.kwargs["params"] == {"access_token": "token"}
 
 
 def test_get_unlimited_qrcode_errcode_json_raises():

@@ -33,8 +33,8 @@ def code2session(appid: str, secret: str, js_code: str) -> dict:
 def get_phone_number(access_token: str, code: str) -> dict:
     resp = requests.post(
         f"{settings.wechat_api_base}/wxa/business/getuserphonenumber",
+        params={"access_token": access_token},
         json={"code": code},
-        headers={"Authorization": f"Bearer {access_token}"},
     )
     payload = resp.json()
     _raise_wechat_error(payload)
@@ -48,6 +48,7 @@ def get_unlimited_qrcode(
         raise HTTPException(status_code=400, detail="scene too long (max 31 chars)")
     resp = requests.post(
         f"{settings.wechat_api_base}/wxa/getwxacodeunlimit",
+        params={"access_token": access_token},
         json={
             "scene": scene,
             "page": page,
@@ -55,7 +56,6 @@ def get_unlimited_qrcode(
             "width": 430,
             "check_path": False,
         },
-        headers={"Authorization": f"Bearer {access_token}"},
     )
     if "image/png" in resp.headers.get("Content-Type", ""):
         return resp.content
