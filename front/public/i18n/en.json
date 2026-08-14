@@ -1874,6 +1874,7 @@
     "BUSINESS_TYPE_CAFE": "Café",
     "BUSINESS_TYPE_RETAIL": "Retail Store",
     "BUSINESS_TYPE_SERVICE": "Service Business",
+    "BUSINESS_TYPE_STREET_FOOD": "Street Food",
     "BUSINESS_TYPE_OTHER": "Other",
     "DESCRIPTION": "Description",
     "DESCRIPTION_PLACEHOLDER": "A brief description of your business...",

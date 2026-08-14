@@ -843,6 +843,9 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                         <option value="bar">{{ 'SETTINGS.BUSINESS_TYPE_BAR' | translate }}</option>
                         <option value="cafe">{{ 'SETTINGS.BUSINESS_TYPE_CAFE' | translate }}</option>
                         <option value="retail">{{ 'SETTINGS.BUSINESS_TYPE_RETAIL' | translate }}</option>
+                        <option value="service">{{ 'SETTINGS.BUSINESS_TYPE_SERVICE' | translate }}</option>
+                        <option value="street_food">{{ 'SETTINGS.BUSINESS_TYPE_STREET_FOOD' | translate }}</option>
+                        <option value="other">{{ 'SETTINGS.BUSINESS_TYPE_OTHER' | translate }}</option>
                       </select>
                     </div>
                   </div>

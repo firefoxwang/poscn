@@ -1656,6 +1656,7 @@
     "BUSINESS_TYPE_CAFE": "Café",
     "BUSINESS_TYPE_RETAIL": "Commerce",
     "BUSINESS_TYPE_SERVICE": "Services",
+    "BUSINESS_TYPE_STREET_FOOD": "Street food",
     "BUSINESS_TYPE_OTHER": "Autre",
     "DESCRIPTION": "Description",
     "DESCRIPTION_PLACEHOLDER": "Courte description de votre établissement…",

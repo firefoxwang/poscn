@@ -1709,6 +1709,7 @@
     "BUSINESS_TYPE_CAFE": "کیفے",
     "BUSINESS_TYPE_RETAIL": "Retail اسٹور کریں",
     "BUSINESS_TYPE_SERVICE": "سروس کاروبار",
+    "BUSINESS_TYPE_STREET_FOOD": "اسٹریٹ فوڈ",
     "BUSINESS_TYPE_OTHER": "دیگر",
     "DESCRIPTION": "تفصیل",
     "DESCRIPTION_PLACEHOLDER": "brief تفصیل کا آپ کا کاروبار...",

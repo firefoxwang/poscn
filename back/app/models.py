@@ -67,6 +67,7 @@ class BusinessType(str, Enum):
     cafe = "cafe"
     retail = "retail"
     service = "service"
+    street_food = "street_food"
     other = "other"
 
 

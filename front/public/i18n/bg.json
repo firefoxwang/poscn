@@ -1709,6 +1709,7 @@
     "BUSINESS_TYPE_CAFE": "кафене",
     "BUSINESS_TYPE_RETAIL": "Магазин за продажба на дребно на маркови стоки",
     "BUSINESS_TYPE_SERVICE": "Сервизен бизнес",
+    "BUSINESS_TYPE_STREET_FOOD": "Улична храна",
     "BUSINESS_TYPE_OTHER": "Други",
     "DESCRIPTION": "Описание",
     "DESCRIPTION_PLACEHOLDER": "A brief description of your business...",

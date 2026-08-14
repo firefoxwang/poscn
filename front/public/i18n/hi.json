@@ -1831,6 +1831,7 @@
     "BUSINESS_TYPE_CAFE": "कैफे",
     "BUSINESS_TYPE_RETAIL": "रिटेल स्टोर",
     "BUSINESS_TYPE_SERVICE": "सेवा व्यवसाय",
+    "BUSINESS_TYPE_STREET_FOOD": "स्ट्रीट फूड",
     "BUSINESS_TYPE_OTHER": "अन्य",
     "DESCRIPTION": "विवरण",
     "DESCRIPTION_PLACEHOLDER": "आपके व्यवसाय का संक्षिप्त विवरण...",

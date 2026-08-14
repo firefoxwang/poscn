@@ -1831,6 +1831,7 @@
     "BUSINESS_TYPE_CAFE": "Cafeteria",
     "BUSINESS_TYPE_RETAIL": "Botiga",
     "BUSINESS_TYPE_SERVICE": "Serveis",
+    "BUSINESS_TYPE_STREET_FOOD": "Menjar de carrer",
     "BUSINESS_TYPE_OTHER": "Altres",
     "DESCRIPTION": "Descripció",
     "DESCRIPTION_PLACEHOLDER": "Una breu descripció del teu negoci...",

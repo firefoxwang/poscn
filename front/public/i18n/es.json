@@ -1997,6 +1997,7 @@
     "OTP_DISABLING": "Desactivando…",
     "BUSINESS_NAME_PLACEHOLDER": "Nombre de tu negocio",
     "BUSINESS_TYPE_SERVICE": "Servicios",
+    "BUSINESS_TYPE_STREET_FOOD": "Comida callejera",
     "BUSINESS_TYPE_OTHER": "Otro",
     "DESCRIPTION_PLACEHOLDER": "Una breve descripción de tu negocio...",
     "PUBLIC_BACKGROUND_COLOR": "Color de fondo del sitio público",
