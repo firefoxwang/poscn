@@ -5,7 +5,7 @@ from typing import Annotated, Literal
 
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic import BaseModel
@@ -110,6 +110,7 @@ def _customer_profile(customer: models.Customer, binding: models.MpBinding | Non
 @limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
 def mp_login(
     request: Request,
+    response: Response,
     body: MpLoginBody,
     session: Session = Depends(get_session),
 ) -> dict:
@@ -205,6 +206,7 @@ def mp_login(
 @limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
 def mp_bind_staff(
     request: Request,
+    response: Response,
     body: MpBindStaffBody,
     session: Session = Depends(get_session),
 ) -> dict:
@@ -282,6 +284,7 @@ def mp_bind_staff(
 @limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
 def mp_phone(
     request: Request,
+    response: Response,
     body: MpPhoneBody,
     session: Session = Depends(get_session),
 ) -> dict:
@@ -298,6 +301,7 @@ def mp_phone(
 @limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
 def mp_refresh(
     request: Request,
+    response: Response,
     session: Session = Depends(get_session),
 ) -> dict:
     scheme, param = get_authorization_scheme_param(request.headers.get("authorization", ""))
