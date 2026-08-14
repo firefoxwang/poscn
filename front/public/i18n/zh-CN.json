@@ -9,6 +9,7 @@
     "EDIT": "编辑",
     "ADD": "添加",
     "CLOSE": "关闭",
+    "DOWNLOAD": "下载",
     "LOADING": "加载中...",
     "ERROR": "错误",
     "SUCCESS": "成功",
@@ -1451,7 +1452,9 @@
     "GROUP_SIBLING_ACTIVITY_TITLE": "同组另一张桌已激活",
     "GROUP_SIBLING_ACTIVITY_MESSAGE": "已合并组：{{names}} 已有活跃会话或未完成订单。除非需要单独一单，请优先使用该桌。",
     "GROUP_SIBLING_ACTIVITY_CONFIRM": "仍要继续",
-    "GROUP_SIBLING_FLOOR_DOT": "同组另一张桌有活跃会话或未完成订单"
+    "GROUP_SIBLING_FLOOR_DOT": "同组另一张桌有活跃会话或未完成订单",
+    "MP_QR_CODE": "小程序码",
+    "MP_QR_CODE_ERROR": "无法获取小程序码，请重试"
   },
   "TABLE_STATUS": {
     "available": "空闲",

@@ -2794,6 +2794,18 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/floors/${floorId}/assign-waiter`, { waiter_id: waiterId });
   }
 
+  /** Mini program table QR PNG for WeChat scan. Requires owner/admin staff token. */
+  getMpTableQrcode(tableId: number, env?: string): Observable<Blob> {
+    const params: Record<string, string> = { table_id: String(tableId) };
+    if (env) {
+      params['env'] = env;
+    }
+    return this.http.get(`${this.apiUrl}/mp/qrcode/table`, {
+      params,
+      responseType: 'blob',
+    });
+  }
+
   getWaiters(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/users`).pipe(
       map((users: User[]) => users.filter(u => u.role === 'waiter'))

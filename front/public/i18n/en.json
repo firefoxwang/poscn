@@ -9,6 +9,7 @@
     "EDIT": "Edit",
     "ADD": "Add",
     "CLOSE": "Close",
+    "DOWNLOAD": "Download",
     "LOADING": "Loading...",
     "ERROR": "Error",
     "SUCCESS": "Success",
@@ -1485,7 +1486,9 @@
     "GROUP_SIBLING_ACTIVITY_TITLE": "Another table in this group is active",
     "GROUP_SIBLING_ACTIVITY_MESSAGE": "Joined group: {{names}} already has an active session or open order. Prefer using that ticket unless you need a separate one.",
     "GROUP_SIBLING_ACTIVITY_CONFIRM": "Continue anyway",
-    "GROUP_SIBLING_FLOOR_DOT": "Another table in this group has an active session or open order"
+    "GROUP_SIBLING_FLOOR_DOT": "Another table in this group has an active session or open order",
+    "MP_QR_CODE": "Mini Program QR",
+    "MP_QR_CODE_ERROR": "Could not fetch the mini program QR code. Try again."
   },
   "TABLE_STATUS": {
     "available": "Available",

@@ -615,6 +615,23 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
               <div class="table-actions">
                 <button type="button" class="btn btn-secondary btn-sm" (click)="openStaffMenu(table)"
                   [disabled]="staffMenuOpeningTableId() === table.id">{{ 'TABLES.OPEN_MENU' | translate }}</button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-ghost"
+                  (click)="showMpQrcode(table)"
+                  [disabled]="mpQrcodeLoadingTableId() === table.id">
+                  @if (mpQrcodeLoadingTableId() === table.id) {
+                    <span class="spinner spinner-dark"></span>
+                  } @else {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="7" height="7" rx="1"/>
+                      <rect x="14" y="3" width="7" height="7" rx="1"/>
+                      <rect x="14" y="14" width="7" height="7" rx="1"/>
+                      <path d="M3 14h7v7H3z"/>
+                    </svg>
+                  }
+                  {{ 'TABLES.MP_QR_CODE' | translate }}
+                </button>
                 <button 
                   class="btn btn-sm" 
                   [class.btn-ghost]="copiedTableId() !== table.id"
@@ -690,6 +707,27 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                 <button type="button" class="btn btn-primary" (click)="doReassignAndDelete()" [disabled]="!reassignTargetTableId()">
                   {{ 'TABLES.REASSIGN_AND_DELETE' | translate }}
                 </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Mini program QR preview -->
+        @if (mpQrcodePreview(); as preview) {
+          <div class="modal-overlay" (click)="closeMpQrcode()">
+            <div class="modal-content mp-qr-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>{{ 'TABLES.MP_QR_CODE' | translate }} — {{ preview.tableName }}</h3>
+                <button type="button" class="close-btn" (click)="closeMpQrcode()" aria-label="Close">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="modal-body mp-qr-body">
+                <img [src]="preview.objectUrl" [alt]="'TABLES.MP_QR_CODE' | translate">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeMpQrcode()">{{ 'COMMON.CLOSE' | translate }}</button>
+                <a class="btn btn-primary" [href]="preview.objectUrl" [download]="preview.downloadName">{{ 'COMMON.DOWNLOAD' | translate }}</a>
               </div>
             </div>
           </div>
@@ -773,6 +811,16 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
     .reassign-modal .reassign-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: var(--space-2); }
     .reassign-modal .reassign-select { width: 100%; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.9375rem; background: var(--color-surface); color: var(--color-text); }
     .reassign-modal .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-2); padding: var(--space-4); border-top: 1px solid var(--color-border); }
+
+    .modal-content.mp-qr-modal { background: var(--color-surface); border-radius: var(--radius-lg); max-width: 380px; width: 90%; box-shadow: var(--shadow-xl); overflow: hidden; }
+    .mp-qr-modal .modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border-bottom: 1px solid var(--color-border); }
+    .mp-qr-modal .modal-header h3 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+    .mp-qr-modal .close-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: var(--space-1); border-radius: var(--radius-sm); }
+    .mp-qr-modal .close-btn:hover { color: var(--color-text); background: var(--color-bg); }
+    .mp-qr-modal .modal-body { padding: var(--space-4); }
+    .mp-qr-modal .mp-qr-body { display: flex; justify-content: center; }
+    .mp-qr-modal .mp-qr-body img { max-width: 100%; height: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+    .mp-qr-modal .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-2); padding: var(--space-4); border-top: 1px solid var(--color-border); }
 
     .empty-state {
       text-align: center; padding: var(--space-8); background: var(--color-surface);
@@ -1116,6 +1164,10 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
+    .spinner-dark {
+      border-color: var(--color-border);
+      border-top-color: var(--color-primary);
+    }
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -1176,6 +1228,10 @@ export class TablesComponent implements OnInit {
   activatingTableId = signal<number | null>(null);
   /** While fetching staff menu token for open-in-new-tab. */
   staffMenuOpeningTableId = signal<number | null>(null);
+  /** While fetching mini program QR for this table. */
+  mpQrcodeLoadingTableId = signal<number | null>(null);
+  /** Mini program QR preview (object URL of downloaded PNG). */
+  mpQrcodePreview = signal<{ tableName: string; objectUrl: string; downloadName: string } | null>(null);
   waiters = signal<User[]>([]);
 
   // Confirmation Modal State
@@ -1809,6 +1865,33 @@ export class TablesComponent implements OnInit {
     } finally {
       document.body.removeChild(textarea);
     }
+  }
+
+  showMpQrcode(table: Table) {
+    if (!table.id) return;
+    this.mpQrcodeLoadingTableId.set(table.id);
+    this.api.getMpTableQrcode(table.id).subscribe({
+      next: blob => {
+        this.mpQrcodeLoadingTableId.set(null);
+        this.mpQrcodePreview.set({
+          tableName: table.name || `Table ${table.id}`,
+          objectUrl: URL.createObjectURL(blob),
+          downloadName: `table-${table.id}-mp.png`,
+        });
+      },
+      error: () => {
+        this.mpQrcodeLoadingTableId.set(null);
+        this.showToast('TABLES.MP_QR_CODE_ERROR', 'error');
+      },
+    });
+  }
+
+  closeMpQrcode() {
+    const preview = this.mpQrcodePreview();
+    if (preview) {
+      URL.revokeObjectURL(preview.objectUrl);
+    }
+    this.mpQrcodePreview.set(null);
   }
 
   loadTenantSettings() {
