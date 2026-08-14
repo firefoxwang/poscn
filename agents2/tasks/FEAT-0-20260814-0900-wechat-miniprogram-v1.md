@@ -343,14 +343,14 @@ T1.1 ── T1.2 ── T1.3
 ---
 
 ## Status Tracker
-| Phase / Stage | Sub-tasks | Status | Notes |
-|---------------|-----------|--------|-------|
-| Stage 1 后端契约凭证 | T1.1/T1.2/T1.3 | pending | 待拆 |
-| Stage 2 微信 API 封装 | T2.1 | pending | 待拆 |
-| Stage 3 MP 鉴权路由 | T3.1/T3.2 | pending | 待拆，里程碑闭环 |
-| Stage 4 商户概览聚合 | T4.1 | pending | 待拆 |
-| Stage 5 小程序码生成 | T5.1 | pending | 待拆 |
-| Stage 6 Web 端入口 | T6.1/T6.2 | pending | 待拆 |
-| Stage 7 商户端小程序 | T7.1–T7.4 | pending | 待拆 |
-| Stage 8 消费者端小程序 | T8.1–T8.4 | pending | 待拆 |
-| Stage 9 文档与收尾 | T9.1/T9.2 | pending | 待拆 |
+| Phase / Stage | Sub-tasks | Status | Sub-task file |
+|---------------|-----------|--------|---------------|
+| Stage 1 后端契约凭证 | T1.1/T1.2/T1.3 | pending | `NEW-0-20260814-1400-mp-stage1-contract-credentials.md` |
+| Stage 2 微信 API 封装 | T2.1 | pending | `NEW-0-20260814-1400-mp-stage2-wechat-api.md` |
+| Stage 3 MP 鉴权路由 | T3.1/T3.2 | pending | `NEW-0-20260814-1400-mp-stage3-auth-routes.md`（里程碑闭环） |
+| Stage 4 商户概览聚合 | T4.1 | pending | `NEW-0-20260814-1400-mp-stage4-dashboard-summary.md` |
+| Stage 5 小程序码生成 | T5.1 | pending | `NEW-0-20260814-1400-mp-stage5-qrcode.md` |
+| Stage 6 Web 端入口 | T6.1/T6.2 | pending | `NEW-0-20260814-1400-mp-stage6-web-entry.md` |
+| Stage 7 商户端小程序 | T7.1–T7.4 | pending | `NEW-0-20260814-1400-mp-stage7-merchant-mp.md` |
+| Stage 8 消费者端小程序 | T8.1–T8.4 | pending | `NEW-0-20260814-1400-mp-stage8-consumer-mp.md` |
+| Stage 9 文档与收尾 | T9.1/T9.2 | pending | `NEW-0-20260814-1400-mp-stage9-docs.md` |
