@@ -1,0 +1,18 @@
+<view class="page">
+  <picker mode="date" value="{{date}}" bindchange="onDateChange">
+    <view class="date-bar">
+      <text class="date-value">{{date}}</text>
+      <text class="date-hint">点击选择日期</text>
+    </view>
+  </picker>
+  <view class="list">
+    <reservation-card
+      wx:for="{{list}}"
+      wx:key="id"
+      reservation="{{item}}"
+      bindconfirm="onConfirm"
+      bindcancel="onCancel"
+    />
+  </view>
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">当天暂无预订</view>
+</view>

@@ -1,0 +1,33 @@
+.chip {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.warn {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.info {
+  color: #0369a1;
+  background: #e0f2fe;
+}
+
+.ok {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.danger {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.muted {
+  color: #6b7280;
+  background: #f3f4f6;
+}

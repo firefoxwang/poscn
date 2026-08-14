@@ -1,0 +1,11 @@
+.tgird {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -10rpx;
+}
+
+.tcell {
+  width: calc(50% - 20rpx);
+  margin: 10rpx;
+  box-sizing: border-box;
+}

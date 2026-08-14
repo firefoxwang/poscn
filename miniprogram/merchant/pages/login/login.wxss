@@ -1,0 +1,44 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 160rpx;
+  background: #ffffff;
+}
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 120rpx;
+}
+
+.login-title {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: #07c160;
+}
+
+.login-sub {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: #9ca3af;
+}
+
+.login-actions {
+  width: 100%;
+  padding: 0 48rpx;
+}
+
+.login-actions .btn-block {
+  margin-bottom: 24rpx;
+}
+
+.login-tip {
+  margin-top: 48rpx;
+  padding: 0 64rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #9ca3af;
+}

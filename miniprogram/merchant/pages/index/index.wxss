@@ -1,0 +1,65 @@
+.hero {
+  background: linear-gradient(135deg, #07c160, #05a24f);
+  border-radius: 20rpx;
+  padding: 40rpx 32rpx;
+  margin-bottom: 24rpx;
+  color: #ffffff;
+}
+
+.hero-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.hero-sub {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -10rpx;
+}
+
+.mcard {
+  width: calc(33.333% - 20rpx);
+  margin: 10rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 28rpx 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.mvalue {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.mvalue.money {
+  font-size: 28rpx;
+  color: #07c160;
+}
+
+.mlabel {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #9ca3af;
+}
+
+.quick {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 32rpx;
+}
+
+.quick .btn {
+  flex: 1;
+}

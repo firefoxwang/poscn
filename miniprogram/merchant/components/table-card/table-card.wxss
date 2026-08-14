@@ -1,0 +1,52 @@
+.tcard {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-top: 8rpx solid #d1d5db;
+}
+
+.tcard.warn {
+  border-top-color: #f59e0b;
+}
+
+.tcard.info {
+  border-top-color: #3b82f6;
+}
+
+.tcard.ok {
+  border-top-color: #07c160;
+}
+
+.tcard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.tname {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.tmeta {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.tpay {
+  display: inline-block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #b45309;
+  background: #fef3c7;
+  border-radius: 8rpx;
+  padding: 4rpx 16rpx;
+}
+
+.tcard-actions {
+  margin-top: 16rpx;
+  border-top: 2rpx solid #f3f4f6;
+  padding-top: 16rpx;
+}

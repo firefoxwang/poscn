@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">商户概览</text>
+    <text class="hero-sub" wx:if="{{summary}}">今日 {{summary.order_count || 0}} 单 · {{summary.tables_occupied || 0}}/{{summary.tables_total || 0}} 桌占用</text>
+  </view>
+  <view class="grid">
+    <view class="mcard" wx:for="{{cards}}" wx:key="label">
+      <text class="mvalue {{item.cls}}">{{item.value}}</text>
+      <text class="mlabel">{{item.label}}</text>
+    </view>
+  </view>
+  <view class="quick">
+    <button class="btn btn-primary" bindtap="goOrders">查看订单</button>
+    <button class="btn btn-outline" bindtap="goTables">管理桌台</button>
+  </view>
+</view>

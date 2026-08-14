@@ -1,0 +1,20 @@
+.date-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.date-value {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.date-hint {
+  font-size: 24rpx;
+  color: #9ca3af;
+}

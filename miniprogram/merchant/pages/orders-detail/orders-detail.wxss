@@ -1,0 +1,45 @@
+.amount {
+  color: #07c160;
+  font-weight: 600;
+}
+
+.item {
+  border-top: 2rpx solid #f3f4f6;
+  padding: 16rpx 0;
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.item-name {
+  font-size: 28rpx;
+}
+
+.item-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-bottom: 8rpx;
+}
+
+.item-notes {
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 8rpx;
+}
+
+.actions .btn {
+  flex: 1;
+}

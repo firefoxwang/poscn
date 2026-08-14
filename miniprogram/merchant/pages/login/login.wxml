@@ -1,0 +1,11 @@
+<view class="page login-page">
+  <view class="login-brand">
+    <text class="login-title">商户端</text>
+    <text class="login-sub">POS 微信小程序</text>
+  </view>
+  <view class="login-actions">
+    <button class="btn btn-primary btn-block" bindtap="onLogin" loading="{{loading}}" disabled="{{loading}}">微信登录</button>
+    <button class="btn btn-outline btn-block" bindtap="goBind">绑定商户账号</button>
+  </view>
+  <text class="login-tip">首次使用请先通过「绑定商户账号」完成微信与商户账号的绑定</text>
+</view>

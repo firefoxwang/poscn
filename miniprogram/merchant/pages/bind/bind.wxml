@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="card">
+    <view class="form-title">绑定商户账号</view>
+    <view class="form-item">
+      <text class="form-label">邮箱</text>
+      <input class="input" type="text" placeholder="商户账号邮箱" value="{{email}}" bindinput="onEmailInput" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">密码</text>
+      <input class="input" password placeholder="登录密码" value="{{password}}" bindinput="onPasswordInput" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">手机号（微信授权）</text>
+      <view class="phone-line">
+        <button class="btn btn-outline btn-sm" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">获取微信手机号</button>
+        <text class="form-value" wx:if="{{phoneNumber}}">{{phoneNumber}}</text>
+      </view>
+    </view>
+    <view class="form-item" wx:if="{{otpRequired}}">
+      <text class="form-label">两步验证码</text>
+      <input class="input" type="number" placeholder="6 位验证码" value="{{otpCode}}" bindinput="onOtpInput" />
+    </view>
+    <button class="btn btn-primary btn-block" bindtap="onSubmit" loading="{{submitting}}" disabled="{{submitting}}">绑定并登录</button>
+  </view>
+  <text class="login-tip">使用商户后台的邮箱和密码完成微信绑定，手机号需与账号一致</text>
+</view>

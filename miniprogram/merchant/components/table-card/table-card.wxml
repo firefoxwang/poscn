@@ -1,0 +1,14 @@
+<view class="tcard {{displayStatus}}" wx:if="{{table}}">
+  <view class="tcard-head">
+    <text class="tname">{{table.name}}</text>
+    <status-chip type="table" status="{{displayStatus}}" />
+  </view>
+  <view class="tmeta">{{table.seat_count}} 座</view>
+  <view class="tpay" wx:if="{{payLabel}}">{{payLabel}}</view>
+  <view class="tcard-actions" wx:if="{{canActivate}}">
+    <button class="btn btn-primary btn-sm" catchtap="onActivate">开启</button>
+  </view>
+  <view class="tcard-actions" wx:if="{{canClose}}">
+    <button class="btn btn-danger btn-sm" catchtap="onClose">关闭</button>
+  </view>
+</view>

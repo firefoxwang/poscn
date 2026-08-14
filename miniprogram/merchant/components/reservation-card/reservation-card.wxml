@@ -1,0 +1,26 @@
+<view class="card" wx:if="{{reservation}}">
+  <view class="card-head">
+    <text class="name">{{reservation.customer_name}}</text>
+    <status-chip type="reservation" status="{{reservation.status}}" />
+  </view>
+  <view class="row">
+    <text class="label">时间</text>
+    <text>{{reservation.reservation_date}} {{reservation.reservation_time}}</text>
+  </view>
+  <view class="row">
+    <text class="label">人数</text>
+    <text>{{reservation.party_size}} 人</text>
+  </view>
+  <view class="row" wx:if="{{reservation.table_name}}">
+    <text class="label">桌台</text>
+    <text>{{reservation.table_name}}</text>
+  </view>
+  <view class="row" wx:if="{{reservation.client_notes}}">
+    <text class="label">备注</text>
+    <text>{{reservation.client_notes}}</text>
+  </view>
+  <view class="card-actions" wx:if="{{canAction}}">
+    <button class="btn btn-primary btn-sm" bindtap="onConfirm">确认入座</button>
+    <button class="btn btn-danger btn-sm" bindtap="onCancel">取消预订</button>
+  </view>
+</view>

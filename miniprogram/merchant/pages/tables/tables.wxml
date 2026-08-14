@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="tgird">
+    <view class="tcell" wx:for="{{list}}" wx:key="id">
+      <table-card
+        table="{{item}}"
+        bindactivate="onActivate"
+        bindclose="onClose"
+      />
+    </view>
+  </view>
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">暂无桌台</view>
+</view>

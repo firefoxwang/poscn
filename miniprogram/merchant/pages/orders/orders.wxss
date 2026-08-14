@@ -1,0 +1,4 @@
+.order-card .amount {
+  color: #07c160;
+  font-weight: 600;
+}

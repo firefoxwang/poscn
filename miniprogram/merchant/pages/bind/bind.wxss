@@ -1,0 +1,12 @@
+.phone-line {
+  display: flex;
+  align-items: center;
+}
+
+.login-tip {
+  display: block;
+  text-align: center;
+  font-size: 24rpx;
+  color: #9ca3af;
+  padding: 0 32rpx;
+}

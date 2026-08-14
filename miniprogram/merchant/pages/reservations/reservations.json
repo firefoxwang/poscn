@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "预订管理",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "reservation-card": "/components/reservation-card/reservation-card"
+  }
+}

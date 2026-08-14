@@ -1,0 +1,49 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/reservations/reservations",
+    "pages/orders/orders",
+    "pages/tables/tables",
+    "pages/profile/profile",
+    "pages/login/login",
+    "pages/bind/bind",
+    "pages/orders-detail/orders-detail"
+  ],
+  "window": {
+    "navigationBarTitleText": "商户端",
+    "navigationBarBackgroundColor": "#07c160",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6fa",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#9ca3af",
+    "selectedColor": "#07c160",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/reservations/reservations",
+        "text": "预订"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/tables/tables",
+        "text": "桌台"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
