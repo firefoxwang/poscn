@@ -93,7 +93,7 @@ def mp_dashboard_summary(
 
     revenue_cents = 0
     for order in today_orders:
-        if order.status == models.OrderStatus.paid:
+        if order.status in (models.OrderStatus.paid, models.OrderStatus.completed):
             items = session.exec(
                 select(models.OrderItem)
                 .where(models.OrderItem.order_id == order.id)
