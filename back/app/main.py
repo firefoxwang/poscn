@@ -13206,13 +13206,10 @@ def create_order(
             )
             session.add(order_item)
     
-    # After adding items, recompute order status from all items (if not paid or cancelled)
-    # This ensures correct status like 'partially_delivered' when there are both delivered and undelivered items
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
-        computed_status = compute_order_status_from_items(all_items)
-        order.status = computed_status
-        logger.debug("Recomputed order status from items: %s", computed_status.value)
+    # After adding items, recompute order status (paid orders may leave completed → paid if new work)
+    all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
+    recompute_order_status_preserving_payment(order, list(all_items))
+    logger.debug("Recomputed order status from items: %s", order.status.value)
     
     session.commit()
     session.refresh(order)
@@ -13579,6 +13576,33 @@ def compute_order_status_from_items(items: list[models.OrderItem]) -> models.Ord
     return models.OrderStatus.pending
 
 
+def recompute_order_status_preserving_payment(
+    order: models.Order,
+    items: list[models.OrderItem],
+) -> None:
+    """
+    Update order.status from items.
+
+    Unpaid orders follow item-derived workflow status.
+    Paid orders stay ``paid`` while service is unfinished (pre-pay); when all
+    items are delivered they become ``completed`` so they leave Active Orders (#345).
+    Do not overwrite ``out_for_delivery`` (courier journey).
+    """
+    if order.status == models.OrderStatus.cancelled:
+        return
+    if order.status == models.OrderStatus.out_for_delivery:
+        return
+    paid = order.paid_at is not None or order.status == models.OrderStatus.paid
+    if paid:
+        computed = compute_order_status_from_items(items)
+        if computed == models.OrderStatus.completed:
+            order.status = models.OrderStatus.completed
+        else:
+            order.status = models.OrderStatus.paid
+        return
+    order.status = compute_order_status_from_items(items)
+
+
 @app.post("/orders/offline-cash")
 def create_offline_cash_order_endpoint(
     body: models.OfflineCashOrderCreate,
@@ -13838,12 +13862,23 @@ def list_orders(
                 )
             ).all()
         
-        # Compute order status from items (if not paid or cancelled)
-        computed_status = order.status
-        if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-            computed_status = compute_order_status_from_items(
-                session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
+        # Display status from items; paid + fully delivered → completed for Active/History (#345)
+        status_items = session.exec(
+            select(models.OrderItem).where(models.OrderItem.order_id == order.id)
+        ).all()
+        if order.status == models.OrderStatus.cancelled:
+            computed_status = models.OrderStatus.cancelled
+        elif order.status == models.OrderStatus.out_for_delivery:
+            computed_status = models.OrderStatus.out_for_delivery
+        elif order.paid_at is not None or order.status == models.OrderStatus.paid:
+            item_status = compute_order_status_from_items(list(status_items))
+            computed_status = (
+                models.OrderStatus.completed
+                if item_status == models.OrderStatus.completed
+                else models.OrderStatus.paid
             )
+        else:
+            computed_status = compute_order_status_from_items(list(status_items))
         
         # Get all items for removed count calculation
         all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order.id)).all()
@@ -14104,12 +14139,12 @@ def mark_order_paid(
         )
     else:
         now = datetime.now(timezone.utc)
-        order.status = models.OrderStatus.paid
         order.paid_at = now
         order.paid_by_user_id = current_user.id
         order.payment_method = order_pay_svc.settlement_payment_method(
             order_pay_svc.list_active_payments(session, order.id)
         ) or method
+        order.status = order_pay_svc.status_after_full_payment(session, order)
         session.add(order)
         session.commit()
         session.refresh(order)
@@ -14339,12 +14374,12 @@ def finish_order(
             settle_if_covered=True,
         )
     else:
-        order.status = models.OrderStatus.paid
         order.paid_at = now
         order.paid_by_user_id = current_user.id
         order.payment_method = order_pay_svc.settlement_payment_method(
             order_pay_svc.list_active_payments(session, order.id)
         ) or method
+        order.status = order_pay_svc.status_after_full_payment(session, order)
         session.add(order)
         session.commit()
         session.refresh(order)
@@ -15047,8 +15082,7 @@ def update_order_item_status(
     
     # Recompute order status from items
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        order.status = compute_order_status_from_items(all_items)
+    recompute_order_status_preserving_payment(order, list(all_items))
     
     session.add(order)
     session.commit()
@@ -15119,8 +15153,7 @@ def reset_item_status(
     
     # Recompute order status
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        order.status = compute_order_status_from_items(all_items)
+    recompute_order_status_preserving_payment(order, list(all_items))
     
     session.add(order)
     session.commit()
@@ -15200,8 +15233,7 @@ def cancel_order_item_staff(
     
     # Recompute order status and total
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        order.status = compute_order_status_from_items(all_items)
+    recompute_order_status_preserving_payment(order, list(all_items))
     
     session.add(order)
     session.commit()
@@ -15292,8 +15324,7 @@ def update_order_item_staff(
     
     # Recompute order status and total
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        order.status = compute_order_status_from_items(all_items)
+    recompute_order_status_preserving_payment(order, list(all_items))
     
     session.add(order)
     session.commit()
@@ -15372,8 +15403,7 @@ def remove_order_item_staff(
     
     # Recompute order status and total
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        order.status = compute_order_status_from_items(all_items)
+    recompute_order_status_preserving_payment(order, list(all_items))
     
     session.add(order)
     session.commit()
@@ -15468,8 +15498,7 @@ def remove_order_item(
     
     # Recompute order status and total
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        order.status = compute_order_status_from_items(all_items)
+    recompute_order_status_preserving_payment(order, list(all_items))
     
     session.add(order)
     session.commit()
@@ -15563,8 +15592,7 @@ def update_order_item_quantity(
     
     # Recompute order status and total
     all_items = session.exec(select(models.OrderItem).where(models.OrderItem.order_id == order_id)).all()
-    if order.status not in [models.OrderStatus.paid, models.OrderStatus.cancelled]:
-        order.status = compute_order_status_from_items(all_items)
+    recompute_order_status_preserving_payment(order, list(all_items))
     
     session.add(order)
     session.commit()
@@ -15868,13 +15896,13 @@ def confirm_payment(
                 detail=f"Payment mismatch: Amount {intent.amount} does not match order total {total_cents}",
             )
 
-        was_unpaid = order.status != models.OrderStatus.paid
-        # Mark order as paid
-        order.status = models.OrderStatus.paid
+        was_unpaid = order.status != models.OrderStatus.paid and order.paid_at is None
+        # Mark order as paid (completed when all items already delivered — #345)
         order.payment_method = "stripe"
         order.paid_at = datetime.now(timezone.utc)
         order.bill_requested_at = None
         order.notes = f"{order.notes or ''}\n[PAID: {payment_intent_id}]".strip()
+        order.status = order_pay_svc.status_after_full_payment(session, order)
         session.add(order)
         session.flush()
         order_pay_svc.ensure_full_payment_leg(
@@ -16089,12 +16117,12 @@ def confirm_revolut_payment(
             detail="Payment amount does not match order total",
         )
 
-    was_unpaid = order.status != models.OrderStatus.paid
-    order.status = models.OrderStatus.paid
+    was_unpaid = order.status != models.OrderStatus.paid and order.paid_at is None
     order.payment_method = "revolut"
     order.paid_at = datetime.now(timezone.utc)
     order.bill_requested_at = None
     order.notes = f"{order.notes or ''}\n[PAID: Revolut {order.revolut_order_id}]".strip()
+    order.status = order_pay_svc.status_after_full_payment(session, order)
     session.add(order)
     session.flush()
     order_pay_svc.ensure_full_payment_leg(

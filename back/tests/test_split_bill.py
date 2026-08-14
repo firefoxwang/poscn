@@ -137,7 +137,8 @@ class TestSplitBill(PgClientTestCase):
         self.assertEqual(len(body2["payments"]), 2)
 
         self.session.refresh(order)
-        self.assertEqual(order.status, models.OrderStatus.paid)
+        # All items already delivered → completed (leaves Active Orders #345)
+        self.assertEqual(order.status, models.OrderStatus.completed)
         self.assertIsNotNone(order.paid_at)
         self.assertEqual(order.payment_method, "split")
 

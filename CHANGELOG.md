@@ -14,6 +14,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.148] - 2026-08-13
+
+### Fixed
+
+- **Paid orders leave Active Orders (#345):** Full settlement (mark-paid, Finish, Stripe/Revolut, split bill, offline cash) sets `completed` when all items are delivered; pre-pay stays `paid` under Active until the last item is delivered, then moves to Order History. Active Orders / History filters and docs match that rule.
 - **Enhancement preflight:** After a version cut, suppress `SIGNAL changelog_sparse` when Unreleased is empty and no `back/` / `front/src/` commits landed after the newest `## [X.Y.Z]` date (keeps the existing 2-day / 48h fresh-cut suppress).
 
 ## [2.1.147] - 2026-08-09

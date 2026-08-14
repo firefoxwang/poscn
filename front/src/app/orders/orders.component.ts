@@ -2634,13 +2634,28 @@ export class OrdersComponent implements OnInit, OnDestroy {
     return (o?.table_name && String(o.table_name).trim()) ? String(o.table_name) : `#${tid}`;
   });
 
-  // Computed signals for separating active and completed orders
-  // Paid orders stay active until delivered (status → completed), so waiters/kitchen/bar still see them
+  // Paid orders stay active until all items are delivered; then only History (#345).
+  /** True when the order still has kitchen/service work (not fully delivered). */
+  private orderHasUndeliveredActiveItems(order: Order): boolean {
+    const items = order.items ?? [];
+    const active = items.filter(
+      (i) => !i.removed_by_customer && i.status !== 'cancelled'
+    );
+    if (active.length === 0) return false;
+    return active.some((i) => i.status !== 'delivered');
+  }
+
+  private isActiveOrderStatus(order: Order): boolean {
+    const workflow = ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered'];
+    if (workflow.includes(order.status)) return true;
+    // Pre-pay: keep paid orders visible while items are still being served.
+    if (order.status === 'paid' && this.orderHasUndeliveredActiveItems(order)) return true;
+    return false;
+  }
+
   activeOrders = computed(() => {
     const tid = this.tableScopeId();
-    let list = this.orders().filter(o =>
-      ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'].includes(o.status)
-    );
+    let list = this.orders().filter((o) => this.isActiveOrderStatus(o));
     if (tid != null) list = list.filter(o => o.table_id === tid);
     return [...list].sort((a, b) => {
       if (!!a.staff_urgent !== !!b.staff_urgent) {
@@ -2651,7 +2666,13 @@ export class OrdersComponent implements OnInit, OnDestroy {
   });
   completedOrders = computed(() => {
     const tid = this.tableScopeId();
-    let list = this.orders().filter(o => ['completed', 'cancelled', 'paid'].includes(o.status));
+    // History: completed / cancelled / paid (incl. legacy paid+fully delivered).
+    // Exclude paid orders that still belong in Active (undelivered items).
+    let list = this.orders().filter((o) => {
+      if (o.status === 'completed' || o.status === 'cancelled') return true;
+      if (o.status === 'paid' && !this.orderHasUndeliveredActiveItems(o)) return true;
+      return false;
+    });
     if (tid != null) list = list.filter(o => o.table_id === tid);
     return list;
   });
@@ -2944,9 +2965,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
         : NaN;
 
     /** Resolve focus using full order list (ignore table scope filter). */
-    const rawActive = this.orders().filter(o =>
-      ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'].includes(o.status)
-    );
+    const rawActive = this.orders().filter((o) => this.isActiveOrderStatus(o));
     const rawNotPaid = this.orders().filter(o => o.status === 'completed' && !o.paid_at);
 
     let preserveTableId: number | null = null;
@@ -2988,9 +3007,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
     } else if (Number.isFinite(focusTableId) && focusTableId > 0) {
       preserveTableId = focusTableId;
       const forTable = this.orders().filter(o => o.table_id === focusTableId);
-      const activeStatuses = ['pending', 'preparing', 'ready', 'out_for_delivery', 'partially_delivered', 'paid'];
       const activeForTable = forTable
-        .filter(o => activeStatuses.includes(o.status))
+        .filter((o) => this.isActiveOrderStatus(o))
         .sort((a, b) => (b.staff_urgent ? 1 : 0) - (a.staff_urgent ? 1 : 0) || a.id - b.id);
       if (activeForTable.length > 0) {
         mode = 'active';
@@ -3002,7 +3020,11 @@ export class OrdersComponent implements OnInit, OnDestroy {
           scrollId = notPaid[0].id;
         } else {
           const hist = forTable
-            .filter(o => ['completed', 'cancelled', 'paid'].includes(o.status))
+            .filter((o) => {
+              if (o.status === 'completed' || o.status === 'cancelled') return true;
+              if (o.status === 'paid' && !this.orderHasUndeliveredActiveItems(o)) return true;
+              return false;
+            })
             .sort((a, b) => b.id - a.id);
           if (hist.length > 0) {
             mode = 'history';

@@ -1400,8 +1400,10 @@ All customer-facing order modification endpoints require and validate `session_i
 3. Customer pays cash/terminal at bar
 4. Staff clicks "Not Paid Yet" tab → Sees order #11
 5. Staff clicks "Mark as Paid" → Enters payment method (cash/terminal)
-6. Order status changes to `paid`, `paid_at` is recorded
-7. Order moves to "Order History" section
+6. Order keeps `paid_at` and payment method; when all items are delivered, status is `completed` (or stays `paid` only while pre-pay service is unfinished — #345)
+7. Order leaves "Active Orders" and appears only under "Order History"
+
+**Pre-pay:** Staff may mark as paid before all items are delivered. Status stays `paid` and the order remains under Active Orders until every active item is `delivered`; then status becomes `completed` and the order leaves Active Orders.
 
 ## Database Schema Fixes ✅ **IMPLEMENTED**
 

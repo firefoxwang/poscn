@@ -25,6 +25,38 @@ def active_order_items(session: Session, order_id: int) -> list[models.OrderItem
     ]
 
 
+def order_items_all_delivered(session: Session, order_id: int) -> bool:
+    """True when every non-removed line is delivered (service done)."""
+    items = session.exec(
+        select(models.OrderItem).where(models.OrderItem.order_id == order_id)
+    ).all()
+    # Match compute_order_status_from_items active set (removed flags only).
+    active = [
+        i
+        for i in items
+        if not i.removed_by_customer and i.removed_by_user_id is None
+    ]
+    if not active:
+        return False
+    return all(i.status == models.OrderItemStatus.delivered for i in active)
+
+
+def status_after_full_payment(
+    session: Session,
+    order: models.Order,
+) -> models.OrderStatus:
+    """
+    After balance is covered: keep ``paid`` while kitchen/service still has work
+    (pre-pay). Use ``completed`` when all items are already delivered so the
+    order leaves Active Orders (#345).
+    """
+    if order.status == models.OrderStatus.out_for_delivery:
+        return models.OrderStatus.paid
+    if order.id is not None and order_items_all_delivered(session, order.id):
+        return models.OrderStatus.completed
+    return models.OrderStatus.paid
+
+
 def order_subtotal_cents(session: Session, order: models.Order) -> int:
     return sum(i.price_cents * i.quantity for i in active_order_items(session, order.id))
 
@@ -269,10 +301,10 @@ def record_payment(
     remaining_after = max(0, due_after - paid_total)
 
     if settle_if_covered and remaining_after == 0:
-        order.status = models.OrderStatus.paid
         order.paid_at = now
         order.paid_by_user_id = paid_by_user_id
         order.payment_method = settlement_payment_method(payments)
+        order.status = status_after_full_payment(session, order)
         session.add(order)
 
     session.commit()

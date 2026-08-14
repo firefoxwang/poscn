@@ -113,8 +113,10 @@ class TestOfflineCashOrderApi(PgClientTestCase):
 
         order = self.session.get(models.Order, oid)
         assert order is not None
-        self.assertEqual(order.status, models.OrderStatus.paid)
+        # Offline cash is paid + all items delivered → completed (#345)
+        self.assertEqual(order.status, models.OrderStatus.completed)
         self.assertEqual(order.payment_method, "cash")
+        self.assertIsNotNone(order.paid_at)
         items = list(
             self.session.exec(select(models.OrderItem).where(models.OrderItem.order_id == oid)).all()
         )

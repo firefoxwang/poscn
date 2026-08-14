@@ -139,6 +139,8 @@ def create_offline_cash_order(
                 item.status_updated_at = now
                 item.delivered_by_user_id = user_id
                 session.add(item)
+        # Cash takeaway is paid and fully delivered → completed (leaves Active Orders #345).
+        order.status = models.OrderStatus.completed
         # Do not leave a paid order as the table's active open ticket.
         if table.active_order_id is None or table.active_order_id == order.id:
             table.active_order_id = None
