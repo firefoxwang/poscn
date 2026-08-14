@@ -5,7 +5,7 @@
       <status-chip type="order" status="{{order.status}}" />
     </view>
     <view class="row">
-      <text class="label">桌台</text>
+      <text class="label">餐桌</text>
       <text>{{order.table_name}}</text>
     </view>
     <view class="row">

@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "桌台管理",
+  "navigationBarTitleText": "餐桌管理",
   "enablePullDownRefresh": true,
   "usingComponents": {
     "table-card": "/components/table-card/table-card"

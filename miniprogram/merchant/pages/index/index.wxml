@@ -11,6 +11,6 @@
   </view>
   <view class="quick">
     <button class="btn btn-primary" bindtap="goOrders">查看订单</button>
-    <button class="btn btn-outline" bindtap="goTables">管理桌台</button>
+    <button class="btn btn-outline" bindtap="goTables">管理餐桌</button>
   </view>
 </view>

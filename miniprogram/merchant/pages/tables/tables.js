@@ -29,13 +29,13 @@ Page({
   async onActivate(e) {
     const id = e.detail.id;
     const name = e.detail.name || '';
-    const ok = await this.confirm('开启桌台 ' + name + '？');
+    const ok = await this.confirm('开启餐桌 ' + name + '？');
     if (!ok) return;
     try {
       const res = await api.tableActivate(id);
       wx.showModal({
-        title: '桌台已开启',
-        content: '桌台 ' + (res.name || name) + ' 的 PIN：' + res.pin,
+        title: '餐桌已开启',
+        content: '餐桌 ' + (res.name || name) + ' 的 PIN：' + res.pin,
         showCancel: false,
       });
       this.load();
@@ -44,11 +44,11 @@ Page({
   async onClose(e) {
     const id = e.detail.id;
     const name = e.detail.name || '';
-    const ok = await this.confirm('关闭桌台 ' + name + '？');
+    const ok = await this.confirm('关闭餐桌 ' + name + '？');
     if (!ok) return;
     try {
       await api.tableClose(id);
-      wx.showToast({ title: '桌台已关闭', icon: 'success' });
+      wx.showToast({ title: '餐桌已关闭', icon: 'success' });
       this.load();
     } catch (e) {}
   },

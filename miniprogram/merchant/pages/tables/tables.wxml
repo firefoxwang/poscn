@@ -8,5 +8,5 @@
       />
     </view>
   </view>
-  <view class="empty" wx:if="{{!loading && list.length === 0}}">暂无桌台</view>
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">暂无餐桌</view>
 </view>

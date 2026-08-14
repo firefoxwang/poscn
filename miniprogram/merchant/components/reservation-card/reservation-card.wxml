@@ -12,7 +12,7 @@
     <text>{{reservation.party_size}} 人</text>
   </view>
   <view class="row" wx:if="{{reservation.table_name}}">
-    <text class="label">桌台</text>
+    <text class="label">餐桌</text>
     <text>{{reservation.table_name}}</text>
   </view>
   <view class="row" wx:if="{{reservation.client_notes}}">

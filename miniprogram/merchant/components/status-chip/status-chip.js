@@ -1,36 +1,41 @@
-const STATUS_MAPS = {
+const i18n = require('../../utils/i18n.js');
+
+// Color classes per status key; labels come from utils/i18n.js so they stay
+// aligned with the Web UI and backend dictionaries.
+const STATUS_CLASS = {
   order: {
-    pending: { label: '待处理', cls: 'warn' },
-    preparing: { label: '制作中', cls: 'info' },
-    ready: { label: '已备好', cls: 'ok' },
-    out_for_delivery: { label: '配送中', cls: 'info' },
-    partially_delivered: { label: '部分配送', cls: 'warn' },
-    paid: { label: '已支付', cls: 'ok' },
-    completed: { label: '已完成', cls: 'muted' },
-    cancelled: { label: '已取消', cls: 'danger' },
+    pending: 'warn',
+    preparing: 'info',
+    ready: 'ok',
+    out_for_delivery: 'info',
+    partially_delivered: 'warn',
+    paid: 'ok',
+    completed: 'muted',
+    cancelled: 'danger',
   },
   item: {
-    pending: { label: '待处理', cls: 'warn' },
-    preparing: { label: '制作中', cls: 'info' },
-    ready: { label: '已备好', cls: 'ok' },
-    delivered: { label: '已上菜', cls: 'ok' },
-    cancelled: { label: '已取消', cls: 'danger' },
+    pending: 'warn',
+    preparing: 'info',
+    ready: 'ok',
+    delivered: 'ok',
+    cancelled: 'danger',
   },
   reservation: {
-    booked: { label: '已预订', cls: 'info' },
-    seated: { label: '已入座', cls: 'ok' },
-    finished: { label: '已完成', cls: 'muted' },
-    cancelled: { label: '已取消', cls: 'danger' },
-    no_show: { label: '未到', cls: 'danger' },
+    booked: 'info',
+    seated: 'ok',
+    finished: 'muted',
+    cancelled: 'danger',
+    no_show: 'danger',
   },
   table: {
-    available: { label: '空闲', cls: 'ok' },
-    reserved: { label: '已预订', cls: 'info' },
-    occupied: { label: '占用中', cls: 'warn' },
-    open_order: { label: '进行中', cls: 'warn' },
-    ready_to_serve: { label: '待上菜', cls: 'info' },
-    pending: { label: '待结账', cls: 'warn' },
-    paid: { label: '已结账', cls: 'ok' },
+    available: 'ok',
+    reserved: 'info',
+    occupied: 'warn',
+    open_order: 'warn',
+    ready_to_serve: 'info',
+    inactive: 'muted',
+    pending: 'warn',
+    paid: 'ok',
   },
 };
 
@@ -45,9 +50,9 @@ Component({
   },
   observers: {
     'type, status': function (type, status) {
-      const map = STATUS_MAPS[type] || {};
-      const item = map[status] || { label: status || '未知', cls: 'muted' };
-      this.setData({ label: item.label, cls: item.cls });
+      const text = i18n.label(type, status);
+      const cls = (STATUS_CLASS[type] || {})[status] || 'muted';
+      this.setData({ label: text || status || '未知', cls: cls });
     },
   },
 });

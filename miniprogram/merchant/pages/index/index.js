@@ -24,12 +24,12 @@ Page({
         { label: '今日订单', value: String(s.order_count || 0), cls: '' },
         { label: '待处理订单', value: String(s.pending_orders || 0), cls: '' },
         {
-          label: '占用桌台',
+          label: '占用餐桌',
           value: String(s.tables_occupied || 0) + ' / ' + String(s.tables_total || 0),
           cls: '',
         },
         {
-          label: '空闲桌台',
+          label: '空闲餐桌',
           value: String((s.tables_total || 0) - (s.tables_occupied || 0)),
           cls: '',
         },
