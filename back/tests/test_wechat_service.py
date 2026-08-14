@@ -127,6 +127,10 @@ def test_get_stable_access_token_caches_and_reuses():
     assert first == "tok-1"
     assert second == "tok-1"
     assert m.call_count == 1
+    m.assert_called_once()
+    body = m.call_args.kwargs.get("json", {})
+    assert body.get("grant_type") == "client_credential"
+    assert body.get("appid") == "appid"
     redis_client.setex.assert_called_once_with("wx:access_token:appid", 6900, "tok-1")
 
 

@@ -82,7 +82,7 @@ def get_stable_access_token(appid: str, secret: str) -> str:
         return cached.decode() if isinstance(cached, bytes) else cached
     resp = requests.post(
         f"{settings.wechat_api_base}/cgi-bin/stable_token",
-        json={"grant_type": "stable_token", "appid": appid, "secret": secret},
+        json={"grant_type": "client_credential", "appid": appid, "secret": secret},
     )
     payload = resp.json()
     _raise_wechat_error(payload)
