@@ -1,5 +1,6 @@
 """WeChat Mini Program official API wrappers (code2session, phone number, QR code, stable access token)."""
 
+import logging
 import os
 
 import redis
@@ -7,6 +8,8 @@ import requests
 from fastapi import HTTPException
 
 from .settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 def _raise_wechat_error(payload: dict) -> None:
@@ -26,6 +29,14 @@ def code2session(appid: str, secret: str, js_code: str) -> dict:
         },
     )
     payload = resp.json()
+    if payload.get("errcode") not in (None, 0):
+        logger.info(
+            "code2session failed: appid=%s code=%s… errcode=%s errmsg=%s",
+            appid,
+            str(js_code)[:8],
+            payload.get("errcode"),
+            payload.get("errmsg"),
+        )
     _raise_wechat_error(payload)
     return {key: payload[key] for key in ("openid", "session_key", "unionid") if key in payload}
 
@@ -37,6 +48,14 @@ def get_phone_number(access_token: str, code: str) -> dict:
         json={"code": code},
     )
     payload = resp.json()
+    if payload.get("errcode") not in (None, 0):
+        logger.info(
+            "get_phone_number failed: errcode=%s errmsg=%s token=%s… code=%s…",
+            payload.get("errcode"),
+            payload.get("errmsg"),
+            str(access_token)[:10],
+            str(code)[:8],
+        )
     _raise_wechat_error(payload)
     return payload["phone_info"]
 

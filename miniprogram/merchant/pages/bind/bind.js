@@ -25,16 +25,8 @@ Page({
       wx.showToast({ title: '未授权手机号', icon: 'none' });
       return;
     }
-    this.setData({ phoneCode: code });
-    try {
-      const info = await auth.getPhone(code);
-      this.setData({
-        phoneNumber: info.purePhoneNumber || info.phoneNumber || '已获取',
-      });
-      wx.showToast({ title: '手机号已获取', icon: 'success' });
-    } catch (err) {
-      wx.showToast({ title: (err && err.message) || '手机号获取失败', icon: 'none' });
-    }
+    this.setData({ phoneCode: code, phoneNumber: '已获取' });
+    wx.showToast({ title: '手机号已获取', icon: 'success' });
   },
   async onSubmit() {
     const email = (this.data.email || '').trim();

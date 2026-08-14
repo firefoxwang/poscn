@@ -1,5 +1,6 @@
 """WeChat Mini Program auth: login / bind-staff / phone / refresh / me (MP v1)."""
 
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Literal
 
@@ -17,6 +18,8 @@ from .db import get_session
 from .phone_utils import normalize_phone_to_e164
 from .rate_limits import limiter
 from .settings import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -231,6 +234,13 @@ def mp_bind_staff(
             raise HTTPException(status_code=400, detail="invalid_otp")
 
     appid, secret = _mp_appid("merchant")
+    logger.info(
+        "mp bind-staff: code=%s… code_len=%d appid=%s email=%s",
+        str(body.code)[:8],
+        len(body.code),
+        appid,
+        email_norm,
+    )
     wx = wechat_service.code2session(appid, secret, body.code)
     openid = wx.get("openid")
     if not openid:
