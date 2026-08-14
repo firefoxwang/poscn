@@ -58,6 +58,7 @@ SAAS_EXEMPT_PREFIXES = (
     "/uploads",
     "/products",  # guided signup seeds / photos before paywall
     "/users/me",
+    "/mp/auth",
 )
 
 

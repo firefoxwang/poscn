@@ -70,12 +70,7 @@ def _customer_dict(c: models.Customer) -> dict:
 
 
 def _token_data_for_customer(c: models.Customer) -> dict:
-    return {
-        "sub": c.email,
-        "customer_id": c.id,
-        "token_version": c.token_version,
-        "type": "customer",
-    }
+    return security.token_data_for_customer(c)
 
 
 def _set_customer_cookie(response: Response, access_token: str) -> None:

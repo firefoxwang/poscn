@@ -60,6 +60,7 @@ from .delivery_integration_routes import (
 from .social_routes import router as social_router
 from .print_routes import staff_router as print_staff_router, agent_router as print_agent_router
 from .customer_routes import router as customer_router
+from .mp_auth_routes import router as mp_auth_router
 from .work_session_serialization import serialize_work_session, work_session_net_duration_minutes
 from .clock_qr_util import (
     clock_qr_tokens_equal,
@@ -587,6 +588,7 @@ app.include_router(
 app.include_router(print_staff_router, tags=["Print jobs"])
 app.include_router(print_agent_router, tags=["Print agent"])
 app.include_router(customer_router, prefix="/customer", tags=["Customer accounts"])
+app.include_router(mp_auth_router, prefix="/mp/auth", tags=["Mini program auth"])
 
 
 # ============ IMAGE OPTIMIZATION ============
@@ -2749,15 +2751,7 @@ def register_provider(
 
 
 def _token_data_for_user(user: models.User) -> dict:
-    """Build JWT payload for user (tenant, provider, or platform operator)."""
-    is_platform = user.role == models.UserRole.platform_operator
-    return {
-        "sub": user.email,
-        "tenant_id": user.tenant_id,
-        "provider_id": getattr(user, "provider_id", None),
-        "token_version": user.token_version,
-        "is_platform_operator": is_platform,
-    }
+    return security.token_data_for_user(user)
 
 
 def _login_scope_label(user: models.User, scope: str | None) -> str:

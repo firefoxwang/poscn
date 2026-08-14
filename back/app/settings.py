@@ -159,6 +159,20 @@ class Settings(BaseSettings):
         description="Optional full OAuth redirect URL; if empty, derived from PUBLIC_APP_BASE_URL + ROOT_PATH.",
     )
 
+    # WeChat Mini Program (MP v1) — merchant (staff) and consumer (end-user) app credentials
+    wechat_mp_merchant_appid: str = Field(default="", validation_alias="WECHAT_MP_MERCHANT_APPID")
+    wechat_mp_merchant_secret: str = Field(default="", validation_alias="WECHAT_MP_MERCHANT_SECRET")
+    wechat_mp_consumer_appid: str = Field(default="", validation_alias="WECHAT_MP_CONSUMER_APPID")
+    wechat_mp_consumer_secret: str = Field(default="", validation_alias="WECHAT_MP_CONSUMER_SECRET")
+    mp_token_expire_minutes: int = Field(
+        default=10080, validation_alias="MP_TOKEN_EXPIRE_MINUTES"
+    )
+    mp_qrcode_page: str = Field(default="pages/menu/menu", validation_alias="MP_QRCODE_PAGE")
+    mp_qrcode_env: str = Field(default="release", validation_alias="MP_QRCODE_ENV")
+    wechat_api_base: str = Field(
+        default="https://api.weixin.qq.com", validation_alias="WECHAT_API_BASE"
+    )
+
     # Optional vision API for menu photo → product bulk import (Products page)
     product_vision_api_key: str = Field(default="", validation_alias="PRODUCT_VISION_API_KEY")
     product_vision_api_url: str = Field(

@@ -107,6 +107,28 @@ def create_refresh_token(data: dict, expires_delta: timedelta | None = None) -> 
     return encoded_jwt
 
 
+def token_data_for_user(user: User) -> dict:
+    """Build JWT payload for user (tenant, provider, or platform operator)."""
+    is_platform = user.role == UserRole.platform_operator
+    return {
+        "sub": user.email,
+        "tenant_id": user.tenant_id,
+        "provider_id": getattr(user, "provider_id", None),
+        "token_version": user.token_version,
+        "is_platform_operator": is_platform,
+    }
+
+
+def token_data_for_customer(c: Customer) -> dict:
+    """Build JWT payload for end-user customer."""
+    return {
+        "sub": c.email,
+        "customer_id": c.id,
+        "token_version": c.token_version,
+        "type": "customer",
+    }
+
+
 async def get_token_from_cookie(
     request: Request,
     token: Annotated[str | None, Depends(oauth2_scheme)]

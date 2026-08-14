@@ -354,6 +354,41 @@ class Customer(SQLModel, table=True):
     )
 
 
+class MpBindingType(str, Enum):
+    """WeChat Mini Program binding target: staff user or end-user customer."""
+
+    staff = "staff"
+    customer = "customer"
+
+
+class MpBinding(SQLModel, table=True):
+    """
+    WeChat Mini Program openid → local account binding (staff User or end-user Customer).
+    Unique per (appid, openid); enforced by migration index uq_mp_binding_appid_openid.
+    """
+
+    __tablename__ = "mp_binding"
+
+    id: int | None = Field(default=None, primary_key=True)
+    appid: str = Field(index=True, max_length=64)
+    openid: str = Field(index=True, max_length=128)
+    unionid: str | None = Field(default=None, max_length=128)
+    binding_type: MpBindingType = Field(default=MpBindingType.staff, max_length=16)
+    user_id: int | None = Field(default=None, foreign_key="user.id")
+    customer_id: int | None = Field(default=None, foreign_key="customer.id")
+    nickname: str | None = Field(default=None, max_length=128)
+    avatar_url: str | None = Field(default=None, max_length=512)
+    phone: str | None = Field(default=None, max_length=32)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+
 class CustomerRegister(SQLModel):
     email: str
     password: str = Field(min_length=8, max_length=128)
