@@ -221,3 +221,7 @@ Exit 0 means tenant 1 has T01–T10 with the correct seat counts; exit 1 reports
 - **Courier portal:** http://localhost:4202/courier (login `/courier/login`; seed env `COURIER_EMAIL` / `COURIER_PASSWORD`, see Courier portal above)
 - **End-user customer portal:** http://localhost:4202/customer (register `/customer/register`, login `/customer/login`, verify `/customer/verify-email`) — separate from staff `/customers` Factura CRM
 - **Platform operator:** http://localhost:4202/platform (login `/platform/login`)
+
+## WeChat Mini Program 模块
+
+See `docs/wechat-miniprogram.md` for the two native WeChat mini programs under `miniprogram/merchant/` and `miniprogram/consumer/` (v1 scope: no WeChat Pay; tokens in JSON body via `/mp/auth/*`).
