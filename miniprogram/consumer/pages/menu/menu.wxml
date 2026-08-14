@@ -1,0 +1,35 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{categories.length}}">
+    <view class="hero">
+      <text class="hero-title">{{tenantName}}</text>
+      <text class="hero-sub" wx:if="{{tableName}}">桌号 {{tableName}}</text>
+    </view>
+    <view class="cat" wx:for="{{categories}}" wx:key="name" wx:for-item="cat">
+      <view class="cat-title">{{cat.name}}</view>
+      <view class="card item" wx:for="{{cat.items}}" wx:key="id" wx:for-item="p">
+        <image class="item-img" wx:if="{{p.imageUrl}}" src="{{p.imageUrl}}" mode="aspectFill" />
+        <view class="item-body">
+          <text class="item-name">{{p.display_name || p.name}}</text>
+          <text class="item-desc" wx:if="{{p.display_description || p.description}}">{{p.display_description || p.description}}</text>
+          <view class="item-foot">
+            <text class="item-price">{{p.priceText}}</text>
+            <view class="add-btn" data-id="{{p.id}}" bindtap="addToCart">+</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="cart-bar" wx:if="{{cartCount > 0}}">
+      <view class="cart-info" bindtap="goCart">
+        <text class="cart-count">{{cartCount}} 件</text>
+        <text class="cart-total">{{cartTotalText}}</text>
+      </view>
+      <button class="btn btn-primary cart-go" bindtap="goCart">去下单</button>
+    </view>
+  </view>
+  <view wx:else class="empty">
+    <text>{{error || '暂无菜品'}}</text>
+    <input class="input token-input" placeholder="粘贴桌台标识" bindinput="onTokenInput" />
+    <button class="btn btn-outline" bindtap="onLoadManual">加载菜单</button>
+  </view>
+</view>

@@ -1,0 +1,47 @@
+{
+  "pages": [
+    "pages/menu/menu",
+    "pages/cart/cart",
+    "pages/order-status/order-status",
+    "pages/book/book",
+    "pages/waitlist/waitlist",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "扫码点餐",
+    "navigationBarBackgroundColor": "#07c160",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6fa",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#9ca3af",
+    "selectedColor": "#07c160",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/menu/menu",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/order-status/order-status",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/book/book",
+        "text": "预订"
+      },
+      {
+        "pagePath": "pages/waitlist/waitlist",
+        "text": "排队"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

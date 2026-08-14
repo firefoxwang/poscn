@@ -1,0 +1,71 @@
+<view class="page">
+  <view wx:if="{{!tenantId}}" class="card">
+    <view class="form-item">
+      <text class="form-label">门店 ID</text>
+      <input class="input" type="number" placeholder="输入门店 ID（扫码进点餐页可自动带入）" bindinput="onTenantIdInput" />
+    </view>
+    <button class="btn btn-primary btn-block" bindtap="loadTenant" loading="{{loading}}" disabled="{{loading}}">加载门店</button>
+  </view>
+  <block wx:else>
+    <view class="hero" wx:if="{{tenantName}}">
+      <text class="hero-title">{{tenantName}}</text>
+      <text class="hero-sub">在线预订</text>
+    </view>
+    <view class="card">
+      <view class="form-item">
+        <text class="form-label">姓名</text>
+        <input class="input" placeholder="您的姓名" bindinput="onNameInput" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">手机号</text>
+        <input class="input" placeholder="含国家区号，如 +8613800138000" bindinput="onPhoneInput" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">日期</text>
+        <picker mode="date" start="{{minDate}}" value="{{date}}" bindchange="onDateChange">
+          <view class="input">{{date}}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">时间</text>
+        <picker mode="time" value="{{time}}" bindchange="onTimeChange">
+          <view class="input">{{time}}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">人数</text>
+        <input class="input" type="number" value="{{partySize}}" bindinput="onPartyInput" />
+      </view>
+      <view class="form-item" wx:if="{{hasZones}}">
+        <text class="form-label">就坐区域</text>
+        <picker range="{{seatOptions}}" range-key="label" value="{{seatIndex}}" bindchange="onSeatChange">
+          <view class="input">{{seatOptions[seatIndex].label}}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">备注（可选）</text>
+        <input class="input" placeholder="例如：靠窗、婴儿椅" bindinput="onNotesInput" />
+      </view>
+      <button class="btn btn-primary btn-block" bindtap="onSubmit" loading="{{submitting}}" disabled="{{submitting}}">提交预订</button>
+    </view>
+    <view class="card" wx:if="{{done}}">
+      <view class="form-title">预订成功</view>
+      <view class="row">
+        <text class="label">预订号</text>
+        <text>#{{done.id}}</text>
+      </view>
+      <view class="row">
+        <text class="label">状态</text>
+        <text>{{done.status === 'booked' ? '已预订' : done.status}}</text>
+      </view>
+      <view class="row" wx:if="{{done.reservation_date}}">
+        <text class="label">时间</text>
+        <text>{{done.reservation_date}} {{done.reservation_time}}</text>
+      </view>
+      <view class="row" wx:if="{{done.customer_name}}">
+        <text class="label">联系人</text>
+        <text>{{done.customer_name}} · {{done.party_size}} 人</text>
+      </view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,36 @@
+<view class="page">
+  <view class="card user-card" wx:if="{{loggedIn}}">
+    <image class="avatar" wx:if="{{avatarUrl}}" src="{{avatarUrl}}" mode="aspectFill" />
+    <view class="user-main">
+      <text class="user-name">{{nickname}}</text>
+      <text class="user-sub" wx:if="{{email}}">{{email}}</text>
+      <text class="user-sub" wx:if="{{phone}}">{{phone}}</text>
+    </view>
+    <button class="btn btn-outline btn-sm" bindtap="onLogout">退出登录</button>
+  </view>
+  <view class="card" wx:else>
+    <view class="form-title">微信登录</view>
+    <view class="form-item">
+      <text class="form-label">头像</text>
+      <button class="avatar-pick" open-type="chooseAvatar" bindchooseavatar="onAvatarChoose">
+        <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
+        <text wx:else>选择头像</text>
+      </button>
+    </view>
+    <view class="form-item">
+      <text class="form-label">昵称</text>
+      <input class="input" type="nickname" placeholder="微信昵称（可选）" bindinput="onNicknameInput" />
+    </view>
+    <button class="btn btn-primary btn-block" bindtap="onLogin" loading="{{loggingIn}}" disabled="{{loggingIn}}">微信一键登录</button>
+    <text class="tip">登录后可查看历史订单；不登录也可扫码点餐</text>
+  </view>
+  <view class="card" wx:if="{{loggedIn}}">
+    <view class="form-title">历史订单</view>
+    <view class="order-row" wx:for="{{orders}}" wx:key="id">
+      <text class="order-id">订单 #{{item.id}}</text>
+      <text class="order-status">{{item.statusLabel}}</text>
+      <text class="order-time">{{item.timeText}}</text>
+    </view>
+    <view class="empty" wx:if="{{!ordersLoading && orders.length === 0}}">暂无订单</view>
+  </view>
+</view>

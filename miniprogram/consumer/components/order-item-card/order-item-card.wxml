@@ -1,0 +1,11 @@
+<view class="oitem">
+  <view class="oitem-main">
+    <text class="oitem-name">{{item.product_name}}</text>
+    <text class="oitem-note" wx:if="{{item.notes}}">{{item.notes}}</text>
+    <text class="oitem-qty">x{{item.quantity}}</text>
+  </view>
+  <view class="oitem-right">
+    <text class="oitem-status">{{statusLabel}}</text>
+    <text class="oitem-price">{{lineTotalText}}</text>
+  </view>
+</view>

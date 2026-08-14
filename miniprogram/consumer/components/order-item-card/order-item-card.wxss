@@ -1,0 +1,52 @@
+.oitem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.oitem:last-child {
+  border-bottom: none;
+}
+
+.oitem-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-right: 16rpx;
+}
+
+.oitem-name {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.oitem-note {
+  font-size: 22rpx;
+  color: #9ca3af;
+  margin-top: 4rpx;
+}
+
+.oitem-qty {
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-top: 4rpx;
+}
+
+.oitem-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.oitem-status {
+  font-size: 22rpx;
+  color: #07c160;
+}
+
+.oitem-price {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-top: 4rpx;
+}

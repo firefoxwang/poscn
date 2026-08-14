@@ -1,0 +1,76 @@
+.user-card {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.user-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 0 20rpx;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.user-sub {
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-top: 4rpx;
+}
+
+.avatar-pick {
+  width: 160rpx;
+  height: 160rpx;
+  padding: 0;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar-pick::after {
+  border: none;
+}
+
+.order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.order-row:last-child {
+  border-bottom: none;
+}
+
+.order-id {
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.order-status {
+  font-size: 24rpx;
+  color: #07c160;
+}
+
+.order-time {
+  font-size: 22rpx;
+  color: #9ca3af;
+}

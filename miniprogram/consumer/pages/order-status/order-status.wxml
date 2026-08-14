@@ -1,0 +1,28 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{!hasOrder}}" class="empty">
+    <text>暂无进行中的订单</text>
+    <button class="btn btn-primary" bindtap="goMenu">去点餐</button>
+  </view>
+  <block wx:else>
+    <view class="card">
+      <view class="card-head">
+        <text class="name">订单状态</text>
+        <text class="chip ok">{{statusLabel}}</text>
+      </view>
+      <view class="row" wx:if="{{tableName}}">
+        <text class="label">桌号</text>
+        <text>{{tableName}}</text>
+      </view>
+      <view class="row">
+        <text class="label">合计</text>
+        <text class="amount">{{totalText}}</text>
+      </view>
+    </view>
+    <view class="card" wx:if="{{items.length}}">
+      <view class="name item-list-title">已点菜品</view>
+      <order-item-card wx:for="{{items}}" wx:key="id" item="{{item}}" currencyCode="{{currencyCode}}" />
+    </view>
+    <text class="tip">页面每 5 秒自动刷新订单状态</text>
+  </block>
+</view>
