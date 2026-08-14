@@ -1,3 +1,133 @@
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #f5f6fa;
+  padding-bottom: 16rpx;
+}
+
+.search-bar {
+  position: relative;
+  margin-bottom: 16rpx;
+}
+
+.search-input {
+  background: #ffffff;
+  border-radius: 999rpx;
+  padding: 16rpx 64rpx 16rpx 28rpx;
+  font-size: 26rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.search-placeholder {
+  color: #9ca3af;
+}
+
+.search-clear {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 24rpx;
+}
+
+.chip-scroll {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.chip-row {
+  display: inline-flex;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  color: #4b5563;
+  border-radius: 999rpx;
+  padding: 10rpx 24rpx;
+  margin-right: 12rpx;
+  font-size: 24rpx;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.03);
+}
+
+.chip-active {
+  background: #07c160;
+  color: #ffffff;
+}
+
+.chip-count {
+  margin-left: 8rpx;
+  font-size: 20rpx;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999rpx;
+  padding: 0 10rpx;
+  line-height: 1.6;
+}
+
+.chip-active .chip-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.sort-row {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+}
+
+.sort-label {
+  color: #6b7280;
+  font-size: 24rpx;
+  margin-right: 12rpx;
+}
+
+.chip-sort {
+  padding: 8rpx 20rpx;
+  font-size: 24rpx;
+}
+
+.sort-arrow {
+  margin-left: 6rpx;
+  font-size: 20rpx;
+}
+
+.result-count {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 22rpx;
+}
+
+.order-card {
+  border-left: 6rpx solid transparent;
+}
+
+.border-warn {
+  border-left-color: #f59e0b;
+}
+
+.border-info {
+  border-left-color: #3b82f6;
+}
+
+.border-ok {
+  border-left-color: #07c160;
+}
+
+.border-muted {
+  border-left-color: #d1d5db;
+}
+
+.border-danger {
+  border-left-color: #ef4444;
+}
+
 .order-card .amount {
   color: #07c160;
   font-weight: 600;

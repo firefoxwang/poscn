@@ -1,5 +1,49 @@
 <view class="page">
-  <view class="card order-card" wx:for="{{list}}" wx:key="id" data-id="{{item.id}}" bindtap="onOrderTap">
+  <view class="toolbar">
+    <view class="search-bar">
+      <input
+        class="search-input"
+        placeholder="搜索桌台 / 顾客 / 订单号"
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        confirm-type="search"
+        bindinput="onSearch"
+      />
+      <text wx:if="{{keyword}}" class="search-clear" bindtap="onClearSearch">✕</text>
+    </view>
+
+    <scroll-view class="chip-scroll" scroll-x show-scrollbar="{{false}}">
+      <view class="chip-row">
+        <view
+          wx:for="{{statusOptions}}"
+          wx:key="key"
+          class="chip {{statusFilter === item.key ? 'chip-active' : ''}}"
+          data-key="{{item.key}}"
+          bindtap="onStatusFilter"
+        >
+          <text>{{item.label}}</text>
+          <text wx:if="{{item.count}}" class="chip-count">{{item.count}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="sort-row">
+      <text class="sort-label">排序</text>
+      <view
+        wx:for="{{sortOptions}}"
+        wx:key="key"
+        class="chip chip-sort {{sortField === item.key ? 'chip-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onSortField"
+      >
+        <text>{{item.label}}</text>
+        <text wx:if="{{sortField === item.key}}" class="sort-arrow">{{sortAsc ? '↑' : '↓'}}</text>
+      </view>
+      <text class="result-count">共 {{list.length}} 单</text>
+    </view>
+  </view>
+
+  <view class="card order-card {{item.borderCls}}" wx:for="{{list}}" wx:key="id" data-id="{{item.id}}" bindtap="onOrderTap">
     <view class="card-head">
       <text class="name">订单 #{{item.id}} · {{item.table_name}}</text>
       <status-chip type="order" status="{{item.status}}" />
