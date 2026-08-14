@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 
-from . import models
+from . import models, revenue
 from .db import get_session
 from .permissions import Permission, require_permission
 from .rate_limits import admin_user_limit
@@ -24,11 +24,6 @@ from .security import get_current_user
 from .work_session_serialization import serialize_work_session
 
 router = APIRouter()
-
-# Order statuses we count as "revenue"
-REVENUE_STATUSES = {models.OrderStatus.paid, models.OrderStatus.completed}
-# Item statuses we exclude from revenue
-EXCLUDED_ITEM_STATUSES = {models.OrderItemStatus.cancelled}
 
 
 def _revenue_date(order: models.Order) -> datetime | None:
@@ -74,7 +69,7 @@ def _get_revenue_items(
         select(models.Order)
         .where(models.Order.tenant_id == tenant_id)
         .where(models.Order.deleted_at.is_(None))
-        .where(models.Order.status.in_([s.value for s in REVENUE_STATUSES]))
+        .where(models.Order.status.in_([s.value for s in revenue.REVENUE_ORDER_STATUSES]))
         .order_by(models.Order.created_at.asc())
     ).all()
 
@@ -83,12 +78,7 @@ def _get_revenue_items(
         rev_date = _revenue_date(order)
         if not _in_range(rev_date, from_date, to_date):
             continue
-        items = session.exec(
-            select(models.OrderItem)
-            .where(models.OrderItem.order_id == order.id)
-            .where(models.OrderItem.removed_by_customer == False)
-            .where(models.OrderItem.status != models.OrderItemStatus.cancelled)
-        ).all()
+        items = revenue.revenue_order_items(session, order)
         table = session.get(models.Table, order.table_id) if order.table_id is not None else None
         waiter_id = None
         waiter_name = None
@@ -142,7 +132,7 @@ def _build_report_payload(tenant_id: int, session: Session, from_date: date, to_
         select(models.Order)
         .where(models.Order.tenant_id == tenant_id)
         .where(models.Order.deleted_at.is_(None))
-        .where(models.Order.status.in_([s.value for s in REVENUE_STATUSES]))
+        .where(models.Order.status.in_([s.value for s in revenue.REVENUE_ORDER_STATUSES]))
     ).all()
     for order in orders_for_tips:
         rev_date = _revenue_date(order)

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlmodel import Session, select
 from zoneinfo import ZoneInfo
 
-from . import models, security
+from . import models, revenue, security
 from .db import get_session
 from .order_discounts import order_level_discount_cents
 from .rate_limits import admin_user_limit
@@ -93,14 +93,8 @@ def mp_dashboard_summary(
 
     revenue_cents = 0
     for order in today_orders:
-        if order.status in (models.OrderStatus.paid, models.OrderStatus.completed):
-            items = session.exec(
-                select(models.OrderItem)
-                .where(models.OrderItem.order_id == order.id)
-                .where(models.OrderItem.removed_by_customer == False)
-                .where(models.OrderItem.status != models.OrderItemStatus.cancelled)
-            ).all()
-            subtotal_cents = sum((item.price_cents or 0) * item.quantity for item in items)
+        if order.status in revenue.REVENUE_ORDER_STATUSES:
+            subtotal_cents = revenue.order_revenue_cents(session, order)
             revenue_cents += max(0, subtotal_cents - order_level_discount_cents(order))
 
     pending_orders = len(
