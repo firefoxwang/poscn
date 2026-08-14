@@ -33,6 +33,10 @@ config.env
 # Demo/local credentials (do not commit)
 .env
 
+# WeChat Mini Program local DevTools config (copy from project.config.json.template)
+miniprogram/**/project.config.json
+miniprogram/**/project.private.config.json
+
 # Uploads directory (user-uploaded files)
 back/uploads/
 
