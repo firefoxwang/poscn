@@ -1,3 +1,5 @@
+const i18n = require('./i18n.js');
+
 function currencySymbol(code) {
   const map = {
     CNY: '¥',
@@ -22,17 +24,7 @@ function formatMoney(cents, currencyCode) {
 }
 
 function orderStatusLabel(status) {
-  const map = {
-    pending: '已下单',
-    preparing: '制作中',
-    ready: '已备好',
-    out_for_delivery: '配送中',
-    partially_delivered: '部分完成',
-    paid: '已支付',
-    completed: '已完成',
-    cancelled: '已取消',
-  };
-  return map[status] || status || '未知';
+  return i18n.label('order', status) || status || '未知';
 }
 
 function pad(n) {

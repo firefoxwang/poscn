@@ -17,7 +17,7 @@
   </view>
   <view class="card" wx:if="{{items.length > 0}}">
     <view class="form-item" wx:if="{{requiresPin}}">
-      <text class="form-label">桌台口令</text>
+      <text class="form-label">餐桌口令</text>
       <input class="input" password placeholder="请输入桌上的口令" bindinput="onPinInput" />
     </view>
     <view class="form-item">

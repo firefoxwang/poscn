@@ -72,11 +72,11 @@ Page({
       return;
     }
     if (!token) {
-      wx.showToast({ title: '缺少桌台信息，请重新扫码', icon: 'none' });
+      wx.showToast({ title: '缺少餐桌信息，请重新扫码', icon: 'none' });
       return;
     }
     if (this.data.requiresPin && !this.data.pin) {
-      wx.showToast({ title: '请输入桌台口令', icon: 'none' });
+      wx.showToast({ title: '请输入餐桌口令', icon: 'none' });
       return;
     }
     const body = {

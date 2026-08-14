@@ -52,7 +52,7 @@ Page({
     }
     const token = decodeTableToken(scene) || decodeTableToken(options.token || options.table_token || '');
     if (!token) {
-      this.setData({ loading: false, error: '未识别到桌台二维码，请重新扫码或粘贴桌台标识' });
+      this.setData({ loading: false, error: '未识别到餐桌二维码，请重新扫码或粘贴餐桌标识' });
       return;
     }
     this.setData({ token });
@@ -164,7 +164,7 @@ Page({
   onLoadManual() {
     const token = decodeTableToken(this.data.manualToken || '');
     if (!token) {
-      wx.showToast({ title: '桌台标识无效', icon: 'none' });
+      wx.showToast({ title: '餐桌标识无效', icon: 'none' });
       return;
     }
     this.setData({ token });

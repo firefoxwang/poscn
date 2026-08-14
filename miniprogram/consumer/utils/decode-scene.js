@@ -1,4 +1,4 @@
-// 解析桌台二维码 scene（后端 `tt:{base64url(16字节 token)}` 压缩格式）。
+// 解析餐桌二维码 scene（后端 `tt:{base64url(16字节 token)}` 压缩格式）。
 // 纯 JS 实现，可在小程序与 Node（CommonJS）中直接运行，不依赖 wx/Buffer。
 // 参考 back/app/mp_qrcode_routes.py 的 encode_scene_token：
 //   uuid 去掉横线 -> bytes.fromhex(32 位 hex) -> urlsafe base64（去 padding）。

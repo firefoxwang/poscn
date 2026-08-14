@@ -29,7 +29,7 @@
   </view>
   <view wx:else class="empty">
     <text>{{error || '暂无菜品'}}</text>
-    <input class="input token-input" placeholder="粘贴桌台标识" bindinput="onTokenInput" />
+    <input class="input token-input" placeholder="粘贴餐桌标识" bindinput="onTokenInput" />
     <button class="btn btn-outline" bindtap="onLoadManual">加载菜单</button>
   </view>
 </view>
