@@ -3,8 +3,7 @@
     <image class="avatar" wx:if="{{avatarUrl}}" src="{{avatarUrl}}" mode="aspectFill" />
     <view class="user-main">
       <text class="user-name">{{nickname}}</text>
-      <text class="user-sub" wx:if="{{email}}">{{email}}</text>
-      <text class="user-sub" wx:if="{{phone}}">{{phone}}</text>
+      <text class="user-sub" wx:if="{{phoneMasked}}">{{phoneMasked}}</text>
     </view>
     <button class="btn btn-outline btn-sm" bindtap="onLogout">退出登录</button>
   </view>

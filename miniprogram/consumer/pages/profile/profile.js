@@ -7,8 +7,7 @@ Page({
     loggedIn: false,
     nickname: '',
     avatarUrl: '',
-    email: '',
-    phone: '',
+    phoneMasked: '',
     orders: [],
     ordersLoading: false,
   },
@@ -25,8 +24,7 @@ Page({
       this.setData({
         nickname: profile.nickname || binding.nickname || me.full_name || '微信用户',
         avatarUrl: binding.avatar_url || '',
-        email: profile.email || me.email || '',
-        phone: profile.phone || binding.phone || me.phone || '',
+        phoneMasked: fmt.maskPhone(profile.phone || binding.phone || me.phone || ''),
       });
       this.loadOrders();
     } else {

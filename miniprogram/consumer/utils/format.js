@@ -31,6 +31,16 @@ function pad(n) {
   return n < 10 ? '0' + n : '' + n;
 }
 
+function maskPhone(phone) {
+  if (!phone) return '';
+  let s = String(phone).trim().replace(/[^0-9+]/g, '');
+  const national = s.replace(/^\+?86(?=\d{11}$)/, '');
+  if (national.length < 8) {
+    return national ? national.replace(/.(?=.{4}$)/g, '*') : '';
+  }
+  return national.slice(0, 3) + '****' + national.slice(-4);
+}
+
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
@@ -53,4 +63,4 @@ function formatDateTime(iso) {
   );
 }
 
-module.exports = { formatMoney, orderStatusLabel, todayStr, formatDateTime };
+module.exports = { formatMoney, orderStatusLabel, todayStr, formatDateTime, maskPhone };
