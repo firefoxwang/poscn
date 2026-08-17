@@ -11,7 +11,14 @@ Page({
     this.setData({ avatarUrl: e.detail.avatarUrl || '' });
   },
   onNicknameInput(e) {
-    this.setData({ nicknameInput: e.detail.value });
+    const val = e.detail.value || '';
+    if (val === this.data.nicknameInput) return;
+    // 异步 setData：打断 type="nickname" 弹框的同步回调链，避免重复弹出
+    if (this._nicknameTimer) clearTimeout(this._nicknameTimer);
+    this._nicknameTimer = setTimeout(() => {
+      this.setData({ nicknameInput: val });
+      this._nicknameTimer = null;
+    }, 0);
   },
   async onLogin() {
     if (this.data.loading) return;
