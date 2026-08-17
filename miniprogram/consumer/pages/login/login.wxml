@@ -12,14 +12,11 @@
         <text wx:else>选择头像</text>
       </button>
     </view>
-
-    <form bindsubmit="onLogin">
-      <view class="form-item">
-        <text class="form-label">昵称（可选）</text>
-        <input class="input" type="nickname" name="nickname" placeholder="微信昵称" />
-      </view>
-      <button class="btn btn-primary btn-block" form-type="submit" loading="{{loading}}" disabled="{{loading}}">微信一键登录</button>
-    </form>
+    <view class="form-item">
+      <text class="form-label">昵称（可选）</text>
+      <input class="input" type="nickname" placeholder="点击获取微信昵称" value="{{nickname}}" bindinput="onNicknameInput" />
+    </view>
+    <button class="btn btn-primary btn-block" bindtap="onLogin" loading="{{loading}}" disabled="{{loading}}">微信一键登录</button>
   </view>
 
   <text class="login-tip">登录后即可扫码点餐、预订、排队及查看历史订单</text>

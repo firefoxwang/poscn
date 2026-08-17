@@ -5,20 +5,19 @@ Page({
   data: {
     loading: false,
     avatarUrl: '',
+    nickname: '',
   },
   onAvatarChoose(e) {
     this.setData({ avatarUrl: e.detail.avatarUrl || '' });
   },
-  // type="nickname" 的 input 不绑定 bindinput：任何 input 回调都可能触发微信
-  // 再次弹出昵称选择框。改用 <form bindsubmit> + form-type="submit"，提交时
-  // 从 e.detail.value.nickname 取值，交互过程中不触发任何自定义回调。
-  async onLogin(e) {
+  onNicknameInput(e) {
+    this.setData({ nickname: e.detail.value || '' });
+  },
+  async onLogin() {
     if (this.data.loading) return;
     this.setData({ loading: true });
     try {
-      const formVal =
-        (e && e.detail && e.detail.value && e.detail.value.nickname) || '';
-      const nickname = formVal.trim();
+      const nickname = (this.data.nickname || '').trim();
       await auth.login(nickname || undefined, this.data.avatarUrl || undefined);
       wx.showToast({ title: '登录成功', icon: 'success' });
       this.goNext();
