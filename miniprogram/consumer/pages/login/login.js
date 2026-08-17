@@ -9,17 +9,16 @@ Page({
   onAvatarChoose(e) {
     this.setData({ avatarUrl: e.detail.avatarUrl || '' });
   },
-  // 关键：type="nickname" 的 input，bindinput 里绝不能 setData，
-  // 否则页面 diff 会让该 input 节点重渲染，微信会再次弹出昵称选择框。
-  // 用实例变量暂存，提交时读取。
-  onNicknameInput(e) {
-    this._nicknameValue = e.detail.value || '';
-  },
-  async onLogin() {
+  // type="nickname" 的 input 不绑定 bindinput：任何 input 回调都可能触发微信
+  // 再次弹出昵称选择框。改用 <form bindsubmit> + form-type="submit"，提交时
+  // 从 e.detail.value.nickname 取值，交互过程中不触发任何自定义回调。
+  async onLogin(e) {
     if (this.data.loading) return;
     this.setData({ loading: true });
     try {
-      const nickname = (this._nicknameValue || '').trim();
+      const formVal =
+        (e && e.detail && e.detail.value && e.detail.value.nickname) || '';
+      const nickname = formVal.trim();
       await auth.login(nickname || undefined, this.data.avatarUrl || undefined);
       wx.showToast({ title: '登录成功', icon: 'success' });
       this.goNext();
@@ -37,19 +36,16 @@ Page({
       app.globalData.pendingScene = '';
       app.globalData.pendingPath = '';
     }
-    // 扫码进入：恢复到带餐桌标识的菜单页
     const token = decodeTableToken(scene || '');
     if (token) {
       wx.reLaunch({ url: '/pages/menu/menu?table_token=' + encodeURIComponent(token) });
       return;
     }
-    // 其它指定页面（非登录页、非菜单首页）则恢复
     if (path && path !== 'pages/login/login' && path !== 'pages/menu/menu') {
       const url = path.indexOf('/') === 0 ? path : '/' + path;
       wx.reLaunch({ url: url });
       return;
     }
-    // 默认进入菜单首页
     wx.switchTab({ url: '/pages/menu/menu' });
   },
 });
