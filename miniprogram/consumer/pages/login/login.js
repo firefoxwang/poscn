@@ -4,27 +4,22 @@ const { decodeTableToken } = require('../../utils/decode-scene.js');
 Page({
   data: {
     loading: false,
-    nicknameInput: '',
     avatarUrl: '',
   },
   onAvatarChoose(e) {
     this.setData({ avatarUrl: e.detail.avatarUrl || '' });
   },
+  // 关键：type="nickname" 的 input，bindinput 里绝不能 setData，
+  // 否则页面 diff 会让该 input 节点重渲染，微信会再次弹出昵称选择框。
+  // 用实例变量暂存，提交时读取。
   onNicknameInput(e) {
-    const val = e.detail.value || '';
-    if (val === this.data.nicknameInput) return;
-    // 异步 setData：打断 type="nickname" 弹框的同步回调链，避免重复弹出
-    if (this._nicknameTimer) clearTimeout(this._nicknameTimer);
-    this._nicknameTimer = setTimeout(() => {
-      this.setData({ nicknameInput: val });
-      this._nicknameTimer = null;
-    }, 0);
+    this._nicknameValue = e.detail.value || '';
   },
   async onLogin() {
     if (this.data.loading) return;
     this.setData({ loading: true });
     try {
-      const nickname = (this.data.nicknameInput || '').trim();
+      const nickname = (this._nicknameValue || '').trim();
       await auth.login(nickname || undefined, this.data.avatarUrl || undefined);
       wx.showToast({ title: '登录成功', icon: 'success' });
       this.goNext();
