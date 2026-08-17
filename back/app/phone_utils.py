@@ -63,3 +63,29 @@ def normalize_phone_to_e164(phone: str, default_country: str = "ES") -> str | No
     if digits_only.startswith(prefix) and len(digits_only) >= len(prefix) + 6:
         return "+" + digits_only
     return "+" + prefix + digits_only
+
+
+def normalize_phone_with_country_code(
+    phone: str,
+    country_code: str | None,
+    default_country: str = "ES",
+) -> str | None:
+    """
+    Normalize to E.164, preferring an explicit numeric country calling code
+    (e.g. WeChat getPhoneNumber returns countryCode "86"). Falls back to
+    normalize_phone_to_e164 when no country code is provided.
+    """
+    if not phone or not isinstance(phone, str):
+        return None
+    raw = re.sub(r"[\s\-\(\)\.]", "", phone.strip())
+    if not raw:
+        return None
+    if raw.startswith("+"):
+        return normalize_phone_to_e164(raw, default_country)
+    digits = re.sub(r"\D", "", raw)
+    if len(digits) < 8:
+        return None
+    cc = re.sub(r"\D", "", str(country_code or ""))
+    if cc:
+        return "+" + cc + digits
+    return normalize_phone_to_e164(phone, default_country)

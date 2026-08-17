@@ -4,20 +4,41 @@
     <text class="login-sub">微信小程序</text>
   </view>
 
-  <view class="login-form card">
-    <view class="form-item">
-      <text class="form-label">头像（可选）</text>
-      <button class="avatar-pick" open-type="chooseAvatar" bind:chooseavatar="onAvatarChoose">
-        <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
-        <text wx:else>选择头像</text>
-      </button>
+  <block wx:if="{{showBindPhone}}">
+    <view class="login-form card">
+      <view class="form-item">
+        <text class="form-label">微信昵称</text>
+        <input class="input" type="nickname" placeholder="点击获取微信昵称" value="{{nickname}}" bindinput="onNicknameInput" />
+      </view>
+      <button
+        wx:if="{{!bindFailed}}"
+        class="btn btn-primary btn-block"
+        open-type="getPhoneNumber"
+        bindgetphonenumber="onGetPhoneNumber"
+        loading="{{bindPhoneLoading}}"
+        disabled="{{bindPhoneLoading}}"
+      >{{bindPhoneLoading ? '绑定中…' : '获取微信手机号'}}</button>
+      <view wx:else class="bind-fail-tip">当前为测试号，无法获取手机号，可暂不绑定</view>
+      <view class="bind-skip" bindtap="onSkipBind">暂不绑定，直接进入</view>
     </view>
-    <view class="form-item">
-      <text class="form-label">昵称（可选）</text>
-      <input class="input" type="nickname" placeholder="点击获取微信昵称" value="{{nickname}}" bindinput="onNicknameInput" />
-    </view>
-    <button class="btn btn-primary btn-block" bindtap="onLogin" loading="{{loading}}" disabled="{{loading}}">微信一键登录</button>
-  </view>
+    <text class="login-tip">授权手机号仅用于订单联系，不会用于其他用途</text>
+  </block>
 
-  <text class="login-tip">登录后即可扫码点餐、预订、排队及查看历史订单</text>
+  <block wx:else>
+    <view class="login-form card">
+      <view class="form-item">
+        <text class="form-label">头像（可选）</text>
+        <button class="avatar-pick" open-type="chooseAvatar" bind:chooseavatar="onAvatarChoose">
+          <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
+          <text wx:else>选择头像</text>
+        </button>
+      </view>
+      <view class="form-item">
+        <text class="form-label">昵称（可选）</text>
+        <input class="input" type="nickname" placeholder="点击获取微信昵称" value="{{nickname}}" bindinput="onNicknameInput" />
+      </view>
+      <button class="btn btn-primary btn-block" bindtap="onLogin" loading="{{loading}}" disabled="{{loading}}">微信一键登录</button>
+    </view>
+    <text class="login-tip">登录后即可扫码点餐、预订、排队及查看历史订单</text>
+  </block>
 </view>

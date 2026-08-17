@@ -66,6 +66,19 @@ async function getPhone(phoneCode) {
   });
 }
 
+async function bindPhone(phoneCode, nickname) {
+  const data = await request.request({
+    url: config.BASE_URL + '/mp/auth/bind-phone',
+    method: 'POST',
+    data: { code: phoneCode, nickname: nickname || undefined },
+    silent: true,
+  });
+  if (data && data.profile) {
+    wx.setStorageSync('profile', data.profile);
+  }
+  return data;
+}
+
 function getNickname() {
   return new Promise((resolve) => {
     if (typeof wx.getUserProfile !== 'function') {
@@ -88,4 +101,4 @@ function logout() {
   clearSession();
 }
 
-module.exports = { login, logout, getProfile, getPhone, getNickname, isLoggedIn, storeSession, clearSession };
+module.exports = { login, logout, getProfile, getPhone, bindPhone, getNickname, isLoggedIn, storeSession, clearSession };

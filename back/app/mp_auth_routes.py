@@ -15,7 +15,7 @@ from sqlmodel import Session, select
 from . import models, security, wechat_service
 from .contact_validation import normalize_email_address
 from .db import get_session
-from .phone_utils import normalize_phone_to_e164
+from .phone_utils import normalize_phone_to_e164, normalize_phone_with_country_code
 from .rate_limits import limiter
 from .settings import settings
 
@@ -44,10 +44,23 @@ class MpPhoneBody(BaseModel):
     appid_type: Literal["merchant", "customer"]
 
 
+class MpBindPhoneBody(BaseModel):
+    code: str
+    nickname: str | None = None
+
+
 def _mp_appid(appid_type: str) -> tuple[str, str]:
     if appid_type == "merchant":
         return settings.wechat_mp_merchant_appid, settings.wechat_mp_merchant_secret
     return settings.wechat_mp_consumer_appid, settings.wechat_mp_consumer_secret
+
+
+def _secret_for_appid(appid: str) -> str | None:
+    if appid == settings.wechat_mp_consumer_appid:
+        return settings.wechat_mp_consumer_secret
+    if appid == settings.wechat_mp_merchant_appid:
+        return settings.wechat_mp_merchant_secret
+    return None
 
 
 def _sign_tokens(token_data: dict) -> dict:
@@ -304,6 +317,49 @@ def mp_phone(
     return {
         "phoneNumber": phone_info.get("phoneNumber"),
         "purePhoneNumber": phone_info.get("purePhoneNumber"),
+    }
+
+
+@router.post("/bind-phone")
+@limiter.limit(f"{getattr(settings, 'rate_limit_login_per_15min', 5)}/15 minutes")
+def mp_bind_phone(
+    request: Request,
+    response: Response,
+    body: MpBindPhoneBody,
+    customer: Annotated[models.Customer, Depends(security.get_current_customer)],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Bind the WeChat getPhoneNumber result to the logged-in customer (consumer MP)."""
+    binding = session.exec(
+        select(models.MpBinding)
+        .where(models.MpBinding.customer_id == customer.id)
+        .order_by(models.MpBinding.id.desc())
+    ).first()
+    if binding is None:
+        raise HTTPException(status_code=404, detail="no_binding")
+    secret = _secret_for_appid(binding.appid)
+    if not secret:
+        raise HTTPException(status_code=400, detail="unknown_appid")
+    access_token = wechat_service.get_stable_access_token(binding.appid, secret)
+    phone_info = wechat_service.get_phone_number(access_token, body.code)
+    raw_phone = phone_info.get("purePhoneNumber") or phone_info.get("phoneNumber")
+    if not raw_phone:
+        raise HTTPException(status_code=400, detail="phone_required")
+    normalized_phone = normalize_phone_with_country_code(
+        raw_phone, phone_info.get("countryCode"), settings.default_phone_country
+    )
+    customer.phone = normalized_phone
+    binding.phone = normalized_phone
+    if body.nickname:
+        binding.nickname = body.nickname
+        customer.full_name = body.nickname
+    session.add(customer)
+    session.add(binding)
+    session.commit()
+    session.refresh(binding)
+    return {
+        "profile": _login_profile(binding, customer.email, customer.phone),
+        "phone": normalized_phone,
     }
 
 

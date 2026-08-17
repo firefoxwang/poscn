@@ -204,6 +204,46 @@ class TestMpAuthFlows(PgClientTestCase):
         self.assertEqual(r.json()["purePhoneNumber"], "13800138000")
         self.assertEqual(r.json()["phoneNumber"], "13800138000")
 
+    @patch("app.wechat_service.get_phone_number")
+    @patch("app.wechat_service.get_stable_access_token")
+    @patch("app.wechat_service.code2session")
+    def test_bind_phone_customer_happy_path(self, mock_code2session, mock_token, mock_phone):
+        openid = self._openid()
+        mock_code2session.return_value = {"openid": openid, "session_key": "sk"}
+        login_res = self.client.post(
+            "/mp/auth/login",
+            json={"code": "c", "appid_type": "customer", "nickname": "小张"},
+        )
+        token = login_res.json()["access_token"]
+        mock_token.return_value = "acc-token"
+        mock_phone.return_value = {
+            "phoneNumber": "13800138000",
+            "purePhoneNumber": "13800138000",
+            "countryCode": "86",
+        }
+        r = self.client.post(
+            "/mp/auth/bind-phone",
+            json={"code": "pc", "nickname": "小张"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["phone"], "+8613800138000")
+        self.assertEqual(body["profile"]["phone"], "+8613800138000")
+
+        customer = self.session.exec(
+            select(models.Customer).where(models.Customer.email == f"wx_{openid}@mp.local")
+        ).first()
+        self.assertEqual(customer.phone, "+8613800138000")
+        binding = self.session.exec(
+            select(models.MpBinding).where(models.MpBinding.openid == openid)
+        ).first()
+        self.assertEqual(binding.phone, "+8613800138000")
+
+    def test_bind_phone_requires_auth(self):
+        r = self.client.post("/mp/auth/bind-phone", json={"code": "pc"})
+        self.assertEqual(r.status_code, 401, r.text)
+
     def test_refresh_exchanges_refresh_token(self):
         user = self._staff_user()
         token_data = security.token_data_for_user(user)

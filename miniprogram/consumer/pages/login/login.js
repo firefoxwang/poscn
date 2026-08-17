@@ -6,6 +6,9 @@ Page({
     loading: false,
     avatarUrl: '',
     nickname: '',
+    showBindPhone: false,
+    bindPhoneLoading: false,
+    bindFailed: false,
   },
   onAvatarChoose(e) {
     this.setData({ avatarUrl: e.detail.avatarUrl || '' });
@@ -18,14 +21,51 @@ Page({
     this.setData({ loading: true });
     try {
       const nickname = (this.data.nickname || '').trim();
-      await auth.login(nickname || undefined, this.data.avatarUrl || undefined);
+      const data = await auth.login(nickname || undefined, this.data.avatarUrl || undefined);
       wx.showToast({ title: '登录成功', icon: 'success' });
-      this.goNext();
+      const profile = (data && data.profile) || wx.getStorageSync('profile') || {};
+      if (!profile.phone) {
+        this.setData({ showBindPhone: true });
+      } else {
+        this.goNext();
+      }
     } catch (err) {
       wx.showToast({ title: (err && err.message) || '登录失败', icon: 'none' });
     } finally {
       this.setData({ loading: false });
     }
+  },
+  async onGetPhoneNumber(e) {
+    const code = e.detail && e.detail.code;
+    if (!code) {
+      const errno = e.detail && e.detail.errno;
+      if (errno === 1400001) {
+        wx.showToast({ title: '手机号授权次数已达上限', icon: 'none' });
+      } else {
+        wx.showToast({ title: '未授权手机号', icon: 'none' });
+      }
+      return;
+    }
+    if (this.data.bindPhoneLoading) return;
+    this.setData({ bindPhoneLoading: true });
+    try {
+      const nickname = (this.data.nickname || '').trim();
+      await auth.bindPhone(code, nickname || undefined);
+      wx.showToast({ title: '绑定成功', icon: 'success' });
+      this.goNext();
+    } catch (err) {
+      const msg = (err && err.message) || '绑定失败';
+      if (msg.indexOf('48001') !== -1) {
+        this.setData({ bindFailed: true });
+      } else {
+        wx.showToast({ title: msg, icon: 'none' });
+      }
+    } finally {
+      this.setData({ bindPhoneLoading: false });
+    }
+  },
+  onSkipBind() {
+    this.goNext();
   },
   goNext() {
     const app = getApp();
