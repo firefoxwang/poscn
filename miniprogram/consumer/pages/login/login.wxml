@@ -1,0 +1,21 @@
+<view class="page login-page">
+  <view class="login-brand">
+    <text class="login-title">扫码点餐</text>
+    <text class="login-sub">微信小程序</text>
+  </view>
+  <view class="login-form card">
+    <view class="form-item">
+      <text class="form-label">头像（可选）</text>
+      <button class="avatar-pick" open-type="chooseAvatar" bindchooseavatar="onAvatarChoose">
+        <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
+        <text wx:else>选择头像</text>
+      </button>
+    </view>
+    <view class="form-item">
+      <text class="form-label">昵称（可选）</text>
+      <input class="input" type="nickname" placeholder="微信昵称" bindinput="onNicknameInput" />
+    </view>
+    <button class="btn btn-primary btn-block" bindtap="onLogin" loading="{{loading}}" disabled="{{loading}}">微信一键登录</button>
+  </view>
+  <text class="login-tip">登录后即可扫码点餐、预订、排队及查看历史订单</text>
+</view>

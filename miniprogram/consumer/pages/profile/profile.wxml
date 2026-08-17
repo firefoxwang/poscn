@@ -9,20 +9,9 @@
     <button class="btn btn-outline btn-sm" bindtap="onLogout">退出登录</button>
   </view>
   <view class="card" wx:else>
-    <view class="form-title">微信登录</view>
-    <view class="form-item">
-      <text class="form-label">头像</text>
-      <button class="avatar-pick" open-type="chooseAvatar" bindchooseavatar="onAvatarChoose">
-        <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
-        <text wx:else>选择头像</text>
-      </button>
-    </view>
-    <view class="form-item">
-      <text class="form-label">昵称</text>
-      <input class="input" type="nickname" placeholder="微信昵称（可选）" bindinput="onNicknameInput" />
-    </view>
-    <button class="btn btn-primary btn-block" bindtap="onLogin" loading="{{loggingIn}}" disabled="{{loggingIn}}">微信一键登录</button>
-    <text class="tip">登录后可查看历史订单；不登录也可扫码点餐</text>
+    <view class="form-title">未登录</view>
+    <text class="tip">登录信息已失效，请重新登录</text>
+    <button class="btn btn-primary btn-block" bindtap="goLogin">去登录</button>
   </view>
   <view class="card" wx:if="{{loggedIn}}">
     <view class="form-title">历史订单</view>

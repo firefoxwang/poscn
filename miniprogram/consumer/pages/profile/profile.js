@@ -5,12 +5,10 @@ const fmt = require('../../utils/format.js');
 Page({
   data: {
     loggedIn: false,
-    loggingIn: false,
     nickname: '',
     avatarUrl: '',
     email: '',
     phone: '',
-    nicknameInput: '',
     orders: [],
     ordersLoading: false,
   },
@@ -35,32 +33,13 @@ Page({
       this.setData({ orders: [] });
     }
   },
-  onAvatarChoose(e) {
-    this.setData({ avatarUrl: e.detail.avatarUrl || '' });
-  },
-  onNicknameInput(e) {
-    this.setData({ nicknameInput: e.detail.value });
-  },
-  async onLogin() {
-    if (this.data.loggingIn) return;
-    this.setData({ loggingIn: true });
-    try {
-      const nickname = (this.data.nicknameInput || '').trim();
-      await auth.login(nickname || undefined, this.data.avatarUrl || undefined);
-      const me = await api.me();
-      wx.setStorageSync('mp_me', me);
-      wx.showToast({ title: '登录成功', icon: 'success' });
-      this.refresh();
-    } catch (err) {
-      wx.showToast({ title: (err && err.message) || '登录失败', icon: 'none' });
-    } finally {
-      this.setData({ loggingIn: false });
-    }
-  },
   onLogout() {
     auth.clearSession();
     wx.removeStorageSync('mp_me');
-    this.refresh();
+    wx.reLaunch({ url: '/pages/login/login' });
+  },
+  goLogin() {
+    wx.reLaunch({ url: '/pages/login/login' });
   },
   async loadOrders() {
     this.setData({ ordersLoading: true });

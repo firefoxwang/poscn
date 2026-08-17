@@ -5,7 +5,8 @@
     "pages/order-status/order-status",
     "pages/book/book",
     "pages/waitlist/waitlist",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/login/login"
   ],
   "window": {
     "navigationBarTitleText": "扫码点餐",

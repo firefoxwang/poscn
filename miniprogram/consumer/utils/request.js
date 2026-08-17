@@ -35,11 +35,19 @@ function request(options) {
           wx.removeStorageSync('refresh_token');
           wx.removeStorageSync('binding_type');
           wx.removeStorageSync('profile');
+          wx.removeStorageSync('mp_me');
           const err = new Error('登录已过期，请重新登录');
           err.statusCode = 401;
           err.data = res.data;
           if (!options.silent) {
             wx.showToast({ title: err.message, icon: 'none' });
+          }
+          // 跳转登录页；避免在登录页再次触发跳转
+          const pages = getCurrentPages();
+          const current = pages.length ? pages[pages.length - 1] : null;
+          const route = current ? current.route : '';
+          if (route && route !== 'pages/login/login') {
+            wx.reLaunch({ url: '/pages/login/login' });
           }
           reject(err);
           return;

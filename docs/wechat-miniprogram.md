@@ -9,7 +9,7 @@ To better fit the China (中国本地化) usage context, this project ships two 
 | Mini program | Directory | Audience | Core pages |
 |---|---|---|---|
 | 商户端 (merchant) | `miniprogram/merchant/` | Restaurant staff / owner | login → bind → dashboard summary, reservations, orders, tables, profile |
-| 消费者端 (consumer) | `miniprogram/consumer/` | End-user diners | scan table QR → menu → cart → place order → poll order status, book, waitlist, profile |
+| 消费者端 (consumer) | `miniprogram/consumer/` | End-user diners | **login** → scan table QR → menu → cart → place order → poll order status, book, waitlist, profile |
 
 Both call the **same FastAPI backend**. Auth is **platform-unified**: the platform operator registers exactly **2 AppIDs** (merchant + consumer) and puts the credentials in `config.env`; consumers are identified by `openid` and staff by their bound `User` account.
 
@@ -31,7 +31,7 @@ miniprogram/
     ├── app.json / app.js / app.wxss
     ├── utils/         # config.js, request.js, session.js (anonymous session_id), auth.js,
     │                  # decode-scene.js (tt: scene → table token), api.js, i18n.js, format.js
-    └── pages/         # menu, cart, order-status, book, waitlist, profile
+    └── pages/         # login, menu, cart, order-status, book, waitlist, profile
 ```
 
 Backend support lives in `back/app/`:
@@ -124,10 +124,11 @@ WeChat mini programs may only call **HTTPS** domains that are whitelisted in the
 
 ### Consumer (消费者端) — `miniprogram/consumer/`
 
-1. **Scan table QR:** scan the 小程序码 (or in DevTools simulate entry with a `scene=tt:<table-token>` navigate) → the page `onLoad` reads `options.scene`, `decodeURIComponent`s it, and `decodeTableToken` recovers the table token.
-2. **Menu:** `GET /menu/{table_token}` renders the menu → add items to cart.
-3. **Place order:** cart → `POST /menu/{table_token}/order` with `{items, session_id}` — `session_id` is generated once by `utils/session.js` and persisted, so the anonymous order is tied to this device even without login.
-4. **Poll status:** `GET /menu/{table_token}/order` every **5 s** (`pages/order-status`) until the order moves through created → preparing → ready/paid.
+1. **Login (required on entry):** `App.onLaunch` checks `access_token`; if absent it `wx.reLaunch`es to `pages/login/login`. The login page runs `wx.login` → `POST /mp/auth/login` (appid_type `customer`), which auto-creates/reuses a `Customer` bound to the `openid` and returns tokens. The launch `scene`/`path` are saved in `globalData` so after a successful login the user is returned to the page they entered through (e.g. the menu for a scanned table QR). A 401 from any later request also `reLaunch`es back to login.
+2. **Scan table QR:** scan the 小程序码 (or in DevTools simulate entry with a `scene=tt:<table-token>` navigate) → the page `onLoad` reads `options.scene`, `decodeURIComponent`s it, and `decodeTableToken` recovers the table token.
+3. **Menu:** `GET /menu/{table_token}` renders the menu → add items to cart.
+4. **Place order:** cart → `POST /menu/{table_token}/order` with `{items, session_id}` — `session_id` is generated once by `utils/session.js` and persisted, so the order is tied to this device.
+5. **Poll status:** `GET /menu/{table_token}/order` every **5 s** (`pages/order-status`) until the order moves through created → preparing → ready/paid.
 
 ## 8. 发布到云托管 checklist
 
