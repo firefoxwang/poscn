@@ -84,3 +84,6 @@ dist/
 
 # Playwright MCP test artifacts (local browser testing only)
 .playwright-mcp/
+
+# opencode skills (local only, do not track)
+.opencode/skills/
