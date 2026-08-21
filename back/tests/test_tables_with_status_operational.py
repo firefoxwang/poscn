@@ -232,6 +232,58 @@ class TestTablesWithStatusOperational(PgClientTestCase):
         self.assertEqual(row["operational_status"], "occupied")
         self.assertEqual(row["payment_status"], "paid")
 
+    def test_payment_paid_when_completed_order_has_bill_requested_and_paid(self) -> None:
+        """Paid order with bill_requested_at preserved must show 'paid', not 'pending'."""
+        order = models.Order(
+            table_id=self.table_id,
+            tenant_id=self.tenant_id,
+            status=models.OrderStatus.completed,
+            bill_requested_at=datetime.now(timezone.utc),
+            paid_at=datetime.now(timezone.utc),
+        )
+        self.session.add(order)
+        self.session.commit()
+        self.session.refresh(order)
+
+        table = self.session.get(models.Table, self.table_id)
+        assert table is not None
+        table.is_active = True
+        table.active_order_id = order.id
+        self.session.add(table)
+        self.session.commit()
+
+        row = self._row()
+        self.assertEqual(row["payment_status"], "paid")
+
+    def test_payment_paid_after_mark_paid_with_bill_requested(self) -> None:
+        """mark-paid preserves bill_requested_at; floor must show 'paid' not 'pending'."""
+        order = models.Order(
+            table_id=self.table_id,
+            tenant_id=self.tenant_id,
+            status=models.OrderStatus.ready,
+            bill_requested_at=datetime.now(timezone.utc),
+        )
+        self.session.add(order)
+        self.session.commit()
+        self.session.refresh(order)
+
+        table = self.session.get(models.Table, self.table_id)
+        assert table is not None
+        table.active_order_id = order.id
+        self.session.add(table)
+        self.session.commit()
+
+        h = _bearer_headers(self.owner)
+        r = self.client.put(
+            f"/orders/{order.id}/mark-paid",
+            json={"payment_method": "cash", "tip_percent": None},
+            headers=h,
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+
+        row = self._row()
+        self.assertEqual(row["payment_status"], "paid")
+
 
 if __name__ == "__main__":
     unittest.main()

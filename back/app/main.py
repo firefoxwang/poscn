@@ -9075,8 +9075,10 @@ def list_tables_with_status(
                     operational_status = "ready_to_serve"
                 else:
                     operational_status = "open_order"
-                if active_order.bill_requested_at is not None:
+                if active_order.bill_requested_at is not None and active_order.paid_at is None:
                     payment_status = "pending"
+                elif active_order.paid_at is not None:
+                    payment_status = "paid"
             else:
                 operational_status = "occupied"
         else:
@@ -9102,9 +9104,9 @@ def list_tables_with_status(
         if payment_status == "none" and table.active_order_id:
             linked = session.get(models.Order, table.active_order_id)
             if linked and linked.tenant_id == current_user.tenant_id and linked.deleted_at is None:
-                if linked.status == models.OrderStatus.paid and linked.paid_at is not None:
+                if linked.paid_at is not None:
                     payment_status = "paid"
-                elif linked.bill_requested_at is not None and linked.status not in (
+                elif linked.bill_requested_at is not None and linked.paid_at is None and linked.status not in (
                     models.OrderStatus.paid,
                     models.OrderStatus.cancelled,
                 ):
