@@ -2218,8 +2218,8 @@ ModuleRegistry.registerModules([
     }
     .payment-tip-preview { margin-top: var(--space-2); margin-bottom: 0; }
 
-    .modal-order-edit { max-width: 520px; }
-    .modal-order-edit .modal-body { max-height: 70vh; overflow-y: auto; }
+    .modal-order-edit { max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; }
+    .modal-order-edit .modal-body { flex: 1; overflow-y: auto; min-height: 0; }
     .edit-order-items { margin-bottom: var(--space-4); }
     .edit-order-label { font-size: 0.75rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--space-2); }
     .edit-order-row {
