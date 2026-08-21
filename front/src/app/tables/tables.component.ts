@@ -996,7 +996,7 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
     .qr-code-wrapper { display: flex; justify-content: center; margin: var(--space-3) 0; }
     .qr-footer { text-align: center; margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
     .table-number { font-size: 1rem; font-weight: 600; color: var(--color-primary); text-transform: uppercase; }
-    .table-actions { display: flex; gap: var(--space-2); justify-content: center; }
+    .table-actions { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; }
 
     .icon-btn { background: none; border: none; padding: var(--space-2); border-radius: var(--radius-sm); color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; }
     .icon-btn:hover { background: var(--color-bg); color: var(--color-text); }
