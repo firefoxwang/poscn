@@ -16,11 +16,9 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   template: `
-    <div class="section" data-testid="settings-delivery-integrations-section">
-      <div class="section-header">
-        <h2>{{ 'SETTINGS.DELIVERY_INTEGRATIONS_TITLE' | translate }}</h2>
-        <p>{{ 'SETTINGS.DELIVERY_INTEGRATIONS_SUBTITLE' | translate }}</p>
-      </div>
+    <div data-testid="settings-delivery-integrations-section">
+      <h3>{{ 'SETTINGS.DELIVERY_INTEGRATIONS_TITLE' | translate }}</h3>
+      <p class="section-desc">{{ 'SETTINGS.DELIVERY_INTEGRATIONS_SUBTITLE' | translate }}</p>
 
       @if (loading()) {
         <p class="hint">{{ 'COMMON.LOADING' | translate }}</p>
@@ -269,6 +267,11 @@ import {
       }
       h4 {
         margin: 1rem 0 0.25rem 0;
+      }
+      .section-desc {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0 0 1rem 0;
       }
     `,
   ],

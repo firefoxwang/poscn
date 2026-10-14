@@ -40,17 +40,18 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
 
         @if (showOtpStep()) {
           <p class="otp-prompt">{{ 'AUTH.OTP_ENTER_CODE' | translate }}</p>
+          <p class="otp-recovery-hint">{{ 'AUTH.OTP_RECOVERY_HINT' | translate }}</p>
           <form (ngSubmit)="onSubmitOtp()">
             <div class="form-group">
               <label for="otp-code">{{ 'AUTH.OTP_CODE' | translate }}</label>
               <input 
                 id="otp-code" 
                 type="text" 
-                inputmode="numeric" 
-                pattern="[0-9]*" 
-                maxlength="6"
+                inputmode="text" 
+                maxlength="19"
                 [(ngModel)]="otpCode" 
                 name="otpCode"
+                data-testid="login-otp-code"
                 [placeholder]="'AUTH.OTP_CODE_PLACEHOLDER' | translate"
                 autocomplete="one-time-code"
               >
@@ -58,7 +59,7 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
             @if (error()) {
               <div class="error-banner">{{ error() }}</div>
             }
-            <button type="submit" class="btn-submit" [disabled]="!otpCode || otpCode.length !== 6 || loading()">
+            <button type="submit" class="btn-submit" [disabled]="!canSubmitOtp() || loading()">
               {{ loading() ? ('AUTH.VERIFYING' | translate) : ('AUTH.VERIFY_OTP' | translate) }}
             </button>
             <button type="button" class="btn-back" (click)="backToPassword()">{{ 'AUTH.BACK' | translate }}</button>
@@ -126,7 +127,7 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
           <span class="auth-foot-sep" aria-hidden="true">·</span>
           <a routerLink="/provider/register" data-testid="login-provider-register">{{ 'LANDING.REGISTER_AS_PROVIDER' | translate }}</a>
           <span class="auth-foot-sep" aria-hidden="true">·</span>
-          <a href="mailto:hello@satisfecho.de" data-testid="login-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
+          <a href="mailto:support@satisfecho.de" data-testid="login-contact-us">{{ 'LANDING.CONTACT_US' | translate }}</a>
           @if (legalTermsUrl() || legalPrivacyUrl()) {
             <span class="auth-foot-sep" aria-hidden="true">·</span>
             <app-legal-links [inline]="true" [termsUrl]="legalTermsUrl()" [privacyUrl]="legalPrivacyUrl()" />
@@ -319,6 +320,11 @@ import { LegalLinksComponent } from '../shared/legal-links.component';
     .otp-prompt {
       color: var(--color-text-muted);
       font-size: 0.9375rem;
+      margin-bottom: var(--space-2);
+    }
+    .otp-recovery-hint {
+      color: var(--color-text-muted);
+      font-size: 0.8125rem;
       margin-bottom: var(--space-4);
     }
     .btn-back {
@@ -487,10 +493,11 @@ export class LoginComponent implements OnInit {
 
   onSubmitOtp() {
     const token = this.otpTempToken();
-    if (!token || !this.otpCode || this.otpCode.length !== 6) return;
+    const code = (this.otpCode || '').trim();
+    if (!token || !this.canSubmitOtp()) return;
     this.error.set('');
     this.loading.set(true);
-    this.api.loginWithOtp(token, this.otpCode).subscribe({
+    this.api.loginWithOtp(token, code).subscribe({
       next: () => {
         this.api.checkAuth().subscribe(user => {
           if (user?.role === 'courier') {
@@ -523,6 +530,14 @@ export class LoginComponent implements OnInit {
         this.error.set(this.apiErr.fromHttpError(err, 'API_ERRORS.INVALID_OTP_CODE'));
       }
     });
+  }
+
+  /** Accept 6-digit TOTP or an 8-char recovery code (with optional dashes). */
+  canSubmitOtp(): boolean {
+    const raw = (this.otpCode || '').trim();
+    if (/^\d{6}$/.test(raw)) return true;
+    const norm = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return norm.length === 8;
   }
 
   backToPassword() {

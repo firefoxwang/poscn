@@ -1,4 +1,4 @@
-import { afterNextRender, Component, effect, inject, signal, computed, OnInit } from '@angular/core';
+import { afterNextRender, Component, DestroyRef, effect, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
@@ -12,7 +12,9 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
+import { LanguageService } from '../services/language.service';
 import { findNonOverlappingDefaultPosition } from './table-floor-layout.util';
+import { formatActivatedAtTime, formatElapsedActiveDuration } from './table-active-duration.util';
 
 const TABLES_VIEW_STORAGE_KEY = 'pos.tables.viewMode';
 
@@ -230,6 +232,11 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                   <td>
                     @if (table.is_active) {
                       <span class="status-badge status-active status-inline"><span class="status-dot"></span>{{ 'TABLES.ACTIVE' | translate }}</span>
+                      @if (activeSessionMeta(table); as meta) {
+                        <div class="active-session-meta" data-testid="table-active-duration">
+                          {{ 'TABLES.ACTIVE_SESSION_META' | translate: meta }}
+                        </div>
+                      }
                     } @else {
                       <span class="status-badge status-inactive status-inline"><span class="status-dot"></span>{{ 'TABLES.INACTIVE' | translate }}</span>
                     }
@@ -383,6 +390,9 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                                     <span class="status-badge status-active status-inline group-tile-member-status">
                                       <span class="status-dot"></span>{{ 'TABLES.ACTIVE' | translate }}
                                     </span>
+                                    @if (activeSessionDurationOnly(table); as duration) {
+                                      <span class="active-session-meta active-session-meta--inline" data-testid="table-active-duration">{{ duration }}</span>
+                                    }
                                   } @else {
                                     <span class="status-badge status-inactive status-inline group-tile-member-status">
                                       <span class="status-dot"></span>{{ 'TABLES.INACTIVE' | translate }}
@@ -481,6 +491,11 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
                     <span class="status-dot"></span>
                     {{ 'TABLES.ACTIVE' | translate }}
                   </div>
+                  @if (activeSessionMeta(table); as meta) {
+                    <div class="active-session-meta" data-testid="table-active-duration">
+                      {{ 'TABLES.ACTIVE_SESSION_META' | translate: meta }}
+                    </div>
+                  }
                   @if (table.order_pin) {
                     <div class="pin-display">
                       <span class="pin-label">PIN:</span>
@@ -1187,6 +1202,21 @@ function getInitialTablesViewMode(): 'tiles' | 'table' {
     .tables-data-table .waiter-inherited-inline { font-size: 0.6875rem; color: var(--color-text-muted); font-style: italic; margin-top: 2px; }
     .tables-data-table .waiter-readonly-inline { font-size: 0.8125rem; color: var(--color-text); }
     .tables-data-table .status-inline { display: inline-flex; align-items: center; gap: var(--space-1); }
+    .active-session-meta {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-top: 0.25rem;
+      line-height: 1.3;
+    }
+    .active-session-meta--inline {
+      margin-top: 0;
+      margin-left: var(--space-1);
+      white-space: nowrap;
+    }
+    .status-section .active-session-meta {
+      width: 100%;
+      text-align: center;
+    }
     .tables-data-table .table-cell-edit { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .tables-data-table .edit-input-inline,
     .tables-data-table .edit-select-inline { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.875rem; }
@@ -1206,6 +1236,11 @@ export class TablesComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private tablesArea = inject(TablesAreaPreferenceService);
   private apiErr = inject(ApiErrorMessageService);
+  private language = inject(LanguageService);
+  private destroyRef = inject(DestroyRef);
+
+  /** Ticks so live active-session duration refreshes without a full reload. */
+  private nowTick = signal(Date.now());
 
   /** When true, skip restoring view mode from localStorage (URL ?view= had priority). */
   private viewResolvedFromQuery = false;
@@ -1328,6 +1363,8 @@ export class TablesComponent implements OnInit {
     }
     this.loadData();
     this.loadTenantSettings();
+    const tickId = setInterval(() => this.nowTick.set(Date.now()), 30_000);
+    this.destroyRef.onDestroy(() => clearInterval(tickId));
     this.api.waitForInitialAuthCheck().subscribe(() => {
       if (this.canManageTableAssignments()) {
         this.api.getWaiters().subscribe({
@@ -1336,6 +1373,26 @@ export class TablesComponent implements OnInit {
         });
       }
     });
+  }
+
+  /** Params for TABLES.ACTIVE_SESSION_META when the table has a live activation timestamp. */
+  activeSessionMeta(table: Table): { duration: string; time: string } | null {
+    if (!table.is_active || !table.activated_at) return null;
+    const now = this.nowTick();
+    const duration = formatElapsedActiveDuration(table.activated_at, now);
+    const time = formatActivatedAtTime(
+      table.activated_at,
+      this.language.currentLocale(),
+      this.tenantSettings()?.timezone,
+    );
+    if (!duration || !time) return null;
+    return { duration, time };
+  }
+
+  /** Compact duration for tight group-member chips. */
+  activeSessionDurationOnly(table: Table): string | null {
+    if (!table.is_active || !table.activated_at) return null;
+    return formatElapsedActiveDuration(table.activated_at, this.nowTick());
   }
 
   /** Owner/admin: can change table/floor waiter assignment (requires user list API). */

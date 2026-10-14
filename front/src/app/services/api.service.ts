@@ -409,8 +409,12 @@ export interface PlatformTenantSummary {
   created_at: string;
   owner_email?: string | null;
   owner_name?: string | null;
+  owner_login_count?: number;
+  owner_last_login_at?: string | null;
   tenant_email?: string | null;
   tenant_phone?: string | null;
+  public_slug?: string | null;
+  city?: string | null;
   product_count: number;
   table_count: number;
   user_count: number;
@@ -422,6 +426,8 @@ export interface PlatformStaffContact {
   email: string;
   full_name?: string | null;
   role: string;
+  login_count?: number;
+  last_login_at?: string | null;
 }
 
 export interface PlatformTenantDetail extends PlatformTenantSummary {
@@ -618,6 +624,9 @@ export interface PublicTenantMenuProduct {
   subcategory: string | null;
   image_url: string | null;
   available: boolean;
+  stock_alert_enabled?: boolean;
+  stock_qty?: number;
+  stock_alert_level?: number;
 }
 
 /** Category group in GET /public/tenants/{id}/menu. */
@@ -648,11 +657,17 @@ export interface TenantSummary {
   whatsapp?: string | null;
   /** Mailing / street address (shown on public book and reservation pages when set). */
   address?: string | null;
+  /** City used in public menu slug (name-city, #413). */
+  city?: string | null;
+  /** Unique public path for /public-menu/{slug} and /{slug}/book; numeric id still works. */
+  public_slug?: string | null;
   opening_hours?: string | null;
   /** Google review URL (tenant settings). */
   public_google_review_url?: string | null;
   /** Background color for public pages (hex, e.g. #1E22AA for RAL5002 Azul). */
   public_background_color?: string | null;
+  /** Primary CTA / button colour on public pages (hex). Null → front blue OOBE default. */
+  public_primary_color?: string | null;
   /** Google Maps URL (tenant settings). */
   public_google_maps_url?: string | null;
   /** Token for take-away/home ordering when a table is configured (e.g. named "Take away"). */
@@ -993,6 +1008,10 @@ export interface Product {
   questions?: ProductQuestion[];
   /** Prep station for KDS (/kitchen vs /bar); null = use tenant default by category */
   kitchen_station_id?: number | null;
+  /** Sellable-unit stock alert (Products UI) */
+  stock_alert_enabled?: boolean;
+  stock_qty?: number;
+  stock_alert_level?: number;
   /** Live promo pricing (#322) from public/QR menu */
   list_price_cents?: number | null;
   promo_label?: string | null;
@@ -1708,6 +1727,7 @@ export interface MenuResponse {
   tenant_revolut_configured?: boolean;
   tenant_immediate_payment_required?: boolean;
   tenant_public_background_color?: string | null;
+  tenant_public_primary_color?: string | null;
   tenant_header_background_filename?: string | null;
   // Table session status
   table_is_active?: boolean;
@@ -1758,6 +1778,8 @@ export interface TenantSettings {
   whatsapp?: string | null;
   email?: string | null;
   address?: string | null;
+  city?: string | null;
+  public_slug?: string | null;
   website?: string | null;
   tax_id?: string | null;
   cif?: string | null;
@@ -1809,6 +1831,8 @@ export interface TenantSettings {
   /** Background color for public-facing pages (hex, e.g. #1E22AA for RAL5002 Azul). */
   public_google_review_url?: string | null;
   public_background_color?: string | null;
+  /** Primary CTA / button colour on public pages (hex). */
+  public_primary_color?: string | null;
   /** Reservation options (pre-payment, policies, reminders) */
   reservation_prepayment_cents?: number | null;
   reservation_prepayment_text?: string | null;
@@ -2207,20 +2231,45 @@ export class ApiService {
     );
   }
 
-  getOtpStatus(): Observable<{ otp_enabled: boolean }> {
-    return this.http.get<{ otp_enabled: boolean }>(`${this.apiUrl}/users/me/otp/status`);
+  getOtpStatus(): Observable<{ otp_enabled: boolean; recovery_codes_remaining: number }> {
+    return this.http.get<{ otp_enabled: boolean; recovery_codes_remaining: number }>(
+      `${this.apiUrl}/users/me/otp/status`,
+    );
   }
 
   setupOtp(): Observable<{ secret: string; provisioning_uri: string }> {
     return this.http.post<{ secret: string; provisioning_uri: string }>(`${this.apiUrl}/users/me/otp/setup`, {});
   }
 
-  confirmOtp(code: string): Observable<{ status: string; otp_enabled: boolean }> {
-    return this.http.post<{ status: string; otp_enabled: boolean }>(`${this.apiUrl}/users/me/otp/confirm`, { code });
+  confirmOtp(code: string): Observable<{
+    status: string;
+    otp_enabled: boolean;
+    recovery_codes: string[];
+  }> {
+    return this.http.post<{ status: string; otp_enabled: boolean; recovery_codes: string[] }>(
+      `${this.apiUrl}/users/me/otp/confirm`,
+      { code },
+    );
   }
 
-  disableOtp(code: string): Observable<{ status: string; otp_enabled: boolean }> {
-    return this.http.post<{ status: string; otp_enabled: boolean }>(`${this.apiUrl}/users/me/otp/disable`, { code });
+  /** Replace recovery codes after password re-entry (#400). Plaintext returned once. */
+  regenerateOtpRecoveryCodes(password: string): Observable<{
+    status: string;
+    recovery_codes: string[];
+    recovery_codes_remaining: number;
+  }> {
+    return this.http.post<{
+      status: string;
+      recovery_codes: string[];
+      recovery_codes_remaining: number;
+    }>(`${this.apiUrl}/users/me/otp/recovery-codes/regenerate`, { password });
+  }
+
+  /** Disable OTP with account password re-entry (logged-in session; #401). */
+  disableOtp(password: string): Observable<{ status: string; otp_enabled: boolean }> {
+    return this.http.post<{ status: string; otp_enabled: boolean }>(`${this.apiUrl}/users/me/otp/disable`, {
+      password,
+    });
   }
 
   registerProvider(data: ProviderRegisterData): Observable<RegisterResponse> {
@@ -3336,7 +3385,9 @@ export class ApiService {
   }
 
   submitOrder(tableToken: string, order: OrderCreate): Observable<any> {
-    return this.http.post(`${this.apiUrl}/menu/${tableToken}/order`, order);
+    return this.http.post(`${this.apiUrl}/menu/${tableToken}/order`, order, {
+      withCredentials: true,
+    });
   }
 
   getCurrentOrder(tableToken: string, sessionId?: string): Observable<any> {
@@ -3389,9 +3440,15 @@ export class ApiService {
     );
   }
 
-  getOrderHistory(tableToken: string, limit = 10): Observable<OrderHistoryItem[]> {
+  getOrderHistory(
+    tableToken: string,
+    sessionId: string,
+    limit = 10,
+  ): Observable<OrderHistoryItem[]> {
+    const params = new HttpParams().set('limit', String(limit)).set('session_id', sessionId);
     return this.http.get<OrderHistoryItem[]>(`${this.apiUrl}/menu/${tableToken}/order-history`, {
-      params: { limit }
+      params,
+      withCredentials: true,
     });
   }
 
@@ -3790,19 +3847,22 @@ export class ApiService {
     );
   }
 
-  getPublicTenant(tenantId: number): Observable<TenantSummary> {
-    return this.http.get<TenantSummary>(`${this.apiUrl}/public/tenants/${tenantId}`);
+  getPublicTenant(tenantRef: number | string): Observable<TenantSummary> {
+    return this.http.get<TenantSummary>(`${this.apiUrl}/public/tenants/${tenantRef}`);
   }
 
   /** Read-only grouped menu for a tenant (public marketing / QR menu page). */
-  getPublicTenantMenu(tenantId: number, lang?: string | null): Observable<PublicTenantMenuResponse> {
+  getPublicTenantMenu(
+    tenantRef: number | string,
+    lang?: string | null,
+  ): Observable<PublicTenantMenuResponse> {
     let params = new HttpParams();
     const resolvedLang = (lang ?? this.language.getLanguage()).trim();
     if (resolvedLang) {
       params = params.set('lang', resolvedLang);
     }
     return this.http.get<PublicTenantMenuResponse>(
-      `${this.apiUrl}/public/tenants/${tenantId}/menu`,
+      `${this.apiUrl}/public/tenants/${tenantRef}/menu`,
       { params },
     );
   }
@@ -3854,6 +3914,26 @@ export class ApiService {
       apple_pkpass_path?: string;
       google_save_url?: string;
     }>(`${this.apiUrl}/public/tenants/${tenantId}/loyalty/join`, body);
+  }
+
+  /** Find existing membership by email or phone and return card token (#372). */
+  recoverPublicLoyalty(
+    tenantId: number,
+    body: { email?: string; phone?: string },
+  ): Observable<{
+    ok: boolean;
+    membership: LoyaltyMembership;
+    wallet?: LoyaltyWalletStatus;
+    apple_pkpass_path?: string;
+    google_save_url?: string;
+  }> {
+    return this.http.post<{
+      ok: boolean;
+      membership: LoyaltyMembership;
+      wallet?: LoyaltyWalletStatus;
+      apple_pkpass_path?: string;
+      google_save_url?: string;
+    }>(`${this.apiUrl}/public/tenants/${tenantId}/loyalty/recover`, body);
   }
 
   getPublicLoyaltyApplePkpassUrl(memberToken: string): string {
@@ -3920,6 +4000,12 @@ export class ApiService {
     return this.http.get<LoyaltyMembership[]>(`${this.apiUrl}/loyalty/memberships`, {
       params,
     });
+  }
+
+  deleteLoyaltyMembership(membershipId: number): Observable<{ ok: boolean; id: number }> {
+    return this.http.delete<{ ok: boolean; id: number }>(
+      `${this.apiUrl}/loyalty/memberships/${membershipId}`,
+    );
   }
 
   redeemLoyaltyOnOrder(

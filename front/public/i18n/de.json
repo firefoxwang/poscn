@@ -126,7 +126,17 @@
     "GROUP_ADMIN": "Verwaltung",
     "CONTRACTS": "Verträge",
     "WAREHOUSES": "Lager",
-    "TALK": "Sprechen"
+    "TALK": "Sprechen",
+    "GROUP_CATALOG_TOGGLE": "Katalog & Inventar ein- oder ausklappen"
+  },
+  "PUBLIC_GUEST_NAV": {
+    "ARIA": "Restaurantseiten",
+    "MENU": "Speisekarte",
+    "BOOK": "Reservieren",
+    "WAITLIST": "Warteliste",
+    "DELIVERY": "Lieferung",
+    "LOYALTY": "Treueclub",
+    "FEEDBACK": "Feedback"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Personal-Navigation",
@@ -240,7 +250,8 @@
     "FEATURES_VIEW_ALL": "Alle Funktionen ansehen",
     "NAV_PRICING": "Preise",
     "NAV_ABOUT": "Über uns",
-    "COMPANY_OPERATOR": "Betrieben von Amvara Consulting S.L."
+    "COMPANY_OPERATOR": "Betrieben von Amvara Consulting S.L.",
+    "USER_MANUAL": "Benutzerhandbuch"
   },
   "PUBLIC_MENU": {
     "PAGE_TITLE": "Speisekarte",
@@ -305,7 +316,8 @@
     "OUTSIDE_RADIUS": "Dieser Standort liegt außerhalb unseres Lieferadius.",
     "DELIVERY_FEE": "Liefergebühr",
     "SUBTOTAL": "Zwischensumme",
-    "TRACK_ORDER": "Bestellung verfolgen"
+    "TRACK_ORDER": "Bestellung verfolgen",
+    "FLOATING_BAR_ARIA": "Bestellsumme und weiter"
   },
   "ORDERS_PUBLIC": {
     "TITLE": "Mitnahme & Lieferservice",
@@ -424,7 +436,11 @@
     "ADDRESS": "Adresse",
     "WEBSITE": "Website",
     "TENANT_NOT_FOUND": "Mandant nicht gefunden.",
-    "LOAD_FAILED": "Plattformdaten konnten nicht geladen werden. Bitte erneut anmelden."
+    "LOAD_FAILED": "Plattformdaten konnten nicht geladen werden. Bitte erneut anmelden.",
+    "COL_OWNER_LOGINS": "Owner-Logins",
+    "COL_OWNER_LAST_LOGIN": "Owner letzter Login",
+    "COL_LOGIN_COUNT": "Logins",
+    "COL_LAST_LOGIN": "Letzter Login"
   },
   "COURIER_HOME": {
     "TITLE": "Lieferungen",
@@ -511,9 +527,9 @@
     "HIDE_PASSWORD": "Passwort verbergen",
     "ORGANIZATION_PLACEHOLDER": "Name Ihres Restaurants",
     "NAME_PLACEHOLDER": "Max Mustermann",
-    "OTP_ENTER_CODE": "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein",
+    "OTP_ENTER_CODE": "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App oder einen Wiederherstellungscode ein",
     "OTP_CODE": "Authentifizierungscode",
-    "OTP_CODE_PLACEHOLDER": "000000",
+    "OTP_CODE_PLACEHOLDER": "000000 oder XXXX-XXXX",
     "VERIFY_OTP": "Bestätigen",
     "VERIFYING": "Wird überprüft…",
     "BACK": "Zurück",
@@ -560,7 +576,8 @@
     "SIGNUP_COMPLETE_LEAD": "Teilen Sie diesen QR-Code, damit Gäste Ihr Menü sehen und bestellen können.",
     "SIGNUP_GO_DASHBOARD": "Personal-Dashboard öffnen",
     "SIGNUP_CONTINUE_PAYWALL": "Weiter zu den Plänen",
-    "LOGOUT": "Abmelden"
+    "LOGOUT": "Abmelden",
+    "OTP_RECOVERY_HINT": "Handy verloren? Nutzen Sie einen unbenutzten Wiederherstellungscode. Jeder Wiederherstellungscode funktioniert nur einmal."
   },
   "MENU": {
     "TITLE": "Speisekarte",
@@ -611,7 +628,8 @@
     "SHARED_CART_HINT": "Gemeinsamer Tisch-Warenkorb — alle am Tisch sehen diese Artikel. Bestellen sendet nur Ihre Artikel.",
     "ADDED_BY": "Hinzugefügt von {{name}}",
     "ADDED_BY_GUEST": "Von einem anderen Gast hinzugefügt",
-    "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen."
+    "PLACE_OWN_ITEMS_ONLY": "Fügen Sie eigene Artikel hinzu, bevor Sie bestellen. Artikel anderer Gäste bleiben im gemeinsamen Warenkorb, bis sie bestellen.",
+    "STOCK_ONLY_LEFT": "Nur noch {{count}} übrig"
   },
   "PRODUCTS": {
     "TITLE": "Produkte",
@@ -813,7 +831,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Pflicht: name. Preis über price oder price_cents. Optional: cost, category, subcategory, description, ingredients. Übliche Aliase (producto, precio, …) werden akzeptiert. Unbekannte Spalten werden abgelehnt, außer KI-Zuordnung ist aktiv.",
     "BULK_IMPORT_CSV_AI_MAPPING": "KI zur Zuordnung unbekannter Spaltenköpfe nutzen (sendet Kopfzeilen und einige Beispielzeilen an die Vision-API; Vorschau vor dem Speichern prüfen)",
-    "BULK_IMPORT_CSV_EMPTY": "Bitte zuerst CSV einfügen oder hochladen."
+    "BULK_IMPORT_CSV_EMPTY": "Bitte zuerst CSV einfügen oder hochladen.",
+    "STOCK_ALERT_ENABLED": "Bestandswarnung aktivieren",
+    "STOCK_ALERT_HINT": "Warnen, wenn der verkaufbare Bestand die Warnschwelle erreicht oder unterschreitet. Am Produkt gepflegt, nicht an Inventar-Zutaten.",
+    "STOCK_QTY": "Aktueller Bestand",
+    "STOCK_ALERT_LEVEL": "Warnen ab / unter",
+    "STOCK_HEADER": "Bestand",
+    "STOCK_LOW": "Niedrig",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Bestand {{qty}} (Warnung bei {{level}})"
   },
   "CATALOG": {
     "TITLE": "Produktkatalog",
@@ -1109,6 +1135,7 @@
     "DEFAULT_TABLE_NAME": "Tisch {{number}}",
     "DRAG_HINT": "Auf die Leinwand ziehen",
     "ACTIVE": "Aktiv",
+    "ACTIVE_SESSION_META": "Aktiv für {{duration}} · seit {{time}}",
     "INACTIVE": "Inaktiv",
     "ACTIVATE": "Aktivieren",
     "CLOSE_TABLE": "Tisch schließen",
@@ -1640,6 +1667,7 @@
   },
   "SETTINGS": {
     "TITLE": "Einstellungen",
+    "SECTION_NAV_ARIA": "Einstellungsbereiche",
     "SUBTITLE": "Verwalten Sie Ihre Geschäftsinformationen und Ihr Branding",
     "NAVIGATION_UI_TAB": "Navigation",
     "UI_MODULES_TITLE": "Personal-Navigation",
@@ -1684,8 +1712,9 @@
     "DESCRIPTION": "Beschreibung",
     "DESCRIPTION_PLACEHOLDER": "Eine kurze Beschreibung Ihres Unternehmens...",
     "PUBLIC_BACKGROUND_COLOR": "Hintergrundfarbe der öffentlichen Seiten",
-    "PUBLIC_BACKGROUND_COLOR_HINT": "Hintergrundfarbe für Buchungs-, Menü- und Reservierungsseiten. Hex verwenden (z. B. #1E22AA) oder die Vorgabe.",
-    "PRESET_RAL5002": "RAL5002 (Azul)",
+    "PUBLIC_BACKGROUND_COLOR_HINT": "Hintergrundfarbe für Buchungs-, Menü- und Reservierungsseiten. Hex eingeben, Farbwähler nutzen oder optional RAL5002 anwenden. Die Vorgabe ändert den Wert nur beim Klick und sperrt das Feld nicht.",
+    "PRESET_RAL5002": "RAL5002 anwenden (#1E22AA)",
+    "PRESET_RAL5002_TITLE": "Optionale Vorgabe: öffentlicher Hintergrund mit RAL5002 Azul (#1E22AA). Sperrt das Feld nicht.",
     "TIMEZONE": "Zeitzone",
     "SEARCH_TIMEZONE": "Zeitzone suchen...",
     "TIMEZONE_NOT_SET": "Keine Zeitzone konfiguriert. UTC wird für die Reservierungszeitvalidierung verwendet.",
@@ -1778,6 +1807,8 @@
     "RESTAURANT_GROUP_THIS_LOCATION": "Dieser Standort",
     "RESTAURANT_GROUP_LEAVE": "Gruppe verlassen",
     "DELIVERY_INTEGRATIONS_TAB": "Integrationen",
+    "DELIVERY_TAB": "Lieferung",
+    "DELIVERY_SECTION_SUBTITLE": "Erste-Party Satisfecho Delivery und Marketplace-Integrationen konfigurieren.",
     "DELIVERY_INTEGRATIONS_TITLE": "Lieferplattform-Integrationen",
     "DELIVERY_INTEGRATIONS_SUBTITLE": "Drittanbieter-Lieferdienste anbinden. Zugangsdaten bleiben auf dem Server. Externe Artikel den POS-Produkten zuordnen; eingehende Bestellungen laufen über denselben Küchen-/Order-Flow.",
     "DELIVERY_INTEGRATIONS_EXPAND": "Einrichten",
@@ -1943,7 +1974,7 @@
     "STAFF_KITCHEN": "Küche",
     "STAFF_RECEPTIONIST": "Empfang",
     "PAYMENT_SETTINGS": "Zahlungseinstellungen",
-    "PAYMENT_SETTINGS_SUBTITLE": "Zahlungsmethoden konfigurieren",
+    "PAYMENT_SETTINGS_SUBTITLE": "Währung, Zahlungsanbieter, Fiskaloptionen und Trinkgeld konfigurieren.",
     "CURRENCY": "Währung",
     "SELECT_CURRENCY": "Währung auswählen",
     "CURRENCY_HINT": "ISO-4217-Code für Preise (Produkte, Menü, Bestellungen, Berichte). Verwenden Sie den Code, den Ihr Zahlungsanbieter erwartet (z. B. EUR, USD, MXN).",
@@ -2011,9 +2042,10 @@
     "OTP_ENABLE": "OTP aktivieren",
     "OTP_CONFIRMING": "Wird überprüft…",
     "OTP_ENABLED": "Zwei-Faktor-Authentifizierung (OTP) ist aktiviert. Beim Anmelden müssen Sie einen Code aus Ihrer Authenticator-App eingeben.",
-    "OTP_DISABLE_ENTER_CODE": "Geben Sie Ihren aktuellen OTP-Code ein, um zu deaktivieren",
     "OTP_DISABLE": "OTP deaktivieren",
     "OTP_DISABLING": "Wird deaktiviert…",
+    "OTP_SECRET_COPIED": "Kopiert",
+    "OTP_SECRET_COPY_FAILED": "Schlüssel konnte nicht kopiert werden. Markieren und manuell kopieren, oder Zwischenablage erlauben.",
     "STRIPE_KEYS": "Stripe-Schlüssel",
     "LOCATION_VERIFICATION": "Standortüberprüfung",
     "LOCATION_VERIFICATION_DESC": "Legen Sie unten Koordinaten und Radius des Restaurantstandorts fest. Derselbe Punkt markiert Bestellungen außerhalb des Bereichs und dient bei aktivierter Mitarbeiter-Stempeluhr-QR auch zur GPS-Prüfung beim Stempeln.",
@@ -2093,6 +2125,7 @@
     "EMAIL_FROM": "Absender-E-Mail-Adresse",
     "EMAIL_FROM_NAME": "Absendername",
     "EMAIL_FROM_PLACEHOLDER": "z. B. Name Ihres Restaurants",
+    "EMAIL_FROM_NAME_HINT": "Leer lassen, um den Geschäftsnamen als Absendername zu verwenden.",
     "RESERVATION_CONFIRMATION_EMAIL_TITLE": "E-Mail zur Reservierungsbestätigung",
     "RESERVATION_CONFIRMATION_EMAIL_DESC": "E-Mail als Klartext verfassen. Werte einfügen, indem Sie einen erlaubten Namen in doppelte geschweifte Klammern setzen (z. B. customer_name). Nur diese Namen werden ersetzt — kein Code oder Skripte. Leer lassen für die integrierte Standardvorlage.",
     "RESERVATION_CONFIRMATION_SUBJECT": "E-Mail-Betreff",
@@ -2103,6 +2136,7 @@
     "LOYALTY_TAB": "Treueclub",
     "LOYALTY_TITLE": "Treueclub",
     "LOYALTY_SUBTITLE": "Punkte oder Stempel bei bezahlten Bestellungen. Gäste treten über einen öffentlichen Link bei; Personal löst an der Kasse ein.",
+    "LOYALTY_DOCS_LINK": "Club-Loyalty-Runbook (docs/0066)",
     "LOYALTY_ENABLED": "Treueprogramm aktivieren",
     "LOYALTY_PROGRAM_NAME": "Programmname",
     "LOYALTY_MODE": "Modus",
@@ -2170,7 +2204,8 @@
     "PRINTING_REVOKED": "Widerrufen",
     "PRINTING_REVOKE": "Widerrufen",
     "PRINTING_REFRESH": "Aktualisieren",
-    "PRINTING_DOCS_HINT": "Anleitung: docs/0070-hardware-printing.md — python3 scripts/print-agent/print_agent.py",
+    "PRINTING_DOCS_LINK": "Hardware-Druck-Runbook (docs/0070)",
+    "PRINTING_AGENT_CMD_HINT": "LAN-Agent: python3 scripts/print-agent/print_agent.py",
     "TSE_TITLE": "Deutsche TSE (KassenSichV-Vorbereitung)",
     "TSE_DESC": "Getrennt von VeriFactu (Spanien). Im Testmodus erhalten bezahlte Bestellungen eine lokale Stub-TSE-Signatur; Belege zeigen Seriennummer, Zähler, Zeit und QR. Live bleibt gesperrt, bis TSE_LIVE_UNLOCK und eine Provider-URL gesetzt sind.",
     "FISCAL_COUNTRY": "Fiscal-Länderhinweis",
@@ -2209,7 +2244,41 @@
     "LOYALTY_MEMBERS_EMPTY_HINT": "Teilen Sie die öffentliche Beitritts-URL, damit Gäste sich anmelden können.",
     "LOYALTY_REFERRAL_INVITEE_HINT": "Einheiten für das neue Mitglied, das mit gültigem Empfehlungscode beitritt (0 = aus).",
     "LOYALTY_WALLET_ENABLED": "Apple-/Google-Wallet-Pässe anbieten",
-    "LOYALTY_WALLET_ENABLED_HINT": "Wenn Plattform-Zertifikate konfiguriert sind, können Mitglieder beim Beitritt einen Wallet-Pass hinzufügen. Deaktivieren für nur Guthaben-Link."
+    "LOYALTY_WALLET_ENABLED_HINT": "Wenn Plattform-Zertifikate konfiguriert sind, können Mitglieder beim Beitritt einen Wallet-Pass hinzufügen. Deaktivieren für nur Guthaben-Link.",
+    "OTP_DISABLE_ENTER_PASSWORD": "Geben Sie Ihr Kontopasswort ein, um die Zwei-Faktor-Authentifizierung zu deaktivieren",
+    "OTP_DISABLE_FAILED": "Zwei-Faktor-Authentifizierung konnte nicht deaktiviert werden. Prüfen Sie Ihr Passwort und versuchen Sie es erneut.",
+    "OTP_RECOVERY_TITLE": "Wiederherstellungscodes speichern",
+    "OTP_RECOVERY_HINT": "Bewahren Sie diese Codes sicher auf. Jeder Code kann einmal verwendet werden, wenn Sie den Zugang zur Authenticator-App verlieren. Sie werden nur jetzt angezeigt.",
+    "OTP_RECOVERY_SAVED_CONFIRM": "Ich habe diese Wiederherstellungscodes sicher gespeichert",
+    "OTP_RECOVERY_CONTINUE": "Weiter",
+    "OTP_RECOVERY_COPY_ALL": "Alle kopieren",
+    "OTP_RECOVERY_DOWNLOAD": "Herunterladen",
+    "OTP_RECOVERY_COPIED": "Kopiert",
+    "OTP_RECOVERY_REMAINING": "Unbenutzte Wiederherstellungscodes: {{count}}",
+    "OTP_RECOVERY_REGENERATE": "Neue Wiederherstellungscodes erzeugen",
+    "OTP_RECOVERY_REGENERATING": "Erzeugen…",
+    "OTP_RECOVERY_REGENERATE_PASSWORD": "Geben Sie Ihr Kontopasswort ein, um neue Wiederherstellungscodes zu erzeugen (ungültig macht unbenutzte)",
+    "OTP_RECOVERY_REGENERATE_FAILED": "Wiederherstellungscodes konnten nicht erzeugt werden. Prüfen Sie Ihr Passwort und versuchen Sie es erneut.",
+    "PUBLIC_PRIMARY_COLOR": "Öffentliche Primärfarbe der Schaltflächen",
+    "PUBLIC_PRIMARY_COLOR_HINT": "Farbe für Hauptaktionen (Tisch buchen, Absenden usw.) auf öffentlichen Seiten. Leer = Blau. Hintergrundfarbe bleibt getrennt.",
+    "PRESET_PRIMARY_BLUE": "Blau (Standard)",
+    "PRESET_PRIMARY_GREEN": "Grün",
+    "LOYALTY_MEMBERS_SEARCH": "Mitglied suchen",
+    "LOYALTY_MEMBERS_SEARCH_HINT": "Nach Name, E-Mail oder Telefon suchen",
+    "LOYALTY_MEMBERS_SEARCH_EMPTY": "Keine Mitglieder passen zu dieser Suche.",
+    "LOYALTY_CARD_LINK": "Kartenlink",
+    "LOYALTY_COPY_CARD": "Kartenlink kopieren",
+    "LOYALTY_COPIED": "Kopiert",
+    "LOYALTY_CONFIRM_DELETE_MEMBER": "Loyalty-Mitglied {{name}} löschen? Dies kann nicht rückgängig gemacht werden.",
+    "SERVICE_LABEL": "Service-Bezeichnung",
+    "SERVICE_LABEL_PLACEHOLDER": "z. B. Frühstück (optional)",
+    "MORNING_LABEL": "Bezeichnung Vormittag",
+    "MORNING_LABEL_PLACEHOLDER": "Mittagessen / Frühstück",
+    "EVENING_LABEL": "Bezeichnung Abend",
+    "EVENING_LABEL_PLACEHOLDER": "Abendessen",
+    "CITY": "Stadt",
+    "PUBLIC_SLUG": "Öffentlicher Menü-URL-Slug",
+    "PUBLIC_SLUG_HINT": "Für /public-menu/{slug} und /{slug}/book (Name-Stadt). Buchstaben, Zahlen, Bindestriche. Leer lassen für Auto aus Name und Stadt."
   },
   "PAYMENTS": {
     "PAYMENT": "Zahlung",
@@ -2612,7 +2681,8 @@
       "BARTENDER": "Barkeeper",
       "WAITER": "Kellner",
       "RECEPTIONIST": "Empfangsmitarbeiter",
-      "COURIER": "Kurier"
+      "COURIER": "Kurier",
+      "PLATFORM_OPERATOR": "Plattform-Betreiber"
     }
   },
   "TRANSLATIONS": {
@@ -2775,7 +2845,16 @@
   "PRICING_PAGE": {
     "BADGE": "Einfache Hosted-Preise",
     "TITLE": "Kostenlos testen, dann ein flacher Monatspreis",
-    "SUBTITLE": "Hosted Satisfecho enthält eine kostenlose Testphase ohne Karte. Self-Hosting unter AGPLv3 ohne Lizenzkosten, wenn Sie selbst betreiben möchten.",
+    "SUBTITLE": "Starten Sie mit einem QR-Menü — für immer kostenlos. Hosted Satisfecho bietet eine kostenlose Testphase ohne Karte für die volle Plattform. Self-Hosting unter AGPLv3 ohne Lizenzkosten, wenn Sie selbst betreiben möchten.",
+    "QR_CALLOUT": "QR-Menü ist für immer kostenlos — starten Sie ohne Kosten",
+    "QR_NAME": "QR-Menü",
+    "QR_LEDE": "Digitales Menü und Tischbestellung für Gäste — keine App nötig.",
+    "QR_PRICE": "Kostenlos",
+    "QR_FOREVER": "Für immer kostenlos",
+    "QR_INCLUDES_1": "Mobiles Menü per QR-Code am Tisch",
+    "QR_INCLUDES_2": "Gerichte einmal aktualisieren — jeder QR zeigt das aktuelle Menü",
+    "QR_INCLUDES_3": "Küche, Berichte und mehr hinzufügen, wenn Sie bereit sind",
+    "CTA_QR": "QR-Menü erstellen",
     "HOSTED_NAME": "Hosted",
     "HOSTED_LEDE": "Verwaltetes Satisfecho für Ihr Restaurant — wir betreiben die Plattform.",
     "PER_MONTH": "/ Monat",
@@ -2793,6 +2872,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "AGPLv3 Open Source — keine Hosted-Gebühr",
     "CTA_GITHUB": "Auf GitHub ansehen",
+    "SUPPORT_NAME": "Professioneller Support",
+    "SUPPORT_HEADLINE": "Wir unterstützen Sie!",
+    "SUPPORT_LEDE": "Optionale Hilfe unseres Teams — Einrichtung, Schulung und Fehlerbehebung.",
+    "SUPPORT_PRICE": "50 €/h + MwSt.",
+    "SUPPORT_NOTE": "Abrechnung nach Stunde. Kontaktieren Sie uns für Ihre Anforderungen.",
+    "CTA_SUPPORT": "Kontakt",
     "LOAD_ERROR": "Preise konnten nicht geladen werden. Bitte später erneut versuchen."
   },
   "WAITLIST": {
@@ -2870,6 +2955,9 @@
   "LOYALTY_PUBLIC": {
     "TITLE": "Treueclub",
     "INVALID_TENANT": "Ungültiger Restaurant-Link.",
+    "NEED_LINK": "Diese Seite braucht einen Restaurant-Treueclub-Link.",
+    "NEED_LINK_HINT": "Fragen Sie das Restaurant nach der Beitritts-URL (zum Beispiel /loyalty/1). Die Pfadangabe /loyalty allein ist keine Beitrittsseite.",
+    "BACK_HOME": "Zur Startseite",
     "NOT_ENABLED": "Dieses Restaurant hat noch keinen Treueclub aktiviert.",
     "LEDE": "Verdiene {{earn}} {{mode}} pro bezahltem Besuch. Einlösen ab {{threshold}}.",
     "NAME": "Dein Name",
@@ -2888,7 +2976,19 @@
     "REFERRAL_CODE": "Empfehlungscode (optional)",
     "REFERRAL_SHARE": "Teile diesen Link, damit Freunde mit deiner Empfehlung beitreten:",
     "ADD_APPLE_WALLET": "Zu Apple Wallet hinzufügen",
-    "ADD_GOOGLE_WALLET": "Zu Google Wallet hinzufügen"
+    "ADD_GOOGLE_WALLET": "Zu Google Wallet hinzufügen",
+    "ALREADY_MEMBER": "Schon Mitglied?",
+    "RECOVER_HINT": "Gib die E-Mail oder Telefonnummer ein, mit der du beigetreten bist, um deine Karte wieder zu öffnen.",
+    "FIND_CARD": "Meine Karte finden",
+    "FINDING": "Suche…",
+    "FOUND": "Wir haben deine Mitgliedschaft gefunden.",
+    "NOT_FOUND": "Keine Mitgliedschaft für diese E-Mail oder Telefonnummer gefunden.",
+    "OPEN_CARD": "Meine Karte öffnen",
+    "CTA_NAV_ARIA": "Nächste Schritte",
+    "CTA_HEADING": "Weiter zum Restaurant",
+    "CTA_MENU": "Speisekarte ansehen",
+    "CTA_BOOK": "Tisch reservieren",
+    "CTA_DELIVERY": "Lieferung bestellen"
   },
   "ABOUT_PAGE": {
     "BADGE": "Unternehmen",
@@ -2901,7 +3001,9 @@
     "OPEN_SOURCE_TITLE": "Open Source",
     "OPEN_SOURCE_BODY": "Das Produkt wird offen entwickelt. Sie können den Code einsehen, unter AGPLv3 selbst hosten oder den Managed Service auf satisfecho.de nutzen.",
     "CONTACT_TITLE": "Kontakt",
-    "CONTACT_BODY": "Fragen zur Plattform oder zum Hosted Service:"
+    "CONTACT_BODY": "Fragen zur Plattform oder zum Hosted Service:",
+    "MANUAL_TITLE": "Benutzerhandbuch",
+    "MANUAL_BODY": "Schritt-für-Schritt-Anleitungen für Einrichtung, Tagesgeschäft, Reservierungen, Inventar und mehr."
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",
@@ -3276,5 +3378,30 @@
         "HOW_3": "Oder für gehostetes Satisfecho mit verwalteten Updates registrieren."
       }
     }
+  },
+  "USER_MANUAL_PAGE": {
+    "LOADING": "Benutzerhandbuch wird geladen…",
+    "LOAD_ERROR": "Das Benutzerhandbuch konnte nicht geladen werden. Seite aktualisieren oder später erneut versuchen.",
+    "DOC_TITLE": "Benutzerhandbuch | Satisfecho POS"
+  },
+  "CATALOG_INVENTORY_HUB": {
+    "TITLE": "Katalog & Inventar",
+    "INTRO": "Produkte, Anbieterkatalog und Inventar-Tools von hier aus öffnen.",
+    "PRODUCTS_TITLE": "Produkte",
+    "PRODUCTS_DESC": "Menüartikel verwalten",
+    "CATALOG_TITLE": "Katalog",
+    "CATALOG_DESC": "Anbieterkatalog und Menüartikel",
+    "ITEMS_TITLE": "Artikel",
+    "ITEMS_DESC": "Lagerartikel und Einheiten",
+    "SUPPLIERS_TITLE": "Lieferanten",
+    "SUPPLIERS_DESC": "Lieferantenkontakte für Einkauf",
+    "WAREHOUSES_TITLE": "Lager",
+    "WAREHOUSES_DESC": "Lagerorte",
+    "PURCHASE_ORDERS_TITLE": "Bestellungen",
+    "PURCHASE_ORDERS_DESC": "Ware bestellen und empfangen",
+    "STOCK_TITLE": "Bestandsübersicht",
+    "STOCK_DESC": "Bestände und Niedrigbestand-Warnungen",
+    "REPORTS_TITLE": "Inventarberichte",
+    "REPORTS_DESC": "Bewertung und Lagerbewegungen"
   }
 }

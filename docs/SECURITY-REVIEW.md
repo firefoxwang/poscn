@@ -23,7 +23,7 @@ flowchart LR
   RBAC --> DB
 ```
 
-- **Sessions:** Short-lived JWT in `HttpOnly` cookie `access_token`; refresh in `refresh_token` with separate `REFRESH_SECRET_KEY`. `PRODUCTION=true` sets `secure` cookies (`back/app/main.py`).
+- **Sessions:** Short-lived JWT in `HttpOnly` cookie `access_token`; refresh in `refresh_token` with separate `REFRESH_SECRET_KEY`. `PRODUCTION=true` sets `secure` cookies (`back/app/main.py`). Prod compose (`docker-compose.prod.yml`) sets `PRODUCTION=true` on **back** so amvara9 gets Secure cookies without relying on `config.env`.
 - **Revocation:** `User.token_version` must match JWT claim (`back/app/security.py`).
 - **RBAC:** `require_permission` / `require_role` on mutating routes (`back/app/permissions.py`).
 
@@ -42,6 +42,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 
 - **`/uploads/providers/{token}/...`:** Non-`products` paths could still be served by `StaticFiles` if files were placed there. Provider `token` is a UUID (`models.Provider`). Prefer keeping only `products/` under each token directory.
 - **Path traversal:** Filename parameters on explicit routes reject `/`, `\`, and leading `.`. Rely on Starlette `StaticFiles` path normalization for the mount (avoid placing symlinks under `uploads/` in production).
+- **Tenant logo SVG (#419):** `POST /tenant/logo` still allows `image/svg+xml`, but uploads go through allowlist sanitize (`app/svg_sanitize.py`) and script / event-handler / `javascript:` markup is rejected. Explicit `/uploads/.../logo|header|products` responses set `X-Content-Type-Options: nosniff`; SVG responses also use `Content-Disposition: attachment` and a restrictive CSP. Front embeds logos with `<img>` (not object/iframe). Regression: `back/tests/test_tenant_logo_svg.py`.
 
 ## 2. Authentication and session security
 
@@ -53,7 +54,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 | `/users/me` | Uses `get_current_user_optional` — returns `null` for anonymous (no credential leak). |
 | `/ws-token` | Returns bearer token for WebSocket upgrade; same-origin + CORS limits cross-site reads of the response body. |
 | Password reset | Raw token hashed (SHA-256) in DB; generic API messages to reduce enumeration; rate limits on reset endpoints (`back/app/main.py`). |
-| OTP | `otp_pending` JWT type; TOTP verify with window 1. |
+| OTP | `otp_pending` JWT type; TOTP verify with window 1. **Recovery codes (#400):** 8 single-use codes (`XXXX-XXXX`); SHA-256 hashes in `user_otp_recovery_code`; plaintext returned once on enable/regenerate; accepted on `POST /token/otp` as alternative to TOTP; do not log full codes. |
 | Refresh token | **No rotation:** same refresh JWT valid until expiry; compromise window is `REFRESH_TOKEN_EXPIRE_DAYS`. Consider refresh rotation + reuse detection for higher assurance. |
 
 ## 3. Multi-tenant IDOR (sampled)
@@ -69,7 +70,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 | Area | Notes |
 |------|--------|
 | Table PIN / menu | Documented in `docs/0009-table-pin-security.md`. Table token is unique; PIN is 4-digit — rate-limit menu/order endpoints in production (`RATE_LIMIT_*`). |
-| Guest payments (Stripe / Revolut) | **Still no inbound Stripe/Revolut payment webhooks** in-repo. Confirmation uses `PaymentIntent.retrieve` / Revolut API with **tenant-scoped secret** (platform keys as optional fallback) and checks metadata amount/order (`main.py`). Guest pay endpoints require **exactly one** of `table_token` or `public_order_token` + matching `order_id`. |
+| Guest payments (Stripe / Revolut) | **Still no inbound Stripe/Revolut payment webhooks** in-repo. Confirmation uses `PaymentIntent.retrieve` / Revolut API with **tenant-scoped secret** (platform keys as optional fallback) and checks metadata amount/order (`main.py`). Read PaymentIntent metadata via `_stripe_metadata_get` (stripe-python 16+ `StripeObject` has no `.get` — #427). Guest pay endpoints require **exactly one** of `table_token` or `public_order_token` + matching `order_id`. |
 | Public waiting list | **Create:** `POST /public/tenants/{tenant_id}/waiting-list` — unauthenticated; tenant-scoped. Accepts guest **PII** (name, E.164 phone) + party size; stores client IP/UA on the entry. **Rate-limited** separately: `RATE_LIMIT_WAITING_LIST_PER_HOUR` (default **10/hour/IP**) — see `docs/0020-rate-limiting-production.md`. No public token / status page (staff contact the guest; staff APIs use `reservation:read` / `reservation:write`). Feature guide: `docs/0011-table-reservation-user-guide.md`. |
 | Public Satisfecho Delivery | **Create:** `POST /public/tenants/{tenant_id}/satisfecho-delivery` — unauthenticated; **rate-limited** (`@public_menu_ip_limit`, same bucket as public menu — see `docs/0020-rate-limiting-production.md`). Requires address + E.164 phone. **Item IDs (#304):** each line `product_id` may be a tenant-scoped public-menu **`TenantProduct.id`** (resolved to the linked `Product` via `delivery_order_service`) or a legacy **`Product.id`**; both paths require `tenant_id` match — cross-tenant IDs must not resolve. On create, validates **postal and/or radius** coverage (`validate_delivery_coverage`); **delivery fee** is snapshotted on the order from tenant settings. Returns signed `public_order_token` (**24h** — pay + track) and payment hints (`stripe_publishable_key`, `revolut_configured` — publishable only). Kitchen/inventory notify is **deferred until payment succeeds**. **Config (no secrets):** `GET /public/tenants/{tenant_id}/satisfecho-delivery-config` — fee + coverage hints; same IP rate limit. **Track:** `GET /public/orders/{order_id}/delivery-status?public_order_token=` — token-gated coarse status only (no maps); same IP rate limit. Staff create (`POST /orders/satisfecho-delivery`) is authenticated and notifies immediately. Feature doc: `docs/0053-satisfecho-delivery-order-channel.md`. Tests: `back/tests/test_public_satisfecho_delivery.py` (incl. `test_public_create_accepts_tenant_product_menu_ids` for #304). |
 | Delivery marketplace webhooks | `POST /public/webhooks/delivery/{webhook_token}` — **inbound** marketplace ingest (not a payment webhook). Auth is the **per-integration URL token** (`webhook_ingest_token`); unknown token → 404. Resolves one `DeliveryMarketplaceIntegration` → that row’s `tenant_id` only (no cross-tenant create). Rate-limited with the public-menu IP bucket. Adapter parse is stub-oriented until provider signatures exist — treat token secrecy + TLS + rate limit as the current control plane. Event logs store summaries/keys, not raw secrets. |
@@ -78,6 +79,7 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 | SaaS signup paywall | Platform monetization of Satisfecho (not guest order Stripe). When `SAAS_PAYWALL_ENABLED=true`, middleware returns **402** `saas_subscription_required` for authenticated tenant staff on non-exempt paths (`back/app/saas_billing.py` / `saas_paywall_middleware` in `main.py`). Exempt prefixes include auth, `/saas/*`, `/onboarding/*`, `/products/*` (signup priming), `/users/me*`, `/public/*`, `/menu/*`, `/provider/*`, `/platform/*`, `/courier/*`. Checkout uses platform `STRIPE_SECRET_KEY` + optional `SAAS_STRIPE_PRICE_ID`. Entitlement: **`POST /saas/confirm-checkout`** (fast path) and **`POST /saas/webhook`** (signed with `SAAS_STRIPE_WEBHOOK_SECRET`) for `checkout.session.completed` / `customer.subscription.*`. Feature doc: `docs/0052-saas-signup-paywall.md`. Tests: `back/tests/test_saas_billing.py`. |
 | Rate limiting | `slowapi` + Redis; client IP from **first** `X-Forwarded-For` hop — **trust only when the edge proxy strips/spoof-proof headers** (see HAProxy config). Delivery create, **satisfecho-delivery-config**, **delivery-status**, and delivery webhooks share the public-menu IP bucket (track-page polling counts against the same budget). Public waiting-list create uses its own per-IP hour bucket (`RATE_LIMIT_WAITING_LIST_PER_HOUR`). |
 | Reservation delay notice | Extra Redis counter per IP + reservation id. |
+| API docs / OpenAPI (#422) | With `PRODUCTION=true`, FastAPI does **not** mount `/docs`, `/redoc`, or `/openapi.json` (anonymous → 404), so production does not publish the full API surface. Dev keeps docs for `test:api-docs`. Opt-in remount: `ENABLE_API_DOCS=true`. Prod HAProxy health uses `/health`, not `/docs`. Tests: `back/tests/test_api_docs_production.py`. |
 
 ### Residual risks (delivery / SaaS / courier)
 
@@ -97,11 +99,11 @@ The app mounted `StaticFiles` on `/uploads` over the entire `uploads/` tree. Sta
 
 ## 6. Secrets, config, logging
 
-- **Never commit** real `config.env`. Production must override `SECRET_KEY`, `REFRESH_SECRET_KEY`, DB password, payment secrets (`config.env.example` documents variables).
+- **Never commit** real `config.env`. Production must override `SECRET_KEY`, `REFRESH_SECRET_KEY`, DB password, payment secrets (`config.env.example` documents variables). When `PRODUCTION=true`, Settings **refuses to start** if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with `CHANGE_THIS` (covers example defaults and Settings field defaults). Dev/local may keep placeholders. Virgin deploy via `scripts/deploy-amvara9.sh` generates random keys. Tests: `back/tests/test_secret_key_production.py`.
 - **SaaS / platform Stripe:** `SAAS_PAYWALL_ENABLED`, `SAAS_TRIAL_DAYS`, `SAAS_PLAN_PRICE_CENTS`, `SAAS_PLAN_CURRENCY`, `SAAS_STRIPE_PRICE_ID`, `SAAS_STRIPE_WEBHOOK_SECRET`, plus platform `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` (documented in `config.env.example`). These are **platform** billing secrets — distinct from per-tenant guest payment keys stored on `Tenant`.
 - **Delivery webhook tokens:** Stored on `DeliveryMarketplaceIntegration.webhook_ingest_token`; treat like API keys (unique, rotatable). Do not put them in client-side marketing sites or commit them.
 - **Logging:** Avoid logging full request bodies, passwords, tokens, or Stripe/SaaS secrets; follow existing log patterns (delivery event logs already avoid raw secret dumps).
-- **Edge:** Terminate TLS at proxy; align `CORS_ORIGINS` with real front-end origins in production.
+- **Edge:** Terminate TLS at proxy; set `CORS_ORIGINS` to exact front-end origin(s) in production. When `PRODUCTION=true`, Settings **refuses to start** if `CORS_ORIGINS` is empty or contains `*` (credentialed CORS must use an allowlist; same-origin public menus do not need a wildcard). Dev may use `*` (e.g. `./run.sh` LAN). Tests: `back/tests/test_cors_origins_production.py`.
 
 ## 7. Dependencies (snapshot)
 
@@ -128,6 +130,8 @@ pip install pip-audit && pip-audit -r back/requirements.txt
 - `docs/0053-satisfecho-delivery-order-channel.md`
 - `docs/0054-restaurant-groups.md` (join codes + share flags)
 - `.cursor/rules/security-secrets-tenant.mdc`
+- `.cursor/rules/security-untrusted-input-no-exfiltration.mdc`
+- `docs/0077-agent-untrusted-github-input.md` (untrusted GitHub input; no host or credential details)
 - `AGENTS.md` (secrets, tenant boundaries)
 - `config.env.example` (`SAAS_*`, platform `STRIPE_*`)
 
@@ -135,6 +139,9 @@ pip install pip-audit && pip-audit -r back/requirements.txt
 
 | Date | Action |
 |------|--------|
+| 2026-10-05 | Reject placeholder `SECRET_KEY` / `REFRESH_SECRET_KEY` when `PRODUCTION=true` (#423); `test_secret_key_production.py`. |
+| 2026-10-05 | API docs hardening (#422): unmount `/docs` `/redoc` `/openapi.json` when `PRODUCTION=true` unless `ENABLE_API_DOCS`; `test_api_docs_production.py`. |
+| 2026-10-05 | Tenant logo SVG (#419): sanitize on upload; nosniff / attachment / CSP on SVG serve; `test_tenant_logo_svg.py`. |
 | 2026-03-26 | Blocked public `/uploads/.../contracts/...`; added tests; initial `SECURITY-REVIEW.md`. |
 | 2026-07-22 | Delta pass for Satisfecho Delivery public create + `public_order_token` pay, marketplace delivery webhooks, courier fulfillment IDOR, and SaaS paywall middleware / platform Checkout. Clarified: still **no** inbound Stripe/Revolut *payment* webhooks; delivery ingest webhooks exist. Linked regression tests and residual risks. **Not a penetration test.** |
 | 2026-07-22 | SaaS: added signed `POST /saas/webhook` (`SAAS_STRIPE_WEBHOOK_SECRET`) for subscription lifecycle sync; residual risk updated from “no webhook” to ops readiness. Guest payment webhooks still absent. |

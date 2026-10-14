@@ -31,15 +31,17 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Res
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel as _BaseModel, Field
-from sqlalchemy import event, or_
+from sqlalchemy import event, exists, or_
 from sqlalchemy.exc import IntegrityError, InvalidRequestError, OperationalError, StatementError
 from sqlmodel import Session, select
 
 from . import models, security
+from . import otp_recovery
 from .db import check_db_connection, create_db_and_tables, get_session, engine
 from .provider_images import (
     provider_product_image_url,
     provider_product_stored_image_path,
+    repair_product_image_filename,
 )
 from .settings import settings
 from .inventory_routes import router as inventory_router
@@ -95,6 +97,7 @@ from . import table_cart as table_cart_svc
 from .translation_service import TranslationService
 from .messages import get_message
 from .api_errors import api_error_payload
+from .svg_sanitize import SvgSanitizeError, sanitize_svg
 
 # Minimum advance booking for public (unauthenticated) reservations
 RESERVATION_PUBLIC_MIN_LEAD_MINUTES = 10
@@ -290,12 +293,17 @@ def _get_requested_language(
     return "en"
 
 
-# Backend always serves the spec at /openapi.json (HAProxy strips /api before forwarding).
+# Backend serves the spec at /openapi.json when docs are enabled (HAProxy strips /api).
 # When behind a proxy at ROOT_PATH=/api, Swagger UI must fetch the spec from /api/openapi.json
 # so the browser request goes through HAProxy correctly; we pass that via swagger_ui_parameters.
+# Production (is_production) disables /docs, /redoc, /openapi.json unless ENABLE_API_DOCS=true.
 _swagger_ui_params = {"faviconUrl": "/favicon.ico"}
 if settings.root_path:
     _swagger_ui_params["url"] = f"{settings.root_path.rstrip('/')}/openapi.json"
+_api_docs_enabled = settings.api_docs_enabled
+_docs_url = "/docs" if _api_docs_enabled else None
+_redoc_url = "/redoc" if _api_docs_enabled else None
+_openapi_url = "/openapi.json" if _api_docs_enabled else None
 
 
 @asynccontextmanager
@@ -359,21 +367,19 @@ async def _app_lifespan(app: FastAPI):
 
 app = FastAPI(
     title="POS API",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url=_docs_url,
+    redoc_url=_redoc_url,
+    openapi_url=_openapi_url,
     root_path=settings.root_path,
-    swagger_ui_parameters=_swagger_ui_params,
+    swagger_ui_parameters=_swagger_ui_params if _api_docs_enabled else None,
     lifespan=_app_lifespan,
 )
 
-# Parse CORS origins from environment (comma-separated)
+# Parse CORS origins from environment (comma-separated exact origins).
+# Production rejects '*' via Settings (#421); allow_credentials requires an allowlist.
 cors_origins_list = [
     origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
 ]
-# Add wildcard for public menu access if not already present
-# if "*" not in cors_origins_list:
-#     cors_origins_list.append("*")
 
 app.add_middleware(
     CORSMiddleware,
@@ -493,6 +499,20 @@ AVIF_QUALITY = 85  # AVIF quality (1-100)
 STATIC_DIR = Path(__file__).parent.parent
 STATIC_DIR.mkdir(exist_ok=True)
 
+def _uploads_media_headers(*, is_svg: bool, download_name: str = "file") -> dict[str, str]:
+    """Hardening for /uploads responses (#419): nosniff; SVG as attachment + restrictive CSP."""
+    headers = {"X-Content-Type-Options": "nosniff"}
+    if is_svg:
+        safe_name = Path(download_name).name or "file.svg"
+        if not safe_name.lower().endswith(".svg"):
+            safe_name = f"{safe_name}.svg"
+        headers["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+        headers["Content-Security-Policy"] = (
+            "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+        )
+    return headers
+
+
 # Serve tenant logos via explicit route so path resolution is reliable (StaticFiles 404 in some setups)
 @app.get("/uploads/{tenant_id}/logo/{filename}", include_in_schema=False)
 def serve_tenant_logo(tenant_id: int, filename: str):
@@ -502,8 +522,13 @@ def serve_tenant_logo(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "logo" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Logo not found")
-    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
-    return FileResponse(path, media_type=media_type)
+    is_svg = filename.lower().endswith(".svg")
+    media_type = "image/svg+xml" if is_svg else None
+    return FileResponse(
+        path,
+        media_type=media_type,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 @app.get("/uploads/{tenant_id}/header/{filename}", include_in_schema=False)
@@ -514,8 +539,13 @@ def serve_tenant_header_background(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "header" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Header image not found")
-    media_type = "image/svg+xml" if filename.lower().endswith(".svg") else None
-    return FileResponse(path, media_type=media_type)
+    is_svg = filename.lower().endswith(".svg")
+    media_type = "image/svg+xml" if is_svg else None
+    return FileResponse(
+        path,
+        media_type=media_type,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 # Serve provider product images via explicit route (StaticFiles often 404s on nested paths behind a proxy)
@@ -527,7 +557,11 @@ def serve_provider_product_image(provider_token: str, filename: str):
     path = UPLOADS_DIR / "providers" / provider_token / "products" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(path)
+    is_svg = filename.lower().endswith(".svg")
+    return FileResponse(
+        path,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 # Serve tenant product images (StaticFiles often 404s on nested paths behind a proxy)
@@ -539,7 +573,11 @@ def serve_tenant_product_image(tenant_id: int, filename: str):
     path = UPLOADS_DIR / str(tenant_id) / "products" / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(path)
+    is_svg = filename.lower().endswith(".svg")
+    return FileResponse(
+        path,
+        headers=_uploads_media_headers(is_svg=is_svg, download_name=filename),
+    )
 
 
 @app.get("/uploads/{tenant_id}/contracts/{filename}", include_in_schema=False)
@@ -833,8 +871,11 @@ class TenantSummary(_BaseModel):
     email: str | None = None
     whatsapp: str | None = None
     address: str | None = None
+    city: str | None = None
+    public_slug: str | None = None
     opening_hours: str | None = None
     public_background_color: str | None = None
+    public_primary_color: str | None = None
     take_away_table_token: str | None = None  # Token for take-away/home ordering if a table is configured
     # Reservation rules (for book page and reservation view)
     reservation_prepayment_cents: int | None = None
@@ -1029,6 +1070,27 @@ def _guest_order_payable_total_cents(session: Session, order: models.Order) -> i
     return max(0, subtotal - discount)
 
 
+def _stripe_metadata_get(metadata: Any, key: str, default: Any = None) -> Any:
+    """Read a key from Stripe metadata (plain dict or stripe-python StripeObject).
+
+    stripe-python 16+ exposes PaymentIntent.metadata as StripeObject, which is
+    not a dict and has no ``.get`` — calling ``.get`` raises AttributeError (#427).
+    """
+    if metadata is None:
+        return default
+    to_dict = getattr(metadata, "to_dict", None)
+    if callable(to_dict):
+        try:
+            as_dict = to_dict()
+            if isinstance(as_dict, dict):
+                return as_dict.get(key, default)
+        except Exception:
+            pass
+    if isinstance(metadata, dict):
+        return metadata.get(key, default)
+    return getattr(metadata, key, default)
+
+
 def _take_away_table_token(session: Session, tenant_id: int) -> str | None:
     """Return token of the first active table named 'Take away' or 'Home ordering' (case-insensitive) for tenant."""
     tables = session.exec(
@@ -1095,8 +1157,11 @@ def _tenant_to_summary(t: models.Tenant, session: Session) -> TenantSummary:
         email=t.email,
         whatsapp=t.whatsapp,
         address=t.address,
+        city=getattr(t, "city", None),
+        public_slug=getattr(t, "public_slug", None),
         opening_hours=t.opening_hours,
         public_background_color=t.public_background_color,
+        public_primary_color=getattr(t, "public_primary_color", None),
         take_away_table_token=take_away_token,
         reservation_prepayment_cents=t.reservation_prepayment_cents,
         reservation_prepayment_text=t.reservation_prepayment_text,
@@ -1166,19 +1231,28 @@ def get_public_legal_urls(
     }
 
 
-@app.get("/public/tenants/{tenant_id}")
+@app.get("/public/tenants/{tenant_ref}")
 @public_menu_ip_limit()
 def get_public_tenant(
     request: Request,
     response: Response,
-    tenant_id: int,
+    tenant_ref: str,
     session: Session = Depends(get_session),
     lang: str = Depends(_get_requested_language),
 ) -> JSONResponse:
-    """Get one tenant's public info for book page (name, logo, phone, email, whatsapp, opening_hours). Public, no authentication."""
-    tenant = session.get(models.Tenant, tenant_id)
+    """Get one tenant's public info for book page (name, logo, phone, email, whatsapp, opening_hours). Public, no authentication.
+
+    ``tenant_ref`` may be the numeric id or ``public_slug`` (name-city).
+    """
+    from .tenant_public_slug import ensure_tenant_public_slug, resolve_tenant_by_ref
+
+    tenant = resolve_tenant_by_ref(session, tenant_ref)
     if not tenant:
         raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
+    had_slug = (tenant.public_slug or "").strip()
+    ensure_tenant_public_slug(session, tenant)
+    if (tenant.public_slug or "").strip() != had_slug:
+        session.commit()
     summary = _tenant_to_summary(tenant, session)
     # Return explicit JSON so whatsapp is always present (same tenant as /tenant/settings)
     body = {
@@ -1191,8 +1265,11 @@ def get_public_tenant(
         "email": summary.email,
         "whatsapp": summary.whatsapp,
         "address": summary.address,
+        "city": summary.city,
+        "public_slug": summary.public_slug,
         "opening_hours": summary.opening_hours,
         "public_background_color": summary.public_background_color,
+        "public_primary_color": summary.public_primary_color,
         "take_away_table_token": summary.take_away_table_token,
         "reservation_prepayment_cents": summary.reservation_prepayment_cents,
         "reservation_prepayment_text": summary.reservation_prepayment_text,
@@ -1218,7 +1295,7 @@ def get_public_tenant(
 
 
 @app.get(
-    "/public/tenants/{tenant_id}/menu",
+    "/public/tenants/{tenant_ref}/menu",
     summary="Public tenant menu for marketing websites",
     tags=["Public"],
 )
@@ -1226,7 +1303,7 @@ def get_public_tenant(
 def get_public_tenant_menu(
     request: Request,
     response: Response,
-    tenant_id: int,
+    tenant_ref: str,
     session: Session = Depends(get_session),
     lang: str = Depends(_get_requested_language),
 ) -> dict:
@@ -1235,10 +1312,15 @@ def get_public_tenant_menu(
 
     Used by external marketing sites. Reuses product visibility rules from
     ``GET /menu/{table_token}`` (active catalog items, availability window).
+    ``tenant_ref`` may be numeric id or ``public_slug``.
     """
     from .public_tenant_menu import build_public_tenant_menu
+    from .tenant_public_slug import resolve_tenant_by_ref
 
-    body = build_public_tenant_menu(session, tenant_id, lang)
+    tenant = resolve_tenant_by_ref(session, tenant_ref)
+    if tenant is None or tenant.id is None:
+        raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
+    body = build_public_tenant_menu(session, tenant.id, lang)
     if body is None:
         raise HTTPException(status_code=404, detail=api_error_payload("tenant_not_found", lang))
     return body
@@ -1928,7 +2010,7 @@ def public_loyalty_program_info(
             getattr(program, "vip_gold_min_lifetime_units", 0) or 0
         ),
         "referral_bonus_units": int(getattr(program, "referral_bonus_units", 0) or 0),
-        "wallet": loyalty_svc.wallet_pass_status(program),
+        "wallet": loyalty_svc.wallet_pass_status(program, include_detail=False),
     }
 
 
@@ -1978,7 +2060,61 @@ def public_loyalty_join(
         "membership": loyalty_svc.membership_to_dict(
             membership, include_token=True, program=program
         ),
-        "wallet": pass_info.get("wallet") or loyalty_svc.wallet_pass_status(program),
+        "wallet": pass_info.get("wallet")
+        or loyalty_svc.wallet_pass_status(program, include_detail=False),
+    }
+    if pass_info.get("apple_pkpass_path"):
+        payload["apple_pkpass_path"] = pass_info["apple_pkpass_path"]
+    if pass_info.get("google_save_url"):
+        payload["google_save_url"] = pass_info["google_save_url"]
+    return payload
+
+
+@app.post("/public/tenants/{tenant_id}/loyalty/recover")
+@limiter.limit(
+    f"{getattr(settings, 'rate_limit_loyalty_join_per_hour', 20)}/hour",
+    key_func=_rate_limit_key,
+)
+def public_loyalty_recover(
+    request: Request,
+    response: Response,
+    tenant_id: int,
+    body: models.LoyaltyRecoverCreate,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Find an existing membership by email or phone and return the card token (#372)."""
+    tenant = session.get(models.Tenant, tenant_id)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    program = loyalty_svc.get_program(session, tenant_id)
+    if not program or not program.enabled:
+        raise HTTPException(status_code=404, detail="Loyalty program is not enabled")
+    email = normalize_email_address(body.email) if body.email else None
+    phone = None
+    if body.phone:
+        try:
+            phone = normalize_phone_e164(body.phone, settings.default_phone_country)
+        except ValueError:
+            phone = body.phone.strip()[:40] or None
+    if not email and not phone:
+        raise HTTPException(status_code=400, detail="email or phone is required")
+    membership = loyalty_svc.find_membership_by_contact(
+        session, tenant_id=tenant_id, email=email, phone=phone
+    )
+    if not membership:
+        raise HTTPException(status_code=404, detail="Membership not found")
+    pass_info = loyalty_wallet.prepare_passes_on_join(
+        session, membership=membership, program=program, tenant=tenant
+    )
+    session.commit()
+    session.refresh(membership)
+    payload = {
+        "ok": True,
+        "membership": loyalty_svc.membership_to_dict(
+            membership, include_token=True, program=program
+        ),
+        "wallet": pass_info.get("wallet")
+        or loyalty_svc.wallet_pass_status(program, include_detail=False),
     }
     if pass_info.get("apple_pkpass_path"):
         payload["apple_pkpass_path"] = pass_info["apple_pkpass_path"]
@@ -2008,7 +2144,7 @@ def public_loyalty_balance(
             membership, include_token=False, program=program
         ),
         "program": loyalty_svc.program_to_dict(program) if program else None,
-        "wallet": loyalty_svc.wallet_pass_status(program),
+        "wallet": loyalty_svc.wallet_pass_status(program, include_detail=False),
     }
 
 
@@ -2028,7 +2164,7 @@ def public_loyalty_wallet_status(
     if not membership:
         raise HTTPException(status_code=404, detail="Membership not found")
     program = session.get(models.LoyaltyProgram, membership.program_id)
-    status_payload = loyalty_svc.wallet_pass_status(program)
+    status_payload = loyalty_svc.wallet_pass_status(program, include_detail=False)
     status_payload["membership_id"] = membership.id
     if status_payload.get("apple_wallet_available"):
         status_payload["apple_pkpass_path"] = (
@@ -2078,11 +2214,11 @@ def public_loyalty_apple_pkpass(
     tenant = session.get(models.Tenant, membership.tenant_id)
     if not program or not tenant:
         raise HTTPException(status_code=404, detail="Membership not found")
-    status = loyalty_svc.wallet_pass_status(program)
+    status = loyalty_svc.wallet_pass_status(program, include_detail=False)
     if not status.get("apple_wallet_available"):
         raise HTTPException(
             status_code=503,
-            detail=status.get("detail") or "Apple Wallet passes are not available",
+            detail="Apple Wallet passes are not available",
         )
     try:
         data = loyalty_wallet.build_pkpass_bytes(
@@ -2121,11 +2257,11 @@ def public_loyalty_google_save(
     tenant = session.get(models.Tenant, membership.tenant_id)
     if not program or not tenant:
         raise HTTPException(status_code=404, detail="Membership not found")
-    status = loyalty_svc.wallet_pass_status(program)
+    status = loyalty_svc.wallet_pass_status(program, include_detail=False)
     if not status.get("google_wallet_available"):
         raise HTTPException(
             status_code=503,
-            detail=status.get("detail") or "Google Wallet passes are not available",
+            detail="Google Wallet passes are not available",
         )
     oid = loyalty_wallet.ensure_google_loyalty_object(
         session, membership=membership, program=program, tenant=tenant
@@ -2408,6 +2544,21 @@ def adjust_loyalty_membership(
         ),
         "entry": loyalty_svc.ledger_to_dict(entry),
     }
+
+
+@app.delete("/loyalty/memberships/{membership_id}")
+def delete_loyalty_membership(
+    membership_id: int,
+    current_user: Annotated[models.User, Depends(require_permission(Permission.LOYALTY_WRITE))],
+    session: Session = Depends(get_session),
+) -> dict:
+    """Hard-delete a loyalty membership (tenant-scoped). Ledger/devices cascade; orders unlink."""
+    membership = session.get(models.LoyaltyMembership, membership_id)
+    if not membership or membership.tenant_id != current_user.tenant_id:
+        raise HTTPException(status_code=404, detail="Membership not found")
+    session.delete(membership)
+    session.commit()
+    return {"ok": True, "id": membership_id}
 
 
 @app.put("/orders/{order_id}/loyalty-membership")
@@ -2930,8 +3081,18 @@ def login_with_otp(
             detail=api_error_payload("otp_session_invalid", lang),
         )
     import pyotp
-    totp = pyotp.TOTP(user.otp_secret)
-    if not totp.verify(body.code, valid_window=1):
+
+    code_ok = False
+    raw_code = (body.code or "").strip()
+    if otp_recovery.looks_like_totp_code(raw_code):
+        totp = pyotp.TOTP(user.otp_secret)
+        code_ok = bool(totp.verify(raw_code, valid_window=1))
+    else:
+        # Single-use recovery code (#400); mark consumed only on success path below.
+        code_ok = otp_recovery.try_consume_recovery_code(session, user.id, raw_code)
+        if code_ok:
+            session.commit()
+    if not code_ok:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=api_error_payload("invalid_otp_code", lang),
@@ -3176,13 +3337,33 @@ def read_users_me(
 @app.get("/users/me/otp/status")
 def get_otp_status(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
 ) -> dict:
-    """Return whether OTP is enabled for the current user (no secret)."""
-    return {"otp_enabled": getattr(current_user, "otp_enabled", False)}
+    """Return whether OTP is enabled and how many unused recovery codes remain (#400)."""
+    enabled = getattr(current_user, "otp_enabled", False)
+    remaining = 0
+    if enabled and current_user.id is not None:
+        remaining = otp_recovery.unused_recovery_code_count(session, current_user.id)
+    return {
+        "otp_enabled": enabled,
+        "recovery_codes_remaining": remaining,
+    }
 
 
 class OTPConfirmBody(_BaseModel):
     code: str
+
+
+class OTPDisableBody(_BaseModel):
+    """Disable OTP for the authenticated user by re-entering the account password (#401)."""
+
+    password: str = Field(..., min_length=1, max_length=256)
+
+
+class OTPRecoveryRegenerateBody(_BaseModel):
+    """Regenerate recovery codes; requires account password (#400)."""
+
+    password: str = Field(..., min_length=1, max_length=256)
 
 
 @app.post("/users/me/otp/setup")
@@ -3202,6 +3383,7 @@ def otp_setup(
     if user:
         user.otp_secret = secret
         user.otp_enabled = False
+        otp_recovery.delete_recovery_codes_for_user(session, user.id)
         session.add(user)
         session.commit()
     return {"secret": secret, "provisioning_uri": provisioning_uri}
@@ -3213,7 +3395,7 @@ def otp_confirm(
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
 ) -> dict:
-    """Verify the OTP code and enable OTP for this user."""
+    """Verify the OTP code, enable OTP, and return one-time recovery codes (#400)."""
     import pyotp
     user = session.get(models.User, current_user.id)
     if not user or not getattr(user, "otp_secret", None):
@@ -3221,26 +3403,68 @@ def otp_confirm(
     totp = pyotp.TOTP(user.otp_secret)
     if not totp.verify(body.code, valid_window=1):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired code")
+    plain_codes = otp_recovery.generate_recovery_codes()
+    otp_recovery.replace_recovery_codes(session, user.id, plain_codes)
     user.otp_enabled = True
     session.add(user)
     session.commit()
-    return {"status": "ok", "otp_enabled": True}
+    return {
+        "status": "ok",
+        "otp_enabled": True,
+        "recovery_codes": plain_codes,
+    }
+
+
+@app.post("/users/me/otp/recovery-codes/regenerate")
+def otp_regenerate_recovery_codes(
+    body: OTPRecoveryRegenerateBody,
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
+) -> dict:
+    """Replace unused recovery codes after password re-entry. Plaintext returned once (#400)."""
+    user = session.get(models.User, current_user.id)
+    if not user or not getattr(user, "otp_enabled", False) or not getattr(user, "otp_secret", None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP is not enabled",
+        )
+    if not security.verify_password(body.password.strip(), user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=api_error_payload("incorrect_actor_password", lang),
+        )
+    plain_codes = otp_recovery.generate_recovery_codes()
+    otp_recovery.replace_recovery_codes(session, user.id, plain_codes)
+    session.commit()
+    return {
+        "status": "ok",
+        "recovery_codes": plain_codes,
+        "recovery_codes_remaining": len(plain_codes),
+    }
 
 
 @app.post("/users/me/otp/disable")
 def otp_disable(
-    body: OTPConfirmBody,
+    body: OTPDisableBody,
     current_user: Annotated[models.User, Depends(security.get_current_user)],
     session: Session = Depends(get_session),
+    lang: str = Depends(_get_requested_language),
 ) -> dict:
-    """Verify the OTP code and disable OTP for this user."""
-    import pyotp
+    """Disable OTP for the current user after password re-entry (logged-in session; #401).
+
+    Does not require a working authenticator code so lost-device lockout does not block disable.
+    Unauthenticated callers still cannot reach this endpoint (get_current_user).
+    """
     user = session.get(models.User, current_user.id)
     if not user or not getattr(user, "otp_secret", None):
         return {"status": "ok", "otp_enabled": False}
-    totp = pyotp.TOTP(user.otp_secret)
-    if not totp.verify(body.code, valid_window=1):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired code")
+    if not security.verify_password(body.password.strip(), user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=api_error_payload("incorrect_actor_password", lang),
+        )
+    otp_recovery.delete_recovery_codes_for_user(session, user.id)
     user.otp_secret = None
     user.otp_enabled = False
     session.add(user)
@@ -4065,6 +4289,40 @@ def update_tenant_settings(
         tenant.address = (
             tenant_update.address.strip() if tenant_update.address else None
         )
+    if tenant_update.city is not None:
+        tenant.city = (
+            tenant_update.city.strip()[:120] if tenant_update.city else None
+        )
+    if tenant_update.public_slug is not None:
+        from .tenant_public_slug import normalize_public_slug
+
+        raw_slug = (
+            tenant_update.public_slug.strip()
+            if isinstance(tenant_update.public_slug, str)
+            else ""
+        )
+        if not raw_slug:
+            # Empty clears so ensure can regenerate from name+city below
+            tenant.public_slug = None
+        else:
+            norm = normalize_public_slug(raw_slug)
+            if not norm:
+                raise HTTPException(
+                    status_code=400,
+                    detail="public_slug must be a URL-safe slug (letters, numbers, hyphens)",
+                )
+            taken = session.exec(
+                select(models.Tenant).where(
+                    models.Tenant.public_slug == norm,
+                    models.Tenant.id != tenant.id,
+                )
+            ).first()
+            if taken:
+                raise HTTPException(
+                    status_code=400,
+                    detail="public_slug is already in use by another restaurant",
+                )
+            tenant.public_slug = norm
     if tenant_update.website is not None:
         tenant.website = (
             tenant_update.website.strip() if tenant_update.website else None
@@ -4087,8 +4345,8 @@ def update_tenant_settings(
         )
     if tenant_update.immediate_payment_required is not None:
         tenant.immediate_payment_required = tenant_update.immediate_payment_required
-    if tenant_update.default_tax_id is not None:
-        # Validate tax belongs to tenant
+    # Use model_fields_set so explicit null clears the default (None alone is the unset default).
+    if "default_tax_id" in tenant_update.model_fields_set:
         if tenant_update.default_tax_id:
             tax = session.get(models.Tax, tenant_update.default_tax_id)
             if not tax or tax.tenant_id != current_user.tenant_id:
@@ -4316,6 +4574,22 @@ def update_tenant_settings(
         else:
             tenant.public_background_color = None
 
+    if tenant_update.public_primary_color is not None:
+        val = (
+            tenant_update.public_primary_color.strip()
+            if isinstance(tenant_update.public_primary_color, str)
+            else None
+        )
+        if val:
+            if not val.startswith("#"):
+                val = "#" + val
+            if len(val) <= 20 and all(c in "0123456789abcdefABCDEF#" for c in val):
+                tenant.public_primary_color = val
+            else:
+                tenant.public_primary_color = None
+        else:
+            tenant.public_primary_color = None
+
     if tenant_update.public_google_review_url is not None:
         tenant.public_google_review_url = _normalize_public_http_url(
             tenant_update.public_google_review_url
@@ -4528,6 +4802,10 @@ def update_tenant_settings(
 
     if tenant_update.clock_qr_location_verify is not None:
         tenant.clock_qr_location_verify = tenant_update.clock_qr_location_verify
+
+    from .tenant_public_slug import ensure_tenant_public_slug
+
+    ensure_tenant_public_slug(session, tenant)
 
     session.add(tenant)
     session.commit()
@@ -5351,8 +5629,13 @@ async def upload_tenant_logo(
         )
 
     is_svg = content_type == "image/svg+xml"
-    if not is_svg:
-        # Optimize raster image locally (SVG is stored as-is)
+    if is_svg:
+        # Sanitize SVG (no PIL re-encode); reject script-bearing / unsafe markup (#419)
+        try:
+            contents = sanitize_svg(contents)
+        except SvgSanitizeError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+    else:
         contents = optimize_image(contents, content_type)
 
     # Create tenant logo directory
@@ -5676,26 +5959,12 @@ def list_products(
                     session.add(product)
                     updated_count += 1
 
-            # Backfill image from provider if missing
-            if not product.image_filename and tenant_product.provider_product_id:
-                # Get image from provider product
-                provider_product = session.exec(
-                    select(models.ProviderProduct).where(
-                        models.ProviderProduct.id == tenant_product.provider_product_id
-                    )
-                ).first()
-                if provider_product and provider_product.image_filename:
-                    provider = session.exec(
-                        select(models.Provider).where(models.Provider.id == provider_product.provider_id)
-                    ).first()
-                    if provider:
-                        stored = provider_product_stored_image_path(
-                            provider.token, provider_product.image_filename
-                        )
-                        if stored:
-                            product.image_filename = stored
-                            session.add(product)
-                            updated_count += 1
+            # Repair image only when missing/orphan; never overwrite valid custom uploads
+            repaired = repair_product_image_filename(session, product, tenant_product)
+            if repaired != product.image_filename:
+                product.image_filename = repaired
+                session.add(product)
+                updated_count += 1
     
     # Commit all changes
     if tenant_products_without_product or updated_count > 0:
@@ -5725,6 +5994,13 @@ def create_product(
             )
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid kitchen station")
+    if getattr(product, "stock_qty", 0) is not None and int(product.stock_qty) < 0:
+        raise HTTPException(status_code=400, detail="stock_qty must be >= 0")
+    if getattr(product, "stock_alert_level", 0) is not None and int(product.stock_alert_level) < 0:
+        raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
+    product.stock_alert_enabled = bool(getattr(product, "stock_alert_enabled", False))
+    product.stock_qty = int(getattr(product, "stock_qty", 0) or 0)
+    product.stock_alert_level = int(getattr(product, "stock_alert_level", 0) or 0)
     session.add(product)
     session.commit()
     session.refresh(product)
@@ -5784,6 +6060,18 @@ def update_product(
             except ValueError:
                 raise HTTPException(status_code=400, detail="Invalid kitchen station")
             product.kitchen_station_id = int(val)
+    if "stock_alert_enabled" in pu:
+        product.stock_alert_enabled = bool(pu["stock_alert_enabled"])
+    if "stock_qty" in pu:
+        qty = int(pu["stock_qty"] if pu["stock_qty"] is not None else 0)
+        if qty < 0:
+            raise HTTPException(status_code=400, detail="stock_qty must be >= 0")
+        product.stock_qty = qty
+    if "stock_alert_level" in pu:
+        level = int(pu["stock_alert_level"] if pu["stock_alert_level"] is not None else 0)
+        if level < 0:
+            raise HTTPException(status_code=400, detail="stock_alert_level must be >= 0")
+        product.stock_alert_level = level
 
     session.add(product)
     # Sync availability dates to linked TenantProduct(s) so customer menu stays consistent
@@ -9130,6 +9418,7 @@ def list_tables_with_status(
             "payment_status": payment_status,
             "is_active": table.is_active,
             "active_order_id": table.active_order_id,
+            "activated_at": table.activated_at.isoformat() if table.activated_at else None,
             "assigned_waiter_id": table.assigned_waiter_id,
             "assigned_waiter_name": waiter_map.get(table.assigned_waiter_id) if table.assigned_waiter_id else None,
             "effective_waiter_id": effective_waiter_id,
@@ -12027,6 +12316,7 @@ def get_menu(
                 "tenant_header_background_filename": tenant.header_background_filename if tenant else None,
                 "tenant_id": table.tenant_id,
                 "tenant_public_background_color": tenant.public_background_color if tenant else None,
+                "tenant_public_primary_color": getattr(tenant, "public_primary_color", None) if tenant else None,
             },
         )
 
@@ -12140,11 +12430,15 @@ def get_menu(
             "_source": "tenant_product",  # Indicate this is from TenantProduct table
         }
 
-        # Get the actual product record to check for customized description
+        # Get the actual product record to check for customized description / stock alert
         if tp.product_id:
             custom_product = session.get(models.Product, tp.product_id)
-            if custom_product and custom_product.description:
-                product_data["description"] = custom_product.description
+            if custom_product:
+                if custom_product.description:
+                    product_data["description"] = custom_product.description
+                from .product_stock import product_stock_alert_payload
+
+                product_data.update(product_stock_alert_payload(custom_product))
 
         # Add translations for tenant product
         if lang != "en":  # Only add if different from default
@@ -12357,6 +12651,8 @@ def get_menu(
     for lp in legacy_products:
         if lp.id in linked_legacy_product_ids:
             continue
+        from .product_stock import product_stock_alert_payload
+
         product_data = {
             "id": lp.id,
             "name": lp.name,
@@ -12368,6 +12664,7 @@ def get_menu(
             "category": lp.category,
             "subcategory": lp.subcategory,
             "_source": "product",
+            **product_stock_alert_payload(lp),
         }
 
         # Add translations for legacy product
@@ -12460,6 +12757,7 @@ def get_menu(
         if tenant
         else False,
         "tenant_public_background_color": tenant.public_background_color if tenant else None,
+        "tenant_public_primary_color": getattr(tenant, "public_primary_color", None) if tenant else None,
         # Table session status (take-away/home ordering tables do not require PIN; staff_access also skips PIN)
         "table_is_active": table.is_active,
         "table_requires_pin": False
@@ -12824,6 +13122,44 @@ def get_current_order(
     return JSONResponse(content=payload)
 
 
+def _menu_order_history_session_scope(session_id: str):
+    """Orders where this browser session contributed items (shared table model)."""
+    sid = session_id.strip()
+    return or_(
+        models.Order.session_id == sid,
+        exists(
+            select(models.OrderItem.id).where(
+                models.OrderItem.order_id == models.Order.id,
+                models.OrderItem.added_by_session == sid,
+                models.OrderItem.removed_by_customer == False,
+            )
+        ),
+    )
+
+
+def _menu_order_history_items_for_viewer(
+    session: Session,
+    order: models.Order,
+    session_id: str,
+    customer: models.Customer | None,
+) -> list[models.OrderItem]:
+    items = session.exec(
+        select(models.OrderItem).where(
+            models.OrderItem.order_id == order.id,
+            models.OrderItem.removed_by_customer == False,
+        )
+    ).all()
+    if customer and order.customer_id == customer.id:
+        return items
+    sid = session_id.strip()
+    scoped = [
+        item
+        for item in items
+        if item.added_by_session == sid or (item.added_by_session is None and order.session_id == sid)
+    ]
+    return scoped
+
+
 @app.get("/menu/{table_token}/order-history")
 @limiter.limit(
     f"{getattr(settings, 'rate_limit_public_menu_per_minute', 30)}/minute"
@@ -12831,35 +13167,53 @@ def get_current_order(
 def get_table_order_history(
     request: Request,
     table_token: str,
+    session_id: str = Query(..., min_length=8, max_length=128),
     limit: int = Query(10, ge=1, le=50),
+    customer: Annotated[
+        models.Customer | None, Depends(security.get_current_customer_optional)
+    ] = None,
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    """Public endpoint - recent paid/completed orders for this table (for customer order history)."""
+    """Public endpoint — paid/completed orders scoped to session or logged-in customer (#350)."""
     table = session.exec(
         select(models.Table).where(models.Table.token == table_token)
     ).first()
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
 
-    orders = session.exec(
-        select(models.Order)
-        .where(
+    sid = session_id.strip()
+    session_scope = _menu_order_history_session_scope(sid)
+    if customer:
+        scope_filter = or_(
+            models.Order.customer_id == customer.id,
+            session_scope,
+        )
+        base_filters = [
+            models.Order.tenant_id == table.tenant_id,
+            models.Order.deleted_at.is_(None),
+            models.Order.status.in_([models.OrderStatus.paid, models.OrderStatus.completed]),
+            scope_filter,
+        ]
+    else:
+        base_filters = [
             models.Order.table_id == table.id,
             models.Order.deleted_at.is_(None),
             models.Order.status.in_([models.OrderStatus.paid, models.OrderStatus.completed]),
-        )
+            session_scope,
+        ]
+
+    orders = session.exec(
+        select(models.Order)
+        .where(*base_filters)
         .order_by(models.Order.created_at.desc())
         .limit(limit)
     ).all()
 
     result = []
     for order in orders:
-        items = session.exec(
-            select(models.OrderItem).where(
-                models.OrderItem.order_id == order.id,
-                models.OrderItem.removed_by_customer == False,
-            )
-        ).all()
+        items = _menu_order_history_items_for_viewer(session, order, sid, customer)
+        if not items:
+            continue
         total_cents = sum(item.price_cents * item.quantity for item in items)
         result.append({
             "id": order.id,
@@ -13030,6 +13384,9 @@ def create_order(
     table_token: str,
     order_data: models.OrderCreate,
     request: Request,
+    customer: Annotated[
+        models.Customer | None, Depends(security.get_current_customer_optional)
+    ] = None,
     session: Session = Depends(get_session),
 ) -> dict:
     """Public endpoint - add items to the table's shared order."""
@@ -13174,6 +13531,9 @@ def create_order(
     # Update customer name if provided (for display purposes)
     if order_data.customer_name and not order.customer_name:
         order.customer_name = order_data.customer_name
+
+    if customer and not order.customer_id:
+        order.customer_id = customer.id
 
     # Append notes if provided
     order_note = normalize_order_note(order_data.notes)
@@ -15973,7 +16333,7 @@ def create_payment_intent(
     table_token: str | None = None,
     public_order_token: str | None = None,
     session: Session = Depends(get_session),
-) -> dict:
+) -> JSONResponse:
     """Create a Stripe PaymentIntent for an order (table guest or public delivery)."""
     order, table, display_name = _resolve_guest_payment_order(
         session,
@@ -16034,11 +16394,14 @@ def create_payment_intent(
             description=f"Order #{order.id} at {tenant.name} - {display_name}",
         )
 
-        return {
-            "client_secret": intent.client_secret,
-            "payment_intent_id": intent.id,
-            "amount": total_cents,
-        }
+        # JSONResponse so slowapi can inject rate-limit headers (requires a Response instance)
+        return JSONResponse(
+            content={
+                "client_secret": intent.client_secret,
+                "payment_intent_id": intent.id,
+                "amount": total_cents,
+            }
+        )
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -16056,7 +16419,7 @@ def confirm_payment(
     table_token: str | None = None,
     public_order_token: str | None = None,
     session: Session = Depends(get_session),
-) -> dict:
+) -> JSONResponse:
     """Mark order as paid after successful Stripe payment."""
     order, table, display_name = _resolve_guest_payment_order(
         session,
@@ -16088,8 +16451,8 @@ def confirm_payment(
             raise HTTPException(status_code=400, detail="Payment not completed")
 
         # Validation: Verify intent matches order
-        # 1. Check order ID in metadata
-        intent_order_id = intent.metadata.get("order_id")
+        # 1. Check order ID in metadata (StripeObject has no .get — see #427)
+        intent_order_id = _stripe_metadata_get(intent.metadata, "order_id")
         if not intent_order_id or str(intent_order_id) != str(order.id):
             raise HTTPException(
                 status_code=400,
@@ -16148,8 +16511,9 @@ def confirm_payment(
             "table_name": display_name,
             "status": order.status.value
         }, table_id=order.table_id)
-        
-        return {"status": "paid", "order_id": order.id}
+
+        # JSONResponse so slowapi can inject rate-limit headers (requires a Response instance)
+        return JSONResponse(content={"status": "paid", "order_id": order.id})
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

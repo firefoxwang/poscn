@@ -24,6 +24,8 @@ This document complements **`docs/0017-billing-customers-factura.md`**. It descr
 
 Configure via **Settings → Payments** (fiscal section) or **PUT `/tenant/settings`**.
 
+**Settings UI visibility (#392):** The VeriFactu prep block is shown when **Country (ISO)** is **`ES`** (or `fiscal_country` is `ES` if country is empty), or when `fiscal_mode` is already `test`/`live`. See also TSE gating in **`docs/0072-tse-fiscal-compliance.md`**. Currency alone does not gate this block.
+
 ## API
 
 | Method | Path | Role |

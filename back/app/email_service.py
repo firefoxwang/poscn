@@ -27,9 +27,28 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _effective_from_name(tenant: Optional["Tenant"] = None) -> str:
+    """
+    Effective From name for outbound mail.
+
+    Prefer a saved tenant From name. If unset/blank, use Business Name (tenant.name).
+    Fall back to global EMAIL_FROM_NAME when no tenant name is available.
+    Does not overwrite a stored email_from_name; only resolves empty cases at send time.
+    """
+    if tenant is not None:
+        saved = (tenant.email_from_name or "").strip()
+        if saved:
+            return saved
+        business = (tenant.name or "").strip()
+        if business:
+            return business
+    return settings.email_from_name
+
+
 def _effective_smtp_config(tenant: Optional["Tenant"] = None) -> dict[str, Any]:
     """
     Build SMTP config: tenant values when tenant has credentials set, else global.
+    From name always prefers tenant identity (saved From name, then Business Name).
     """
     use_tenant = (
         tenant
@@ -47,7 +66,7 @@ def _effective_smtp_config(tenant: Optional["Tenant"] = None) -> dict[str, Any]:
         "user": (tenant.smtp_user or settings.smtp_user) if use_tenant else settings.smtp_user,
         "password": (tenant.smtp_password or settings.smtp_password) if use_tenant else settings.smtp_password,
         "from_email": (tenant.email_from or settings.email_from) if use_tenant else settings.email_from,
-        "from_name": (tenant.email_from_name or settings.email_from_name) if use_tenant else settings.email_from_name,
+        "from_name": _effective_from_name(tenant),
     }
 
 

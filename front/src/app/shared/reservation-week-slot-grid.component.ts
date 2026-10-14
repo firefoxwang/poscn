@@ -7,6 +7,7 @@ import {
   ReservationBookDaySlotsResponse,
   ReservationBookWeekSlotState,
 } from '../services/api.service';
+import { resolveBookingServiceLabel } from './booking-meal-split';
 
 /** Month calendar + time dropdown (public /book and staff /reservations). */
 @Component({
@@ -32,6 +33,8 @@ export class ReservationWeekSlotGridComponent {
   weekAnchorSeed = input<string | null>(null);
   /** When opening hours have lunch+dinner, filter to one service (same backend as /book). */
   serviceType = input<'all' | 'lunch' | 'dinner'>('all');
+  /** Tenant opening_hours JSON — used for custom service labels on the summary. */
+  openingHoursJson = input<string | null>(null);
   /** Public /book: seating zone — capacity for that floor only (omit when venue-wide). */
   bookFloorId = input<number | null>(null);
 
@@ -358,10 +361,16 @@ export class ReservationWeekSlotGridComponent {
   }
 
   serviceLabel(): string {
-    const s = this.serviceType();
-    if (s === 'lunch') return this.translate.instant('BOOK.SERVICE_LUNCH');
-    if (s === 'dinner') return this.translate.instant('BOOK.SERVICE_DINNER');
-    return this.translate.instant('BOOK.SERVICE_ALL');
+    return resolveBookingServiceLabel(
+      this.openingHoursJson(),
+      this.serviceType(),
+      {
+        all: this.translate.instant('BOOK.SERVICE_ALL'),
+        lunch: this.translate.instant('BOOK.SERVICE_LUNCH'),
+        dinner: this.translate.instant('BOOK.SERVICE_DINNER'),
+      },
+      this.selectedDate()?.trim() || null,
+    );
   }
 
   formattedSelectedDate(): string {

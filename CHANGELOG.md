@@ -14,6 +14,281 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+## [2.1.183] - 2026-10-10
+
+### Fixed
+
+- Menu ordering photos (`/menu/…`): use `object-fit: contain` on grid, featured, and detail images so offer posters are not cropped; remove hover image zoom (#429).
+
+## [2.1.182] - 2026-10-09
+
+### Fixed
+
+- **Guest confirm-payment 500 (#427):** After Stripe succeeds, `confirm-payment` no longer crashes when PaymentIntent metadata is a stripe-python `StripeObject` (no `.get`). Order matching still returns a controlled 400 on mismatch.
+
+## [2.1.181] - 2026-10-08
+
+### Fixed
+
+- **Guest Stripe checkout 500 (#425):** `create-payment-intent` and `confirm-payment` return `JSONResponse` so SlowAPI can attach rate-limit headers after Stripe succeeds (bare `dict` returns caused HTTP 500).
+
+## [2.1.180] - 2026-10-05
+
+### Fixed
+
+- **Deploy CORS rewrite (#424):** `deploy-amvara9.sh` replaces empty or `*` `CORS_ORIGINS` in server `config.env` with `https://satisfecho.de,https://www.satisfecho.de` (override via `PRODUCTION_CORS_ORIGINS`) so production migrate/boot succeeds after `PRODUCTION=true` rejects wildcards.
+
+### Added
+
+- **Marketing / Kebab Factory:** Registered **satisfecho.de/kebab-factory/es/** — manifest entry for **`092_kebabfactory`** (slug **`kebab-factory`**; artifact **`kebab-factory-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+
+## [2.1.179] - 2026-10-05
+
+### Changed
+
+- **Production CORS allowlist (#421):** Example and compose defaults use local HAProxy origins (4202/4200) instead of `*`. When `PRODUCTION=true`, the backend refuses to start if `CORS_ORIGINS` is empty or contains `*`. Dev/`./run.sh` may still use `*` for LAN testing.
+
+## [2.1.178] - 2026-10-05
+
+### Changed
+
+- **Reject placeholder secrets in production (#423):** When `PRODUCTION=true`, the backend refuses to start if `SECRET_KEY` or `REFRESH_SECRET_KEY` still starts with `CHANGE_THIS`. Local/dev may keep placeholders; `deploy-amvara9.sh` generates real keys on virgin deploy.
+- **Production API docs off (#422):** When `PRODUCTION=true`, Swagger/ReDoc/OpenAPI (`/docs`, `/redoc`, `/openapi.json`) are not mounted (404). Dev keeps `/api/docs` for local smoke. Opt-in remount: `ENABLE_API_DOCS=true`.
+- **Production `PRODUCTION=true` (#420):** `docker-compose.prod.yml` sets `PRODUCTION=true` on the **back** service so Secure auth cookies and production rate limits apply on amvara9 without requiring `PRODUCTION` in `config.env`. Dev overlay unchanged (`is_production=False`).
+
+## [2.1.177] - 2026-10-05
+
+### Fixed
+
+- **Tenant logo SVG (#419):** SVG logos are sanitized on upload (script / event handlers / unsafe URLs rejected). Logo and related `/uploads` responses send `X-Content-Type-Options: nosniff`; SVG responses also use `Content-Disposition: attachment` and a restrictive CSP.
+
+## [2.1.176] - 2026-10-04
+
+### Added
+
+- **README Getting Started:** The section now points readers to the hosted demo at satisfecho.de and says tenant data can be exported and imported on a self-hosted stack.
+- **Public menu URL slug (#413):** `/public-menu/{slug}` uses a unique **name-city** `public_slug` (plus optional `city` in Settings). Numeric `/public-menu/{id}` still works and redirects to the slug when set. Landing QR, guest nav, delivery, loyalty CTAs, and platform shortcuts prefer the slug.
+- **Agent loop vs untrusted GitHub input:** `docs/0077-agent-untrusted-github-input.md` states the rule only. It does not list hosts, paths, keys, or commands.
+- **Public menu contact footer (#412):** `/public-menu/{tenantId}` shows restaurant phone, WhatsApp, email, address, and maps links above the existing back/legal footer (same tenant fields as `/book`).
+- **Loyalty public Menu / Book / Delivery CTAs (#374):** `/loyalty/card/:token` uses the sticky guest header; card and join-success show body CTAs to `/public-menu`, `/book`, and `/delivery` for that tenant.
+
+### Changed
+
+- **Kitchen display doc:** `docs/0015-kitchen-display.md` explains that a restaurant can run as many prep displays as it needs. Each product goes to one station, so that display shows only the lines it must prepare (for example starters or cocktails).
+- **README (#418):** Each topic is stated once. Payments, reservations, languages, deploy settings, and URLs are not repeated. Detail stays in `docs/`.
+- **Agent instructions:** `AGENTS.md` no longer names the git key file, production host access, or demo passwords. Those values stay in local env files. Archived agent task notes no longer include the production address, host alias, deploy path, or SSH port.
+- **Settings RAL5002 preset clarity (#367):** Public background colour preset is labelled **Apply RAL5002 (#1E22AA)** with hint/title that it is optional and does not lock the field; colour picker and hex stay in sync while typing.
+- **Settings → Loyalty club docs link (#394):** Loyalty club tab links to the runbook on GitHub (`docs/0066-club-loyalty.md`). Smoke: `npm run test:settings-loyalty-docs --prefix front`.
+- **Sidebar Log Out as icon (#383):** Staff sidebar Log Out is a compact icon left of `POS` (not a full-width footer button). Logout still goes to staff `/login`. Smoke: `npm run test:sidebar-logout --prefix front`.
+- **Sidebar language as flat icon (#384):** Staff sidebar language control is a compact globe+code icon to the right of `POS` (not a full select in the footer). Other pages keep the select picker.
+
+### Fixed
+
+- **Demo tenant 1 waitlist and Satisfecho Delivery samples:** Local reset re-seeds waiting-list and Delivery orders. `seed_demo_orders` now adds Delivery samples when table orders already exist so staff Delivery / courier Mine are not empty. Daily amvara9 reset is already documented in `docs/0001-ci-cd-amvara9.md`.
+- **Open menu icon on staff orders (#416):** The Open menu button on the internal order view uses a complete box-and-arrow icon. Click still opens the table menu when `table_id` and `table_token` are set.
+- **Public guest nav contrast on light wash (#411):** Sticky `app-public-guest-header` picks dark or white ink from tenant `public_background_color` (`pickContrastingForeground`) so light washes no longer leave white-on-lime unreadable labels. Design rule `.cursor/rules/ui-contrast.mdc`; tester must fail unreadable contrast.
+- **Book a table hero pill scrolls to form (#364):** On `/book/:tenantId`, the hero **"Book a table"** pill is a button that smooth-scrolls to the booking form (clears sticky guest header). Smoke: `npm run test:public-guest-header --prefix front`.
+- **Platform operator role i18n (#409):** Add `USERS.ROLES.PLATFORM_OPERATOR` to all `front/public/i18n/*.json` locales so sidebar/users/working-plan show a translated label instead of the raw key.
+- **Public button contrast on branded page wash (#408):** Secondary and calendar-nav controls use `--color-subtle` (not `--color-bg`) so a dark tenant page background no longer makes black-on-blue map/calendar buttons; primary CTAs keep white `--color-on-primary` text.
+- **Overbooking 0025 pytest without demo seed (#407):** `tests/test_overbooking_0025.py` creates its own tenant and 10 tables (5×4 + 5×2 = 30 seats) and no longer needs `seed_demo_tables` / tenant 1.
+- **SQLite tenant tip presets for pytest (#406):** `Tenant.tip_preset_percents` (and sibling tenant JSON fields) use dialect-aware JSON so SQLite unit tests can `create_all`; PostgreSQL still stores JSONB. No migration change.
+- **Book Party size label once (#368):** Public `/book` (and staff reservation modal) no longer repeats **Party size** in the week-grid summary; the form field label is the single visible name.
+- **SMTP From name defaults to Business Name (#366):** Empty Settings → Email **From name** uses the tenant Business Name at send time; the field shows Business Name as a placeholder and does not overwrite a saved value.
+- **Book Time slot alignment (#369):** Public `/book` week summary keeps Time slot left-aligned under Date (no right-side float on wide viewports).
+- **Public menu Back to home (#386):** `/public-menu/:tenantId` (and delivery) **Back to home** goes to `/book/:tenantId` instead of marketing `/`.
+- **Sidebar mobile brand link (#390):** Close the broken mobile header `<a>` so the Angular template compiles again (desktop POS → dashboard link was already correct).
+
+### Removed
+
+- **Unused agent prompt copy (#417):** Removed the old `zz_cursor-agents-do-not-use/` tree (old prompts and archived task copies). The live loop stays in `agents2/`.
+
+## [2.1.175] - 2026-09-18
+
+### Added
+
+- **Public booking URL slug (#415):** Guest booking prefers `/{public_slug}/book` (same name-city slug as the public menu). Numeric `/book/{id}` still works and redirects to the slug form when set. Guest nav, menu/delivery/waitlist/loyalty CTAs, and platform shortcuts prefer the slug path. Smoke: `npm run test:public-book-slug --prefix front`.
+
+## [2.1.174] - 2026-09-14
+
+### Added
+
+- **Delete Loyalty Club members (#362):** Settings → Loyalty club has a Delete action per member (confirm). `DELETE /loyalty/memberships/{id}` requires `loyalty:write`; hard delete cascades ledger/devices and unlinks orders.
+
+## [2.1.173] - 2026-09-14
+
+### Added
+
+- **Booking service labels on opening hours (#404):** Settings → Opening hours accepts optional service names (`serviceLabel`, or `morningLabel` / `eveningLabel` with a break). Public `/book` and staff reservations show those names instead of fixed “Lunch and dinner” when set; empty keeps the previous defaults.
+
+## [2.1.172] - 2026-09-14
+
+### Added
+
+- **Loyalty recover lost card (#372):** Public `/loyalty/{tenantId}` has **Already a member?** (email/phone → card link via `POST …/loyalty/recover`). Join/recover always show the balance card link. Staff Settings → Loyalty club: member search + copy card link. Smoke: `npm run test:loyalty-recover --prefix front`.
+
+## [2.1.171] - 2026-09-14
+
+### Added
+
+- **Public primary button colour (#370):** Settings → Business profile can set a **primary button colour** for public pages. Empty uses blue (`#2563EB`). Waiting-list link on `/book` is muted (not the same strong colour as Book table). See `docs/0028-tenant-public-branding.md`.
+
+## [2.1.170] - 2026-09-14
+
+### Fixed
+
+- **Public menu currency symbol (#387):** `/public-menu/:tenantId` and delivery menu prices use the same Intl currency formatting as Products (tenant ISO code → symbol, e.g. `€9.50` / `£9.50`), via shared `formatMoneyCents`.
+
+## [2.1.169] - 2026-09-14
+
+### Added
+
+- **Sidebar POS → dashboard (#390):** The staff sidebar (and mobile header) **POS** brand is a link to `/dashboard`. Version control still opens the changelog. Smoke: `npm run test:sidebar-brand-home --prefix front`.
+
+## [2.1.168] - 2026-09-14
+
+### Changed
+
+- **Settings default tax placement (#371):** **Default tax (IVA)** moves from Contact Information to **Settings → Taxes**, with its own Save control.
+
+### Fixed
+
+- **Default tax (IVA) save (#371):** `PUT /tenant/settings` now clears `default_tax_id` when the client sends `null` (previously ignored). Changing the default rate and saving persists across reload.
+
+## [2.1.167] - 2026-09-14
+
+### Added
+
+- **2FA recovery codes (#400):** Settings → Security shows one-time recovery codes after enabling OTP (copy/download + confirm saved). Login accepts a 6-digit TOTP or an unused recovery code (`XXXX-XXXX`); used codes cannot be reused. Regenerate with account password. Backend: `user_otp_recovery_code` (hashed). Smoke: `npm run test:otp-recovery-codes --prefix front`.
+
+## [2.1.166] - 2026-09-14
+
+### Changed
+
+- **Settings Payment / Delivery regroup (#396):** Payment Settings keeps currency, gateways, fiscal, and tips. **Delivery** is its own nav section (Satisfecho Delivery + marketplace integrations). **Location Verification** moves under Business Profile. Legacy `?section=delivery-integrations` opens Delivery. Smoke: `npm run test:settings-vertical-nav --prefix front`.
+
+## [2.1.165] - 2026-09-14
+
+### Changed
+
+- **Settings vertical menu (#395):** `/settings` replaces the horizontal scrolling tab strip with a vertical section menu (sidebar from 900px up; stacked scrollable list on narrow viewports). Section deep links use `?section=` for all settings areas (including Security). Smoke: `npm run test:settings-vertical-nav --prefix front`.
+
+## [2.1.164] - 2026-09-14
+
+### Added
+
+- **Sidebar version opens changelog (#399):** The version string under **POS** in the staff sidebar is a button. It opens the same changelog modal as Dashboard **What's new**. Smoke: `npm run test:changelog --prefix front`.
+
+- **Settings → Printing docs link (#397):** Hardware printing tab links to the runbook on GitHub (`docs/0070-hardware-printing.md`). Smoke: `npm run test:settings-printing-docs --prefix front`.
+
+### Changed
+
+- **Disable 2FA with password while logged in (#401):** Settings → Security no longer requires an authenticator code to turn off OTP. Re-enter the account password instead (session still required). Smoke: `npm run test:settings-otp-disable-password --prefix front`.
+
+- **Settings fiscal sections by country (#392):** Payments shows VeriFactu prep only for Country ISO `ES` (or when `fiscal_mode` is already on) and German TSE / KassenSichV prep only for `DE` (or when `tse_mode` is already on). Currency alone does not gate these blocks.
+
+### Fixed
+
+- **Staff sidebar Logout (#402):** After logout, the sidebar sends staff to `/login` instead of `/` (embedded Satisfecho marketing landing). Provider / courier / platform / customer logout destinations unchanged.
+
+- **Public loyalty Wallet copy (#393):** Guests on `/loyalty/{tenantId}` no longer see operator PassKit / Google issuer setup text. Add-to-Wallet and “Save this card link” show only when Wallet issuance is available; staff Settings still show wallet status detail.
+
+## [2.1.163] - 2026-09-14
+
+### Added
+
+- **Catalog & Inventory hub (#391):** Sidebar **Catalog & Inventory** opens a `/dashboard`-style hub at `/catalog-inventory` with tiles for products, provider catalog, and inventory destinations. Chevron still expands the nested menu; child deep links unchanged.
+
+## [2.1.162] - 2026-09-14
+
+### Added
+
+- **Public sticky guest header (#376, #364):** Tenant-scoped public pages (`/book`, `/public-menu`, `/waitlist`, `/delivery`, `/loyalty`, `/feedback`, reservation view) show a compact sticky bar with branding and links while the guest scrolls.
+
+### Fixed
+
+- **Bare `/loyalty` landing (#373):** `/loyalty` and `/loyalty/` show a short “need a restaurant link” page instead of falling through to the Satisfecho marketing landing. Join `/loyalty/{tenantId}` and card `/loyalty/card/{token}` unchanged.
+- **2FA secret Copy (#377):** Settings → Security Copy uses Clipboard API with an `execCommand` fallback and shows Copied / error feedback (helps LibreWolf and other strict browsers).
+- **Delivery floating CTA overlap (#360):** Fixed bottom total + CTA shows on the delivery **menu** step only. Cart and address keep inline actions so the bar no longer covers cart lines or Continue buttons.
+
+## [2.1.161] - 2026-09-14
+
+### Added
+
+- **Floating order total + CTA (#360):** Satisfecho Delivery shows a fixed bottom bar (item count, total, next-step button) on menu, cart, and address. QR menu cart bar shows total plus a **Checkout** button that opens the order sheet.
+- **Marketing / Kebab Express:** Registered **satisfecho.de/kebab-express/es/** — manifest entry for **`092_kebabexpress`** (slug **`kebab-express`** matches SPA **`baseHref`**; artifact **`kebab-express-satisfecho-deploy`**; **`deploySubpath`** **`es`**).
+
+## [2.1.160] - 2026-08-26
+
+### Changed
+
+- **Public pricing page (#358):** Added **QR Menu — free forever** as its own tier before paid plans, a hero callout, and optional **professional support** at **€50/h + tax** with a contact link.
+
+## [2.1.159] - 2026-08-26
+
+### Added
+
+- **Product image deploy repair:** `sync_product_images` and `check_product_image_health` seeds repair stale `Product.image_filename` after catalog import; deploy runs them after linking demo products to catalog.
+
+### Fixed
+
+- **`/products` vs public menu:** `GET /products` no longer overwrites custom tenant upload paths when the file exists on disk; stale `providers/...` refs are repaired from the linked catalog.
+
+## [2.1.158] - 2026-08-26
+
+### Added
+
+- **Customer stock alerts (#356):** QR menu and Satisfecho Delivery show **Only X left** when a product’s sellable stock is at or below its alert level. From discussion #21.
+- **Tenant ID in staff header (#357):** The staff sidebar shows the logged-in tenant number after the version and commit hash (compact tooltip “Tenant ID”).
+
+### Changed
+
+- **Products form:** Default stock alert level for new products is **5** (was 0).
+
+### Fixed
+
+- **`/products` thumbnails vs public menu:** `GET /products` repairs stale `Product.image_filename` values when the file is missing on disk, using the linked `TenantProduct` / provider catalog image (same source as `/public-menu/{id}`).
+
+## [2.1.157] - 2026-08-26
+
+### Added
+
+- **Product stock alerts (#356):** On `/products`, each product can enable a sellable-unit stock alert (`stock_qty` / `stock_alert_level`). Low stock shows a badge in the products list. From discussion #21.
+
+## [2.1.156] - 2026-08-26
+
+### Added
+
+- **Platform owner/staff login counts (#315):** `/platform` All tenants table shows each owner's login count and last login; tenant detail staff table shows the same per user (from `login_event`).
+
+## [2.1.155] - 2026-08-24
+
+### Added
+
+- **User manual translations (#354):** Full manual body HTML for de, fr, ca, bg, hi, ur, and zh-CN. `/manual-usuario` loads each locale’s content file; missing files fall back to English.
+- **README starter paths (#355):** New “Start with one feature” section for newcomers who want only a QR menu or only online reservations — minimal setup steps, links to docs, and note that self-host has no license fee.
+
+## [2.1.154] - 2026-08-24
+
+### Added
+
+- **User manual language switch (#353):** Public `/manual-usuario` is now an Angular page with the marketing language picker and shared footer. Spanish and English manual bodies load from `content/es.html` and `content/en.html`; other UI locales use English until more translations exist. Footer and About links use the SPA route.
+
+## [2.1.153] - 2026-08-23
+
+### Fixed
+
+- **QR menu order history (#350):** Public `/menu/{table_token}` order history no longer lists every guest’s paid orders at the same table. `GET /menu/{table_token}/order-history` requires `session_id` and scopes results to that browser session or, when logged in, the end-user customer at the tenant. Table orders set `Order.customer_id` when the customer cookie is present. Staff back-office table views are unchanged.
+
+## [2.1.152] - 2026-08-23
+
+### Added
+
+- **User manual on marketing site (#352):** Published the Spanish user manual at `/manual-usuario/` (static assets from `docs/manual-usuario/`). **User manual** links on the shared marketing footer, `/about`, and `/features`.
+
+### Changed
+
+- **Agent loop (FEAT waiting for human):** Feature coder step skips parked **FEAT** tasks after one waiting GitHub comment until a human replies on the linked issue (`scripts/agent-feat-waiting-human-preflight.sh`).
+
 ## [2.1.151] - 2026-08-20
 
 ### Added

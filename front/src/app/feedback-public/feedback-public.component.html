@@ -2,12 +2,17 @@
   class="book-page"
   [style.--color-bg]="tenant()?.public_background_color ?? null"
   [style.--hero-header-bg]="tenant()?.public_background_color ?? null"
+  [style.--color-primary]="resolvePublicPrimaryColor(tenant()?.public_primary_color)"
 >
+  <app-public-guest-header
+    [tenantId]="tenantId()"
+    [tenantName]="tenant()?.name ?? null"
+    [logoUrl]="logoUrl()"
+    [headerBackgroundColor]="tenant()?.public_background_color ?? null"
+    activePage="feedback"
+  />
   @if (loading()) {
     <div class="feedback-error-shell">
-      <div class="feedback-error-bar">
-        <app-language-picker class="book-language-picker"></app-language-picker>
-      </div>
       <div class="loading-screen">
         <p class="feedback-loading-text">{{ 'FEEDBACK.LOADING' | translate }}</p>
         <div class="loading-content">
@@ -20,9 +25,6 @@
     </div>
   } @else if (errorKind()) {
     <div class="feedback-error-shell">
-      <div class="feedback-error-bar">
-        <app-language-picker class="book-language-picker"></app-language-picker>
-      </div>
       <main class="book-content">
         <div class="book-card" style="margin-top: 2rem">
           <h1>{{ 'FEEDBACK.TITLE' | translate }}</h1>
@@ -43,7 +45,6 @@
       [style.background-image]="headerBackgroundStyle()"
     >
       <div class="hero-overlay"></div>
-      <app-language-picker class="book-language-picker"></app-language-picker>
       <div class="hero-content">
         <div class="hero-top-row">
           @if (logoUrl()) {
@@ -106,7 +107,6 @@
       [style.background-image]="headerBackgroundStyle()"
     >
       <div class="hero-overlay"></div>
-      <app-language-picker class="book-language-picker"></app-language-picker>
       <div class="hero-content">
         <div class="hero-top-row">
           @if (logoUrl()) {

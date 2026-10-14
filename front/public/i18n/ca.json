@@ -126,7 +126,17 @@
     "GROUP_ADMIN": "Administració",
     "CONTRACTS": "Contractes",
     "WAREHOUSES": "Magatzems",
-    "TALK": "Parlar"
+    "TALK": "Parlar",
+    "GROUP_CATALOG_TOGGLE": "Expandeix o contrau Catàleg i inventari"
+  },
+  "PUBLIC_GUEST_NAV": {
+    "ARIA": "Pàgines del restaurant",
+    "MENU": "Carta",
+    "BOOK": "Reservar",
+    "WAITLIST": "Llista d'espera",
+    "DELIVERY": "Entrega",
+    "LOYALTY": "Fidelització",
+    "FEEDBACK": "Opinió"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "Navegació de personal",
@@ -240,7 +250,8 @@
     "QR_DEMO_OPEN_MENU": "Obrir carta demo",
     "NAV_PRICING": "Preus",
     "NAV_ABOUT": "Qui som",
-    "COMPANY_OPERATOR": "Operat per Amvara Consulting S.L."
+    "COMPANY_OPERATOR": "Operat per Amvara Consulting S.L.",
+    "USER_MANUAL": "Manual d'usuari"
   },
   "FEATURES_PAGE": {
     "BADGE": "Llista completa de funcions",
@@ -317,7 +328,16 @@
   "PRICING_PAGE": {
     "BADGE": "Preus hosted senzills",
     "TITLE": "Prova gratis, després un pla mensual fix",
-    "SUBTITLE": "Satisfecho hosted inclou una prova gratuïta sense targeta. Autohostitja sota AGPLv3 sense cost de llicència si prefereixes executar-lo tu.",
+    "SUBTITLE": "Comença amb un menú QR gratis per sempre. Satisfecho hosted afegeix una prova gratuïta sense targeta per a la plataforma completa. Autohostitja sota AGPLv3 sense cost de llicència si prefereixes executar-lo tu.",
+    "QR_CALLOUT": "Menú QR gratis per sempre — comença sense cost",
+    "QR_NAME": "Menú QR",
+    "QR_LEDE": "Menú digital i comandes a taula per als clients — sense instal·lar cap app.",
+    "QR_PRICE": "Gratuït",
+    "QR_FOREVER": "Gratuït per sempre",
+    "QR_INCLUDES_1": "Publica un menú mòbil des d'un codi QR a la taula",
+    "QR_INCLUDES_2": "Actualitza els plats una vegada — cada QR mostra el menú actual",
+    "QR_INCLUDES_3": "Afegeix cuina, informes i més quan estiguis preparat",
+    "CTA_QR": "Crea el teu menú QR",
     "HOSTED_NAME": "Hosted",
     "HOSTED_LEDE": "Satisfecho gestionat per al teu restaurant — nosaltres operem la plataforma.",
     "PER_MONTH": "/ mes",
@@ -335,6 +355,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "Codi obert AGPLv3 — sense quota hosted",
     "CTA_GITHUB": "Veure a GitHub",
+    "SUPPORT_NAME": "Suport professional",
+    "SUPPORT_HEADLINE": "Et donem suport!",
+    "SUPPORT_LEDE": "Ajuda opcional del nostre equip — configuració, formació i resolució de problemes.",
+    "SUPPORT_PRICE": "50 €/h + IVA",
+    "SUPPORT_NOTE": "Facturació per hora. Contacta'ns per parlar de les teves necessitats.",
+    "CTA_SUPPORT": "Contacta'ns",
     "LOAD_ERROR": "No s'ha pogut carregar la tarifa. Torna-ho a provar més tard."
   },
   "PUBLIC_MENU": {
@@ -400,7 +426,8 @@
     "BACK_HOME": "Tornar a l'inici",
     "INVALID_TENANT": "Enllaç de restaurant no vàlid.",
     "TENANT_NOT_FOUND": "Restaurant no trobat.",
-    "LOAD_FAILED": "No s'ha pogut carregar el menú de lliurament. Torneu-ho a provar més tard."
+    "LOAD_FAILED": "No s'ha pogut carregar el menú de lliurament. Torneu-ho a provar més tard.",
+    "FLOATING_BAR_ARIA": "Total de la comanda i continuar"
   },
   "DELIVERY_TRACK": {
     "TITLE": "Track your order",
@@ -534,7 +561,11 @@
     "ADDRESS": "Adreça",
     "WEBSITE": "Lloc web",
     "TENANT_NOT_FOUND": "Inquilí no trobat.",
-    "LOAD_FAILED": "No s'han pogut carregar les dades de la plataforma. Torneu a iniciar sessió."
+    "LOAD_FAILED": "No s'han pogut carregar les dades de la plataforma. Torneu a iniciar sessió.",
+    "COL_OWNER_LOGINS": "Inicis del propietari",
+    "COL_OWNER_LAST_LOGIN": "Darrer inici del propietari",
+    "COL_LOGIN_COUNT": "Inicis de sessió",
+    "COL_LAST_LOGIN": "Darrer inici"
   },
   "COURIER_HOME": {
     "TITLE": "Entregues",
@@ -621,9 +652,9 @@
     "HIDE_PASSWORD": "Amaga la contrasenya",
     "ORGANIZATION_PLACEHOLDER": "Nom del teu restaurant",
     "NAME_PLACEHOLDER": "Joan García",
-    "OTP_ENTER_CODE": "Introdueix el codi de 6 dígits de la teva app d'autenticació",
+    "OTP_ENTER_CODE": "Introdueix el codi de 6 dígits de la teva app d’autenticació, o un codi de recuperació",
     "OTP_CODE": "Codi d'autenticació",
-    "OTP_CODE_PLACEHOLDER": "000000",
+    "OTP_CODE_PLACEHOLDER": "000000 o XXXX-XXXX",
     "VERIFY_OTP": "Verificar",
     "VERIFYING": "Verificant…",
     "BACK": "Enrere",
@@ -670,7 +701,8 @@
     "SIGNUP_COMPLETE_LEAD": "Comparteix aquest codi QR perquè els clients vegin el menú i demanin.",
     "SIGNUP_GO_DASHBOARD": "Obrir tauler de personal",
     "SIGNUP_CONTINUE_PAYWALL": "Continuar als plans",
-    "LOGOUT": "Tancar la sessió"
+    "LOGOUT": "Tancar la sessió",
+    "OTP_RECOVERY_HINT": "Has perdut el telèfon? Usa un codi de recuperació no usat. Cada codi de recuperació només funciona una vegada."
   },
   "PAYWALL": {
     "TITLE": "Tria un pla per continuar",
@@ -733,7 +765,8 @@
     "SHARED_CART_HINT": "Cistella compartida de la taula: tothom veu aquests articles. En demanar s’envien només els teus.",
     "ADDED_BY": "Afegit per {{name}}",
     "ADDED_BY_GUEST": "Afegit per un altre convidat",
-    "PLACE_OWN_ITEMS_ONLY": "Afegeix els teus articles abans de demanar. Els dels altres queden a la cistella compartida fins que demanin."
+    "PLACE_OWN_ITEMS_ONLY": "Afegeix els teus articles abans de demanar. Els dels altres queden a la cistella compartida fins que demanin.",
+    "STOCK_ONLY_LEFT": "Només en queden {{count}}"
   },
   "PRODUCTS": {
     "TITLE": "Productes",
@@ -935,7 +968,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Obligatori: name. Preu amb price o price_cents. Opcional: cost, category, subcategory, description, ingredients. S'accepten àlies comuns (producto, precio, …). Les columnes desconegudes es rebutgen tret que activeu el mapatge amb IA.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Utilitzar IA per mapar columnes desconegudes (envia capçaleres i algunes files de mostra a l'API de visió; reviseu la vista prèvia abans de desar)",
-    "BULK_IMPORT_CSV_EMPTY": "Enganxeu o pugeu CSV primer."
+    "BULK_IMPORT_CSV_EMPTY": "Enganxeu o pugeu CSV primer.",
+    "STOCK_ALERT_ENABLED": "Activar alerta d'estoc",
+    "STOCK_ALERT_HINT": "Aviseu quan l'estoc venible estigui en o per sota del llindar. Es gestiona en aquest producte.",
+    "STOCK_QTY": "Estoc actual",
+    "STOCK_ALERT_LEVEL": "Alertar en o per sota de",
+    "STOCK_HEADER": "Estoc",
+    "STOCK_LOW": "Baix",
+    "STOCK_OK": "OK",
+    "STOCK_BADGE_TITLE": "Estoc {{qty}} (alerta a {{level}})"
   },
   "CATALOG": {
     "TITLE": "Catàleg de productes",
@@ -1400,6 +1441,7 @@
     "DEFAULT_TABLE_NAME": "Taula {{number}}",
     "DRAG_HINT": "Arrossega al llenç",
     "ACTIVE": "Activa",
+    "ACTIVE_SESSION_META": "Activa {{duration}} · des de {{time}}",
     "INACTIVE": "Inactiva",
     "ACTIVATE": "Activar",
     "CLOSE_TABLE": "Tancar Taula",
@@ -1796,6 +1838,7 @@
   },
   "SETTINGS": {
     "TITLE": "Configuració",
+    "SECTION_NAV_ARIA": "Seccions de configuració",
     "SUBTITLE": "Gestiona la informació i la marca del teu negoci",
     "NAVIGATION_UI_TAB": "Navegació",
     "UI_MODULES_TITLE": "Navegació del personal",
@@ -1840,8 +1883,9 @@
     "DESCRIPTION": "Descripció",
     "DESCRIPTION_PLACEHOLDER": "Una breu descripció del teu negoci...",
     "PUBLIC_BACKGROUND_COLOR": "Color de fons del lloc públic",
-    "PUBLIC_BACKGROUND_COLOR_HINT": "Color de fons per a reserves, menú i vista de reserva. Hex (ex. #1E22AA) o el preset.",
-    "PRESET_RAL5002": "RAL5002 (Blau)",
+    "PUBLIC_BACKGROUND_COLOR_HINT": "Color de fons per a reserves, menú i vista de reserva. Escriu un hex, usa el selector o aplica RAL5002. El preset només canvia el valor en fer clic; no bloqueja el camp.",
+    "PRESET_RAL5002": "Aplicar RAL5002 (#1E22AA)",
+    "PRESET_RAL5002_TITLE": "Preset opcional: omple el fons públic amb RAL5002 Azul (#1E22AA). No bloqueja el camp.",
     "TIMEZONE": "Zona horària",
     "SEARCH_TIMEZONE": "Cercar zona horària...",
     "TIMEZONE_NOT_SET": "No hi ha zona horària configurada. S'usarà UTC per a la validació d'horaris de reserva.",
@@ -1934,6 +1978,8 @@
     "RESTAURANT_GROUP_THIS_LOCATION": "Aquest local",
     "RESTAURANT_GROUP_LEAVE": "Abandonar el grup",
     "DELIVERY_INTEGRATIONS_TAB": "Integracions",
+    "DELIVERY_TAB": "Lliurament",
+    "DELIVERY_SECTION_SUBTITLE": "Configura Satisfecho Delivery propi i les integracions de marketplace.",
     "DELIVERY_INTEGRATIONS_TITLE": "Integracions amb marketplaces de delivery",
     "DELIVERY_INTEGRATIONS_SUBTITLE": "Connecta marques de delivery de tercers. Les credencials romanen al servidor. Mapeja articles externs a productes del TPV; les comandes entrants segueixen el mateix flux de cuina.",
     "DELIVERY_INTEGRATIONS_EXPAND": "Configurar",
@@ -2099,7 +2145,7 @@
     "STAFF_KITCHEN": "Cuina",
     "STAFF_RECEPTIONIST": "Recepció",
     "PAYMENT_SETTINGS": "Configuració de pagament",
-    "PAYMENT_SETTINGS_SUBTITLE": "Configura els mètodes de pagament",
+    "PAYMENT_SETTINGS_SUBTITLE": "Configura moneda, passarel·les de pagament, opcions fiscals i propines.",
     "CURRENCY": "Moneda",
     "SELECT_CURRENCY": "Seleccionar moneda",
     "CURRENCY_HINT": "Codi ISO 4217 per als preus (productes, menú, comandes, informes). Utilitzeu el codi que esperi el vostre proveïdor de pagaments (p. ex. EUR, USD, MXN).",
@@ -2167,9 +2213,10 @@
     "OTP_ENABLE": "Activar OTP",
     "OTP_CONFIRMING": "Verificant…",
     "OTP_ENABLED": "L'autenticació de dos factors (OTP) està activada. Hauràs d'introduir un codi de la teva app en iniciar sessió.",
-    "OTP_DISABLE_ENTER_CODE": "Introdueix el teu codi OTP actual per desactivar",
     "OTP_DISABLE": "Desactivar OTP",
     "OTP_DISABLING": "Desactivant…",
+    "OTP_SECRET_COPIED": "Copiat",
+    "OTP_SECRET_COPY_FAILED": "No s'ha pogut copiar la clau. Selecciona-la i copia-la manualment, o permet l'accés al porta-retalls.",
     "STRIPE_KEYS": "Claus Stripe",
     "LOCATION_VERIFICATION": "Verificació d'ubicació",
     "LOCATION_VERIFICATION_DESC": "Defineix a sota les coordenades i el radi del local. El mateix punt marca comandes fora de l'àrea i, si ho actives al QR de fitxatge del personal, verifica el GPS en fitxar.",
@@ -2249,6 +2296,7 @@
     "EMAIL_FROM": "Adreça del remitent",
     "EMAIL_FROM_NAME": "Nom del remitent",
     "EMAIL_FROM_PLACEHOLDER": "p. ex. Nom del teu restaurant",
+    "EMAIL_FROM_NAME_HINT": "Deixa-ho en blanc per usar el Nom del negoci com a remitent.",
     "RESERVATION_CONFIRMATION_EMAIL_TITLE": "Correu de confirmació de reserva",
     "RESERVATION_CONFIRMATION_EMAIL_DESC": "Escriu el correu en text pla. Per inserir valors, posa un nom permès entre claus dobles (per exemple customer_name). Només aquests noms es substitueixen; no s’executa codi ni scripts. Deixa-ho buit per usar el text integrat per defecte.",
     "RESERVATION_CONFIRMATION_SUBJECT": "Assumpte del correu",
@@ -2259,6 +2307,7 @@
     "LOYALTY_TAB": "Loyalty club",
     "LOYALTY_TITLE": "Club loyalty",
     "LOYALTY_SUBTITLE": "Points or stamps earned on paid orders. Guests join via a public link; staff redeem rewards at checkout.",
+    "LOYALTY_DOCS_LINK": "Guia del club de fidelitat (docs/0066)",
     "LOYALTY_ENABLED": "Enable loyalty program",
     "LOYALTY_PROGRAM_NAME": "Program name",
     "LOYALTY_MODE": "Mode",
@@ -2326,7 +2375,8 @@
     "PRINTING_REVOKED": "Revocat",
     "PRINTING_REVOKE": "Revocar",
     "PRINTING_REFRESH": "Actualitza",
-    "PRINTING_DOCS_HINT": "Guia: docs/0070-hardware-printing.md — python3 scripts/print-agent/print_agent.py",
+    "PRINTING_DOCS_LINK": "Guia d’impressió hardware (docs/0070)",
+    "PRINTING_AGENT_CMD_HINT": "Agent LAN: python3 scripts/print-agent/print_agent.py",
     "TSE_TITLE": "German TSE (KassenSichV preparation)",
     "TSE_DESC": "Separate from Spain VeriFactu. In test mode, paid orders get a local stub TSE signature; receipts show serial, counter, time, and QR. Live mode stays locked until TSE_LIVE_UNLOCK and a cloud provider URL are set. Not certified by itself.",
     "FISCAL_COUNTRY": "Fiscal country hint",
@@ -2365,7 +2415,41 @@
     "LOYALTY_MEMBERS_EMPTY_HINT": "Compartiu l'URL pública d'alta perquè els clients es puguin registrar.",
     "LOYALTY_REFERRAL_INVITEE_HINT": "Unitats per al nou membre que s'uneix amb un codi de referit vàlid (0 = off).",
     "LOYALTY_WALLET_ENABLED": "Oferir passis d’Apple / Google Wallet",
-    "LOYALTY_WALLET_ENABLED_HINT": "Si hi ha certificats de plataforma, els membres poden afegir un pass en unir-se. Desactiva per deixar només l’enllaç de saldo."
+    "LOYALTY_WALLET_ENABLED_HINT": "Si hi ha certificats de plataforma, els membres poden afegir un pass en unir-se. Desactiva per deixar només l’enllaç de saldo.",
+    "OTP_DISABLE_ENTER_PASSWORD": "Introdueix la contrasenya del compte per desactivar l’autenticació de dos factors",
+    "OTP_DISABLE_FAILED": "No s’ha pogut desactivar l’autenticació de dos factors. Comprova la contrasenya i torna-ho a provar.",
+    "OTP_RECOVERY_TITLE": "Desa els teus codis de recuperació",
+    "OTP_RECOVERY_HINT": "Guarda aquests codis en un lloc segur. Cada codi es pot usar una vegada si perds l’accés a l’app d’autenticació. Només es mostren ara.",
+    "OTP_RECOVERY_SAVED_CONFIRM": "He desat aquests codis de recuperació en un lloc segur",
+    "OTP_RECOVERY_CONTINUE": "Continuar",
+    "OTP_RECOVERY_COPY_ALL": "Copia’ls tots",
+    "OTP_RECOVERY_DOWNLOAD": "Descarrega",
+    "OTP_RECOVERY_COPIED": "Copiat",
+    "OTP_RECOVERY_REMAINING": "Codis de recuperació no usats: {{count}}",
+    "OTP_RECOVERY_REGENERATE": "Genera nous codis de recuperació",
+    "OTP_RECOVERY_REGENERATING": "Generant…",
+    "OTP_RECOVERY_REGENERATE_PASSWORD": "Introdueix la contrasenya del compte per generar nous codis de recuperació (invalida els no usats)",
+    "OTP_RECOVERY_REGENERATE_FAILED": "No s’han pogut generar els codis de recuperació. Comprova la contrasenya i torna-ho a provar.",
+    "PUBLIC_PRIMARY_COLOR": "Color primari dels botons públics",
+    "PUBLIC_PRIMARY_COLOR_HINT": "Color de les accions principals (Reservar taula, Enviar, etc.) a les pàgines públiques. Buit = blau. El color de fons continua a part.",
+    "PRESET_PRIMARY_BLUE": "Blau (per defecte)",
+    "PRESET_PRIMARY_GREEN": "Verd",
+    "LOYALTY_MEMBERS_SEARCH": "Cerca un membre",
+    "LOYALTY_MEMBERS_SEARCH_HINT": "Cerca per nom, correu o telèfon",
+    "LOYALTY_MEMBERS_SEARCH_EMPTY": "Cap membre no coincideix amb aquesta cerca.",
+    "LOYALTY_CARD_LINK": "Enllaç de targeta",
+    "LOYALTY_COPY_CARD": "Copia l’enllaç",
+    "LOYALTY_COPIED": "Copiat",
+    "LOYALTY_CONFIRM_DELETE_MEMBER": "Vols eliminar el membre del club {{name}}? Aquesta acció no es pot desfer.",
+    "SERVICE_LABEL": "Etiqueta del servei",
+    "SERVICE_LABEL_PLACEHOLDER": "p. ex. Esmorzar (opcional)",
+    "MORNING_LABEL": "Etiqueta del torn del matí",
+    "MORNING_LABEL_PLACEHOLDER": "Dinar / Esmorzar",
+    "EVENING_LABEL": "Etiqueta del torn del vespre",
+    "EVENING_LABEL_PLACEHOLDER": "Sopar",
+    "CITY": "Ciutat",
+    "PUBLIC_SLUG": "Slug de l’URL del menú públic",
+    "PUBLIC_SLUG_HINT": "S’usa a /public-menu/{slug} i /{slug}/book (nom-ciutat). Lletres, números i guions. Buit = auto des del nom i la ciutat."
   },
   "PAYMENTS": {
     "PAYMENT": "Pagament",
@@ -2734,7 +2818,8 @@
       "BARTENDER": "Cambrer de barra",
       "WAITER": "Cambrer",
       "RECEPTIONIST": "Recepcionista",
-      "COURIER": "Repartidor"
+      "COURIER": "Repartidor",
+      "PLATFORM_OPERATOR": "Operador de plataforma"
     }
   },
   "TRANSLATIONS": {
@@ -2870,6 +2955,9 @@
   "LOYALTY_PUBLIC": {
     "TITLE": "Loyalty club",
     "INVALID_TENANT": "Invalid restaurant link.",
+    "NEED_LINK": "Aquesta pàgina necessita l'enllaç de fidelitat del restaurant.",
+    "NEED_LINK_HINT": "Demaneu al restaurant la URL d'alta (per exemple /loyalty/1). La ruta /loyalty sola no és una pàgina d'alta.",
+    "BACK_HOME": "Tornar a l'inici",
     "NOT_ENABLED": "This restaurant has not enabled a loyalty club yet.",
     "LEDE": "Earn {{earn}} {{mode}} per paid visit. Redeem at {{threshold}} for a reward.",
     "NAME": "Your name",
@@ -2888,7 +2976,19 @@
     "REFERRAL_CODE": "Codi de referit (opcional)",
     "REFERRAL_SHARE": "Comparteix aquest enllaç perquè amics s'uneixin amb el teu referit:",
     "ADD_APPLE_WALLET": "Afegir a Apple Wallet",
-    "ADD_GOOGLE_WALLET": "Afegir a Google Wallet"
+    "ADD_GOOGLE_WALLET": "Afegir a Google Wallet",
+    "ALREADY_MEMBER": "Ja ets membre?",
+    "RECOVER_HINT": "Introdueix el correu o el telèfon amb què et vas unir per obrir la targeta de nou.",
+    "FIND_CARD": "Troba la meva targeta",
+    "FINDING": "Cercant…",
+    "FOUND": "Hem trobat la teva afiliació.",
+    "NOT_FOUND": "No s’ha trobat cap afiliació amb aquest correu o telèfon.",
+    "OPEN_CARD": "Obre la meva targeta",
+    "CTA_NAV_ARIA": "Següents passos",
+    "CTA_HEADING": "Continua amb el restaurant",
+    "CTA_MENU": "Veure el menú",
+    "CTA_BOOK": "Reservar taula",
+    "CTA_DELIVERY": "Demanar a domicili"
   },
   "ABOUT_PAGE": {
     "BADGE": "Empresa",
@@ -2901,7 +3001,9 @@
     "OPEN_SOURCE_TITLE": "Codi obert",
     "OPEN_SOURCE_BODY": "El producte es desenvolupa en obert. Podeu revisar el codi, autoallotjar-lo sota AGPLv3 o usar el servei gestionat a satisfecho.de.",
     "CONTACT_TITLE": "Contacte",
-    "CONTACT_BODY": "Preguntes sobre la plataforma o el servei allotjat:"
+    "CONTACT_BODY": "Preguntes sobre la plataforma o el servei allotjat:",
+    "MANUAL_TITLE": "Manual d'usuari",
+    "MANUAL_BODY": "Guies pas a pas per a la configuració, l'operació diària, reserves, inventari i més."
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",
@@ -3276,5 +3378,30 @@
         "HOW_3": "O registreu-vos a Satisfecho allotjat amb actualitzacions gestionades."
       }
     }
+  },
+  "USER_MANUAL_PAGE": {
+    "LOADING": "S’està carregant el manual d’usuari…",
+    "LOAD_ERROR": "No s’ha pogut carregar el manual d’usuari. Actualitzeu la pàgina o torneu-ho a provar més tard.",
+    "DOC_TITLE": "Manual d’usuari | Satisfecho POS"
+  },
+  "CATALOG_INVENTORY_HUB": {
+    "TITLE": "Catàleg i inventari",
+    "INTRO": "Obre productes, catàleg de proveïdors i eines d'inventari des d'aquí.",
+    "PRODUCTS_TITLE": "Productes",
+    "PRODUCTS_DESC": "Gestiona els articles del menú",
+    "CATALOG_TITLE": "Catàleg",
+    "CATALOG_DESC": "Catàleg de proveïdors i articles",
+    "ITEMS_TITLE": "Articles",
+    "ITEMS_DESC": "Articles d'estoc i unitats",
+    "SUPPLIERS_TITLE": "Proveïdors",
+    "SUPPLIERS_DESC": "Contactes de proveïdors per a compres",
+    "WAREHOUSES_TITLE": "Magatzems",
+    "WAREHOUSES_DESC": "Ubicacions d'emmagatzematge",
+    "PURCHASE_ORDERS_TITLE": "Comandes de compra",
+    "PURCHASE_ORDERS_DESC": "Demanar i rebre estoc",
+    "STOCK_TITLE": "Tauler d'estoc",
+    "STOCK_DESC": "Nivells i alertes d'estoc baix",
+    "REPORTS_TITLE": "Informes d'inventari",
+    "REPORTS_DESC": "Valoració i moviments d'estoc"
   }
 }

@@ -49,6 +49,8 @@ Multi-tenant SaaS POS (cloud backend, restaurants on LAN) cannot reliably attach
 
 Configure via **Settings → Payments** (TSE section) or **PUT `/tenant/settings`**.
 
+**Settings UI visibility (#392):** The VeriFactu prep block is shown when **Country (ISO)** is **`ES`** (or `fiscal_country` is `ES` if country is empty), or when `fiscal_mode` is already `test`/`live`. The TSE / KassenSichV prep block is shown for **`DE`** the same way, or when `tse_mode` is already on. Currency alone does not gate these blocks (EUR is multi-country). Hidden sections do not clear stored settings.
+
 ## Transaction lifecycle
 
 | Event | TSE process type |

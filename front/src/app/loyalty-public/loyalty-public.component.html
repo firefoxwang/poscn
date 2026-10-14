@@ -1,138 +1,253 @@
-<div class="book-page loyalty-public" data-testid="loyalty-public-page">
-  <header class="book-header">
-    <app-language-picker></app-language-picker>
-  </header>
+<div
+  class="book-page loyalty-public"
+  data-testid="loyalty-public-page"
+  [style.--color-bg]="tenant()?.public_background_color ?? null"
+  [style.--hero-header-bg]="tenant()?.public_background_color ?? null"
+  [style.--color-primary]="resolvePublicPrimaryColor(tenant()?.public_primary_color)"
+>
+  @if (tenantId() > 0) {
+    <app-public-guest-header
+      [tenantId]="tenantId()"
+      [tenantName]="tenant()?.name ?? null"
+      [logoUrl]="logoUrl()"
+      [headerBackgroundColor]="tenant()?.public_background_color ?? null"
+      activePage="loyalty"
+    />
+  } @else {
+    <header class="book-header loyalty-bare-header">
+      <app-language-picker></app-language-picker>
+    </header>
+  }
 
   @if (loading()) {
-    <p class="hint">{{ 'COMMON.LOADING' | translate }}</p>
-  } @else if (errorKind() === 'invalid_tenant') {
-    <p class="error">{{ 'LOYALTY_PUBLIC.INVALID_TENANT' | translate }}</p>
+    <main class="book-content">
+      <div class="book-card">
+        <p class="hint">{{ 'COMMON.LOADING' | translate }}</p>
+      </div>
+    </main>
+  } @else if (errorKind() === 'missing_link' || errorKind() === 'invalid_tenant') {
+    <main class="book-content" data-testid="loyalty-need-link">
+      <div class="book-card">
+        <h1>{{ 'LOYALTY_PUBLIC.TITLE' | translate }}</h1>
+        <p class="form-error">
+          {{
+            (errorKind() === 'missing_link'
+              ? 'LOYALTY_PUBLIC.NEED_LINK'
+              : 'LOYALTY_PUBLIC.INVALID_TENANT'
+            ) | translate
+          }}
+        </p>
+        <p class="hint">{{ 'LOYALTY_PUBLIC.NEED_LINK_HINT' | translate }}</p>
+        <a routerLink="/" class="btn btn-primary" data-testid="loyalty-back-home">{{
+          'LOYALTY_PUBLIC.BACK_HOME' | translate
+        }}</a>
+      </div>
+    </main>
   } @else if (errorKind() === 'not_enabled') {
-    <p class="error">{{ 'LOYALTY_PUBLIC.NOT_ENABLED' | translate }}</p>
+    <main class="book-content">
+      <div class="book-card">
+        <p class="form-error">{{ 'LOYALTY_PUBLIC.NOT_ENABLED' | translate }}</p>
+      </div>
+    </main>
   } @else if (program(); as p) {
-    <main class="book-main">
-      <h1>{{ p.program_name }}</h1>
-      <p class="lede">
-        {{
-          'LOYALTY_PUBLIC.LEDE'
-            | translate
-              : {
-                  earn: p.earn_units_per_order,
-                  mode: p.mode,
-                  threshold: p.redemption_threshold,
-                }
-        }}
-      </p>
+    <main class="book-content">
+      <div class="book-card" [class.book-success-card]="submitted()">
+        <h1 class="loyalty-title">{{ p.program_name }}</h1>
+        <p class="lede">
+          {{
+            'LOYALTY_PUBLIC.LEDE'
+              | translate
+                : {
+                    earn: p.earn_units_per_order,
+                    mode: p.mode,
+                    threshold: p.redemption_threshold,
+                  }
+          }}
+        </p>
 
-      @if (submitted()) {
-        <div class="success" data-testid="loyalty-join-success">
-          <p>{{ 'LOYALTY_PUBLIC.JOINED' | translate }}</p>
-          <p>
-            {{ 'LOYALTY_PUBLIC.BALANCE' | translate }}: <strong>{{ balance() }}</strong>
-          </p>
-          @if (vipTier()) {
-            <p data-testid="loyalty-join-vip">
-              {{ 'LOYALTY_PUBLIC.VIP_TIER' | translate }}: <strong>{{ vipTier() }}</strong>
+        @if (submitted()) {
+          <div class="success" data-testid="loyalty-join-success">
+            <p class="success-message">
+              {{
+                (recovered() ? 'LOYALTY_PUBLIC.FOUND' : 'LOYALTY_PUBLIC.JOINED') | translate
+              }}
             </p>
-          }
-          @if (ownReferralCode(); as refCode) {
-            <p class="token-hint">{{ 'LOYALTY_PUBLIC.REFERRAL_SHARE' | translate }}</p>
-            <p class="token" data-testid="loyalty-referral-link">
-              <code>{{ origin }}/loyalty/{{ tenantId() }}?ref={{ refCode }}</code>
+            <p class="balance-line">
+              {{ 'LOYALTY_PUBLIC.BALANCE' | translate }}: <strong>{{ balance() }}</strong>
             </p>
-          }
-          @if (memberToken()) {
-            <p class="token-hint">{{ 'LOYALTY_PUBLIC.KEEP_LINK' | translate }}</p>
-            <p class="token">
-              <code>{{ origin }}/loyalty/card/{{ memberToken() }}</code>
-            </p>
-          }
-          @if (applePkpassUrl() || googleSaveUrl()) {
-            <div class="wallet-actions" data-testid="loyalty-wallet-actions">
-              @if (applePkpassUrl(); as appleUrl) {
-                <a class="btn primary" [href]="appleUrl" data-testid="loyalty-add-apple-wallet">
-                  {{ 'LOYALTY_PUBLIC.ADD_APPLE_WALLET' | translate }}
-                </a>
-              }
-              @if (googleSaveUrl(); as gUrl) {
+            @if (vipTier()) {
+              <p data-testid="loyalty-join-vip">
+                {{ 'LOYALTY_PUBLIC.VIP_TIER' | translate }}: <strong>{{ vipTier() }}</strong>
+              </p>
+            }
+            @if (ownReferralCode(); as refCode) {
+              <p class="token-hint">{{ 'LOYALTY_PUBLIC.REFERRAL_SHARE' | translate }}</p>
+              <p class="token" data-testid="loyalty-referral-link">
+                <code>{{ origin }}/loyalty/{{ tenantId() }}?ref={{ refCode }}</code>
+              </p>
+            }
+            @if (memberToken()) {
+              <p class="token-hint">{{ 'LOYALTY_PUBLIC.KEEP_LINK' | translate }}</p>
+              <p class="token" data-testid="loyalty-card-link">
+                <code>{{ origin }}/loyalty/card/{{ memberToken() }}</code>
+              </p>
+              <p>
                 <a
-                  class="btn primary"
-                  [href]="gUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="loyalty-add-google-wallet"
+                  class="btn btn-primary"
+                  [routerLink]="['/loyalty/card', memberToken()]"
+                  data-testid="loyalty-open-card"
                 >
-                  {{ 'LOYALTY_PUBLIC.ADD_GOOGLE_WALLET' | translate }}
+                  {{ 'LOYALTY_PUBLIC.OPEN_CARD' | translate }}
                 </a>
-              }
-            </div>
-          } @else if (walletNote()) {
-            <p class="hint">{{ walletNote() }}</p>
-          }
-        </div>
-      } @else {
-        <form (ngSubmit)="submit()" class="join-form">
-          <label>
-            <span>{{ 'LOYALTY_PUBLIC.NAME' | translate }}</span>
-            <input type="text" [(ngModel)]="displayName" name="displayName" required />
-          </label>
-          <label>
-            <span>{{ 'LOYALTY_PUBLIC.EMAIL' | translate }}</span>
-            <input type="email" [(ngModel)]="email" name="email" />
-          </label>
-          <label>
-            <span>{{ 'LOYALTY_PUBLIC.PHONE' | translate }}</span>
-            <input type="tel" [(ngModel)]="phone" name="phone" />
-          </label>
-          <div class="birthday-row">
-            <label>
-              <span>{{ 'LOYALTY_PUBLIC.BIRTHDAY_MONTH' | translate }}</span>
-              <input
-                type="number"
-                min="1"
-                max="12"
-                [(ngModel)]="birthdayMonth"
-                name="birthdayMonth"
-                data-testid="loyalty-join-birthday-month"
-              />
-            </label>
-            <label>
-              <span>{{ 'LOYALTY_PUBLIC.BIRTHDAY_DAY' | translate }}</span>
-              <input
-                type="number"
-                min="1"
-                max="31"
-                [(ngModel)]="birthdayDay"
-                name="birthdayDay"
-                data-testid="loyalty-join-birthday-day"
-              />
-            </label>
-          </div>
-          <p class="hint">{{ 'LOYALTY_PUBLIC.BIRTHDAY_HINT' | translate }}</p>
-          <label>
-            <span>{{ 'LOYALTY_PUBLIC.REFERRAL_CODE' | translate }}</span>
-            <input
-              type="text"
-              [(ngModel)]="referralCode"
-              name="referralCode"
-              data-testid="loyalty-join-referral"
+              </p>
+            }
+            @if (applePkpassUrl() || googleSaveUrl()) {
+              <div class="wallet-actions" data-testid="loyalty-wallet-actions">
+                @if (applePkpassUrl(); as appleUrl) {
+                  <a class="btn btn-primary" [href]="appleUrl" data-testid="loyalty-add-apple-wallet">
+                    {{ 'LOYALTY_PUBLIC.ADD_APPLE_WALLET' | translate }}
+                  </a>
+                }
+                @if (googleSaveUrl(); as gUrl) {
+                  <a
+                    class="btn btn-primary"
+                    [href]="gUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="loyalty-add-google-wallet"
+                  >
+                    {{ 'LOYALTY_PUBLIC.ADD_GOOGLE_WALLET' | translate }}
+                  </a>
+                }
+              </div>
+            }
+            <app-public-guest-sales-ctas
+              [tenantId]="tenantId()"
+              [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+              [publicBookSlug]="tenant()?.public_slug?.trim() || null"
             />
-          </label>
-          <p class="hint">{{ 'LOYALTY_PUBLIC.CONTACT_HINT' | translate }}</p>
-          @if (submitError()) {
-            <p class="error">{{ submitError() }}</p>
-          }
-          <button type="submit" class="btn primary" [disabled]="!canSubmit() || submitting()">
-            {{
-              submitting()
-                ? ('COMMON.SAVING' | translate)
-                : ('LOYALTY_PUBLIC.JOIN' | translate)
-            }}
-          </button>
-        </form>
-      }
+          </div>
+        } @else {
+          <form (ngSubmit)="submit()" class="book-form join-form" data-testid="loyalty-join-form">
+            <div class="form-group">
+              <label for="loyalty-join-name">{{ 'LOYALTY_PUBLIC.NAME' | translate }}</label>
+              <input
+                id="loyalty-join-name"
+                type="text"
+                [(ngModel)]="displayName"
+                name="displayName"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="loyalty-join-email">{{ 'LOYALTY_PUBLIC.EMAIL' | translate }}</label>
+              <input id="loyalty-join-email" type="email" [(ngModel)]="email" name="email" />
+            </div>
+            <div class="form-group">
+              <label for="loyalty-join-phone">{{ 'LOYALTY_PUBLIC.PHONE' | translate }}</label>
+              <input id="loyalty-join-phone" type="tel" [(ngModel)]="phone" name="phone" />
+            </div>
+            <div class="form-group birthday-row">
+              <div class="birthday-field">
+                <label for="loyalty-join-birthday-month">{{
+                  'LOYALTY_PUBLIC.BIRTHDAY_MONTH' | translate
+                }}</label>
+                <input
+                  id="loyalty-join-birthday-month"
+                  type="number"
+                  min="1"
+                  max="12"
+                  [(ngModel)]="birthdayMonth"
+                  name="birthdayMonth"
+                  data-testid="loyalty-join-birthday-month"
+                />
+              </div>
+              <div class="birthday-field">
+                <label for="loyalty-join-birthday-day">{{
+                  'LOYALTY_PUBLIC.BIRTHDAY_DAY' | translate
+                }}</label>
+                <input
+                  id="loyalty-join-birthday-day"
+                  type="number"
+                  min="1"
+                  max="31"
+                  [(ngModel)]="birthdayDay"
+                  name="birthdayDay"
+                  data-testid="loyalty-join-birthday-day"
+                />
+              </div>
+            </div>
+            <p class="field-hint">{{ 'LOYALTY_PUBLIC.BIRTHDAY_HINT' | translate }}</p>
+            <div class="form-group">
+              <label for="loyalty-join-referral">{{ 'LOYALTY_PUBLIC.REFERRAL_CODE' | translate }}</label>
+              <input
+                id="loyalty-join-referral"
+                type="text"
+                [(ngModel)]="referralCode"
+                name="referralCode"
+                data-testid="loyalty-join-referral"
+              />
+            </div>
+            <p class="field-hint">{{ 'LOYALTY_PUBLIC.CONTACT_HINT' | translate }}</p>
+            @if (submitError()) {
+              <p class="form-error">{{ submitError() }}</p>
+            }
+            <button type="submit" class="btn btn-primary" [disabled]="!canSubmit() || submitting()">
+              {{
+                submitting()
+                  ? ('COMMON.SAVING' | translate)
+                  : ('LOYALTY_PUBLIC.JOIN' | translate)
+              }}
+            </button>
+          </form>
+
+          <section class="recover-block" data-testid="loyalty-recover-section">
+            <h2 class="recover-title">{{ 'LOYALTY_PUBLIC.ALREADY_MEMBER' | translate }}</h2>
+            <p class="hint">{{ 'LOYALTY_PUBLIC.RECOVER_HINT' | translate }}</p>
+            <form (ngSubmit)="recover()" class="book-form recover-form">
+              <div class="form-group">
+                <label for="loyalty-recover-email">{{ 'LOYALTY_PUBLIC.EMAIL' | translate }}</label>
+                <input
+                  id="loyalty-recover-email"
+                  type="email"
+                  [(ngModel)]="recoverEmail"
+                  name="recoverEmail"
+                  data-testid="loyalty-recover-email"
+                />
+              </div>
+              <div class="form-group">
+                <label for="loyalty-recover-phone">{{ 'LOYALTY_PUBLIC.PHONE' | translate }}</label>
+                <input
+                  id="loyalty-recover-phone"
+                  type="tel"
+                  [(ngModel)]="recoverPhone"
+                  name="recoverPhone"
+                  data-testid="loyalty-recover-phone"
+                />
+              </div>
+              @if (recoverError()) {
+                <p class="form-error" data-testid="loyalty-recover-error">{{ recoverError() }}</p>
+              }
+              <button
+                type="submit"
+                class="btn btn-secondary"
+                [disabled]="!canRecover() || recovering()"
+                data-testid="loyalty-recover-submit"
+              >
+                {{
+                  recovering()
+                    ? ('LOYALTY_PUBLIC.FINDING' | translate)
+                    : ('LOYALTY_PUBLIC.FIND_CARD' | translate)
+                }}
+              </button>
+            </form>
+          </section>
+        }
+      </div>
     </main>
   }
 
-  <app-legal-links></app-legal-links>
+  <div class="book-legal-footer">
+    <app-legal-links></app-legal-links>
+  </div>
 </div>

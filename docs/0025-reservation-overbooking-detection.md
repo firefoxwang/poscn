@@ -9,7 +9,7 @@ Slot capacity checks, overbooking detection, and prevention are **live** in prod
 - **Report:** `GET /reservations/overbooking-report` — per-slot seats/tables demand vs capacity (`over_seats` / `over_tables`).
 - **Prevention:** create/update reservation returns **400** when the slot would exceed capacity; public next-available respects remaining capacity.
 - **UI:** overbooking indicators on the reservations list; remaining capacity on create/edit; Reports summary card when `overbooking_slots_count > 0` (see [0016-reports.md](0016-reports.md)).
-- **Verify:** scenario notes in [0058-test-scenario-one-empty-table.md](0058-test-scenario-one-empty-table.md); checker `python -m app.seeds.check_overbooking_0025` (exit 0 = pass); unittest `python -m tests.test_overbooking_0025`.
+- **Verify:** scenario notes in [0058-test-scenario-one-empty-table.md](0058-test-scenario-one-empty-table.md); checker `python -m app.seeds.check_overbooking_0025` (exit 0 = pass; tenant 1); pytest `python3 -m pytest tests/test_overbooking_0025.py` (isolated tenant).
 
 Anything below that still reads as “future work” is **optional polish** or historical design context — not “not implemented”.
 

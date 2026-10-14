@@ -10,6 +10,8 @@ import { FocusFirstInputDirective } from '../shared/focus-first-input.directive'
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { getSubcategoryLabel as resolveSubcategoryLabel } from '../shared/product-subcategory-label.util';
+import { productStockLeft } from '../shared/product-stock.util';
+import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
 
 interface CartItem {
   product: Product;
@@ -43,6 +45,7 @@ interface PlacedOrder {
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent implements OnInit, OnDestroy {
+  readonly resolvePublicPrimaryColor = resolvePublicPrimaryColor;
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private audio = inject(AudioService);
@@ -77,6 +80,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   tenantCurrencyCode = signal<string>('CNY');
   immediatePaymentRequired = signal(false);
   tenantPublicBackgroundColor = signal<string | null>(null);
+  tenantPublicPrimaryColor = signal<string | null>(null);
   tenantRevolutConfigured = signal(false);
   tenantHeaderBackgroundFilename = signal<string | null>(null);
 
@@ -305,6 +309,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         this.tenantCurrency.set(data.tenant_currency || '€');
         this.immediatePaymentRequired.set(data.tenant_immediate_payment_required || false);
         this.tenantPublicBackgroundColor.set(data.tenant_public_background_color ?? null);
+        this.tenantPublicPrimaryColor.set(data.tenant_public_primary_color ?? null);
         this.tenantHeaderBackgroundFilename.set(data.tenant_header_background_filename ?? null);
 
         if (data.tenant_stripe_publishable_key) {
@@ -365,6 +370,7 @@ export class MenuComponent implements OnInit, OnDestroy {
           this.closedTenantName.set(detail.tenant_name || '');
           this.closedTenantId.set(detail.tenant_id || null);
           this.tenantPublicBackgroundColor.set(detail.tenant_public_background_color ?? null);
+          this.tenantPublicPrimaryColor.set(detail.tenant_public_primary_color ?? null);
           this.tenantHeaderBackgroundFilename.set(detail.tenant_header_background_filename ?? null);
           if (detail.tenant_logo && detail.tenant_id) {
             this.closedTenantLogo.set(
@@ -731,6 +737,12 @@ export class MenuComponent implements OnInit, OnDestroy {
       else next.add(key);
       return next;
     });
+  }
+
+  /** Expand cart sheet so the guest can review lines and place the order (#360). */
+  openCartCheckout(event: Event): void {
+    event.stopPropagation();
+    this.cartExpanded.set(true);
   }
 
   isCartItemCommentExpanded(item: CartItem): boolean {
@@ -1122,6 +1134,10 @@ export class MenuComponent implements OnInit, OnDestroy {
     }).format(priceCents / 100);
   }
 
+  stockLeft(product: Product): number | null {
+    return productStockLeft(product);
+  }
+
   sortItems(items: CartItem[]): CartItem[] {
     return [...items].sort((a, b) => {
       if (a.itemId && b.itemId) {
@@ -1397,8 +1413,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   loadOrderHistory() {
-    if (!this.tableToken) return;
-    this.api.getOrderHistory(this.tableToken, 10).subscribe({
+    if (!this.tableToken || !this.sessionId) return;
+    this.api.getOrderHistory(this.tableToken, this.sessionId, 10).subscribe({
       next: (orders) => this.orderHistory.set(orders),
       error: () => this.orderHistory.set([])
     });

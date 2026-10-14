@@ -106,7 +106,14 @@ import { ApiService, PrintAgent, PrintBridgeStatus } from '../services/api.servi
       }
 
       <p class="hint docs">
-        {{ 'SETTINGS.PRINTING_DOCS_HINT' | translate }}
+        <a
+          class="docs-link"
+          href="https://github.com/satisfecho/pos/blob/master/docs/0070-hardware-printing.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="settings-printing-docs-link"
+        >{{ 'SETTINGS.PRINTING_DOCS_LINK' | translate }}</a>
+        <span> — {{ 'SETTINGS.PRINTING_AGENT_CMD_HINT' | translate }}</span>
       </p>
     </div>
   `,
@@ -119,6 +126,14 @@ import { ApiService, PrintAgent, PrintBridgeStatus } from '../services/api.servi
       .hint {
         color: #64748b;
         font-size: 0.9rem;
+      }
+      .docs-link {
+        color: #0369a1;
+        font-weight: 600;
+        text-decoration: underline;
+      }
+      .docs-link:hover {
+        color: #0c4a6e;
       }
       .form-grid {
         display: grid;

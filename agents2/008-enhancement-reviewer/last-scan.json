@@ -192,12 +192,24 @@
       "iso": "2026-08-12T00:05:21Z",
       "new": 1,
       "note": "changelog_sparse false positive post-2.1.147 (empty Unreleased, 0 commits after version date); queued NEW-0-20260812-0005 preflight suppress; demo ok; weekly_due=no; NEW backlog=0"
+    },
+    {
+      "feat": 1,
+      "iso": "2026-09-14T11:03:01Z",
+      "new": 1,
+      "note": "weekly_due=yes (16d); no SIGNAL lines; demo ok; queued FEAT-0 roadmap Aug-Sep + NEW-0 preflight wire products/delivery checks; FEAT=4 from 001 left alone"
+    },
+    {
+      "feat": 0,
+      "iso": "2026-10-04T17:13:18Z",
+      "new": 1,
+      "note": "demo_waiting_list_check=fail + demo_delivery_orders_check=fail unowned; queued NEW-0-20261004-1713 repair via reset_demo_data; weekly_due=no; NEW backlog was 0; FEAT-388 left alone"
     }
   ],
-  "g008_signals": 1,
-  "last_agent_iso": "2026-08-12T00:05:21Z",
-  "last_agent_run_iso": "2026-08-12T00:05:21Z",
-  "last_run": "2026-08-20T14:52:34Z",
+  "g008_signals": 2,
+  "last_agent_iso": "2026-10-04T17:13:18Z",
+  "last_agent_run_iso": "2026-10-04T17:13:18Z",
+  "last_run": "2026-10-10T18:38:09Z",
   "last_signals": 0,
   "new_created": 1
 }

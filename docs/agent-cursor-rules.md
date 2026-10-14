@@ -15,6 +15,7 @@ This repository uses **`.cursor/rules/*.mdc`** to give agents short, verifiable 
 | **Angular build** | `.cursor/rules/angular-frontend-docker-logs.mdc` | Edits under `front/` |
 | **Angular i18n** | `.cursor/rules/angular-ngx-translate.mdc` | Edits under `front/` (UI copy) |
 | **Frontend smoke** | `.cursor/rules/front-smoke-test.mdc` | Edits under `front/` |
+| **UI contrast** | `.cursor/rules/ui-contrast.mdc` | Edits under `front/` (colours / chrome) |
 | **Backend API / DB** | `.cursor/rules/fastapi-sqlmodel-backend.mdc` | Edits under `back/` |
 | **Docker / HAProxy** | `.cursor/rules/docker-compose-haproxy.mdc` | Edits to `docker-compose*.yml` |
 | **Security / tenants** | `.cursor/rules/security-secrets-tenant.mdc` | Always |

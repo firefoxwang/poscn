@@ -109,7 +109,7 @@ The Table PIN Security System provides a multi-layered approach to ensure that o
 order_pin: VARCHAR(6)        -- 4-digit PIN
 is_active: BOOLEAN           -- Is table accepting orders?
 active_order_id: INTEGER     -- Current shared order FK
-activated_at: TIMESTAMP      -- When activated
+activated_at: TIMESTAMP      -- When activated (staff Tables UI shows live duration + start time while is_active)
 ```
 
 ### Tenant Model (Location Settings)
@@ -145,6 +145,9 @@ Response: { id, name, is_active, message }
 
 POST /tables/{id}/regenerate-pin
 Response: { id, name, pin, is_active }
+
+GET /tables/with-status
+Includes activated_at (ISO) so floor UI can show how long the table has been Active.
 ```
 
 ### Order Submission

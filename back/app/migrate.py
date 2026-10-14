@@ -442,11 +442,15 @@ def main():
         version = runner.run_migrations(dry_run=args.check)
         if not args.check:
             from .category_codes import repair_stored_category_aliases
+            from .tenant_public_slug import backfill_all_public_slugs
 
             with Session(engine) as session:
                 stats = repair_stored_category_aliases(session)
                 if stats["products_updated"] or stats["tenants_updated"]:
                     logger.info("Category alias repair: %s", stats)
+                slug_stats = backfill_all_public_slugs(session)
+                if slug_stats["tenants_updated"]:
+                    logger.info("Public slug backfill: %s", slug_stats)
             print(f"✅ Database schema version: {version}")
     except Exception as e:
         logger.error(f"Migration runner failed: {e}")

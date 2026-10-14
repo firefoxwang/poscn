@@ -22,43 +22,55 @@
     },
     "satisfecho/060_labellatoscana": {
       "last_artifact": "labellatoscana-satisfecho-deploy",
-      "pushed_at": "2026-06-05T11:47:20Z"
+      "pushed_at": "2026-09-17T13:48:55Z"
     },
     "satisfecho/082_la_moca": {
       "last_artifact": "la-moca-dist",
-      "pushed_at": "2026-05-29T09:38:56Z"
+      "pushed_at": "2026-09-17T13:48:58Z"
     },
     "satisfecho/083_wimpi": {
       "last_artifact": "wimpi-satisfecho-deploy",
-      "pushed_at": "2026-06-05T12:46:54Z"
+      "pushed_at": "2026-09-17T13:49:00Z"
     },
     "satisfecho/085_Bosskebabypizzeria": {
       "last_artifact": "boss-kebab-satisfecho-deploy",
-      "pushed_at": "2026-06-02T07:02:46Z"
+      "pushed_at": "2026-09-17T13:49:03Z"
     },
     "satisfecho/086_pitahouse": {
       "last_artifact": "pita-house-satisfecho-deploy",
-      "pushed_at": "2026-06-05T06:54:41Z"
+      "pushed_at": "2026-09-17T13:49:10Z"
     },
     "satisfecho/087_pizzalluna": {
       "last_artifact": "pizzaluna-satisfecho-deploy",
-      "pushed_at": "2026-06-04T14:08:11Z"
+      "pushed_at": "2026-09-17T13:49:08Z"
     },
     "satisfecho/088_ricokebab": {
       "last_artifact": "rico-kebab-satisfecho-deploy",
-      "pushed_at": "2026-06-02T16:47:52Z"
+      "pushed_at": "2026-09-17T13:49:05Z"
     },
     "satisfecho/089_amigokebab": {
       "last_artifact": "amigo-kebab-satisfecho-deploy",
-      "pushed_at": "2026-06-15T11:20:32Z"
+      "pushed_at": "2026-09-17T13:49:13Z"
     },
     "satisfecho/090_aribakebab": {
       "last_artifact": "ariba-doner-satisfecho-deploy",
-      "pushed_at": "2026-06-17T12:58:16Z"
+      "pushed_at": "2026-09-17T13:49:15Z"
     },
     "satisfecho/091_frenchkebab": {
       "last_artifact": "french-kebab-satisfecho-deploy",
       "pushed_at": "2026-06-25T12:15:36Z"
+    },
+    "satisfecho/092_kebabexpress": {
+      "last_artifact": "kebab-express-satisfecho-deploy",
+      "pushed_at": "2026-09-21T14:45:38Z"
+    },
+    "satisfecho/092_kebabfactory": {
+      "last_artifact": "kebab-factory-satisfecho-deploy",
+      "pushed_at": "2026-09-24T16:56:37Z"
+    },
+    "satisfecho/093_bar-jupiter": {
+      "last_artifact": "bar-jupiter-satisfecho-deploy",
+      "pushed_at": "2026-09-17T02:22:44Z"
     }
   }
 }

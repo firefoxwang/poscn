@@ -42,12 +42,58 @@
     flex: 1;
 }
 
+.logo-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    width: 100%;
+}
+
 .logo {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-primary);
     line-height: 1.2;
     display: block;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: underline;
+        outline: none;
+    }
+}
+
+.logout-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0.25rem;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    line-height: 1;
+    min-width: 28px;
+    min-height: 28px;
+
+    &:hover {
+        color: var(--color-primary);
+        background: var(--color-bg);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+    }
+}
+
+.sidebar-lang {
+    flex-shrink: 0;
 }
 
 .sidebar-org-name {
@@ -74,7 +120,29 @@
     margin-top: 2px;
 }
 
-.commit-hash {
+.version-btn {
+    font-family: inherit;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+}
+
+.version-btn:hover,
+.version-btn:focus-visible {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.version-btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.commit-hash,
+.tenant-id {
     margin-left: 4px;
     font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
     font-size: 0.625rem;
@@ -149,6 +217,8 @@
     color: var(--color-text-muted);
     font-size: 0.9375rem;
     font-weight: 500;
+    // Buttons default to text-align:center; keep labels left like .nav-link.
+    text-align: left;
     cursor: pointer;
     transition: all 0.15s ease;
     border-left: 3px solid transparent;
@@ -159,8 +229,107 @@
         background: var(--color-bg);
     }
 
+    > svg:first-child {
+        flex-shrink: 0;
+    }
+
+    > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .chevron {
         margin-left: auto;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+
+        &.open {
+            transform: rotate(180deg);
+        }
+    }
+
+    // Hub link + expand chevron: overlay chevron so label width matches peers.
+    &--split {
+        position: relative;
+        padding: 0;
+        gap: 0;
+        cursor: default;
+
+        &:hover {
+            color: var(--color-text-muted);
+            background: none;
+        }
+
+        &.active {
+            border-left-color: var(--color-primary);
+        }
+    }
+}
+
+.nav-section-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+    // Same horizontal padding as .nav-section-header; right pad clears overlay chevron.
+    padding: var(--space-3) var(--space-5);
+    color: inherit;
+    text-decoration: none;
+    text-align: left;
+    font-size: inherit;
+    font-weight: inherit;
+    min-height: 44px;
+
+    > svg {
+        flex-shrink: 0;
+    }
+
+    > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &:hover {
+        color: var(--color-text);
+        background: var(--color-bg);
+    }
+
+    &.active {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+}
+
+.nav-section-chevron {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    z-index: 1;
+
+    &:hover {
+        color: var(--color-text);
+        background: var(--color-bg);
+    }
+
+    .chevron {
+        margin-left: 0;
         transition: transform 0.2s ease;
 
         &.open {
@@ -251,8 +420,7 @@
 }
 
 .user-info {
-    margin-top: var(--space-4);
-    margin-bottom: var(--space-3);
+    margin-bottom: 0;
 }
 
 .user-email {
@@ -270,27 +438,6 @@
     display: block;
     margin-top: 2px;
     text-transform: capitalize;
-}
-
-.logout-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    width: 100%;
-    padding: var(--space-3);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    min-height: 44px;
-
-    &:hover {
-        background: var(--color-bg);
-        color: var(--color-text);
-    }
 }
 
 // Mobile header
@@ -347,6 +494,13 @@
     font-size: 1rem;
     color: var(--color-primary);
     min-width: 0;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: underline;
+        outline: none;
+    }
 }
 
 .header-org-name {

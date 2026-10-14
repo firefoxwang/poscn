@@ -53,9 +53,10 @@ Step-by-step guide to use Gmail for sending transactional emails (e.g. reservati
   | **SMTP username / email** | the Gmail account from step 1 (e.g. `your-restaurant@gmail.com`) |
   | **SMTP password** | the 16-character App Password from step 4 (not your normal Gmail password) |
   | **From email address** (optional) | usually the same Gmail address, or leave blank to use the username |
-  | **From name** (optional) | e.g. your restaurant name |
+  | **From name** (optional) | leave blank to use **Business Name** from Settings → Business; or set a custom sender name |
 
 - Save. Emails sent by POS will use this account; if you leave the SMTP fields empty, the server’s global SMTP config (`config.env`) is used instead.
+- **From name default:** If **From name** is empty, outbound mail uses the tenant **Business Name**. A saved From name is never overwritten. The Settings field shows Business Name as a placeholder only until you type and save a value.
 
 ---
 

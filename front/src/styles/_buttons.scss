@@ -36,15 +36,22 @@
 // Button variants
 .btn-primary {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary, #ffffff);
+
+    svg {
+        fill: currentColor;
+        color: inherit;
+    }
 
     &:hover:not(:disabled) {
         background: var(--color-primary-hover);
+        color: var(--color-on-primary, #ffffff);
     }
 }
 
 .btn-secondary {
-    background: var(--color-bg);
+    /* Use --color-subtle so tenant --color-bg brand wash does not paint controls (#408) */
+    background: var(--color-subtle, var(--color-surface));
     color: var(--color-text);
     border: 1px solid var(--color-border);
 
@@ -55,7 +62,7 @@
 
 .btn-danger {
     background: var(--color-error);
-    color: white;
+    color: var(--color-on-primary, #ffffff);
 
     &:hover:not(:disabled) {
         background: #b91c1c;
@@ -64,7 +71,7 @@
 
 .btn-success {
     background: var(--color-success);
-    color: white;
+    color: var(--color-on-primary, #ffffff);
 
     &:hover:not(:disabled) {
         background: #15803d;
@@ -76,7 +83,7 @@
     color: var(--color-text-muted);
 
     &:hover:not(:disabled) {
-        background: var(--color-bg);
+        background: var(--color-subtle, var(--color-bg));
         color: var(--color-text);
     }
 }
@@ -116,7 +123,7 @@
     min-height: 44px; // Touch target
 
     &:hover {
-        background: var(--color-bg);
+        background: var(--color-subtle, var(--color-bg));
         color: var(--color-text);
     }
 
@@ -174,7 +181,7 @@
     }
 
     &.completed {
-        background: var(--color-bg);
+        background: var(--color-subtle, var(--color-bg));
         color: var(--color-text-muted);
     }
 }

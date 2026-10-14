@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Puppeteer smoke test: Settings → Contact information → default tax dropdown.
+ * Puppeteer smoke test: Settings → Taxes → default tax (IVA) dropdown.
  *
  * Checks that the default tax select is populated with at least one IVA option
- * (e.g. "IVA 10%") instead of rendering as an empty wrapper.
+ * (e.g. "IVA 10%") and that changing + saving persists across reload.
  *
  * Usage:
- *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run <script> --prefix front
+ *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:settings-contact-tax --prefix front
  *   Or (from repo root):
  *   BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-settings-contact-tax-dropdown.mjs
  *
@@ -94,6 +94,20 @@ async function main() {
   page.on('console', (msg) => console.log('[browser]', msg.text()));
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+  async function openTaxesSection() {
+    await page.goto(new URL('/settings?section=taxes', baseUrl).href, {
+      waitUntil: 'networkidle2',
+      timeout: 15000,
+    });
+    await sleep(2000);
+    const taxesTab = await page.$('[data-testid="settings-taxes-tab"]');
+    if (!taxesTab) {
+      throw new Error('Taxes tab not found (data-testid=settings-taxes-tab).');
+    }
+    await taxesTab.click();
+    await sleep(1500);
+  }
+
   try {
     console.log('1. Logging in...');
     await page.goto(new URL(`/login?tenant=${tenantId}`, baseUrl).href, {
@@ -115,27 +129,13 @@ async function main() {
       process.exit(1);
     }
 
-    console.log('2. Opening Settings...');
-    await page.goto(new URL('/settings', baseUrl).href, {
-      waitUntil: 'networkidle2',
-      timeout: 15000,
-    });
-    await sleep(2000);
+    console.log('2. Opening Settings → Taxes...');
+    await openTaxesSection();
 
-    console.log('3. Opening Contact information...');
-    const contactTab = await page.$('[data-testid="settings-contact-tab"]');
-    if (!contactTab) {
-      console.log('FAIL: Contact tab not found (data-testid=settings-contact-tab).');
-      await browser.close();
-      process.exit(1);
-    }
-    await contactTab.click();
-    await sleep(2000);
-
-    console.log('4. Checking default tax dropdown options...');
-    const select = await page.$('select#default_tax_id');
+    console.log('3. Checking default tax dropdown options...');
+    const select = await page.$('[data-testid="settings-default-tax-select"]');
     if (!select) {
-      console.log('FAIL: default tax select not found (select#default_tax_id).');
+      console.log('FAIL: default tax select not found (data-testid=settings-default-tax-select).');
       await browser.close();
       process.exit(1);
     }
@@ -158,7 +158,48 @@ async function main() {
       process.exit(1);
     }
 
-    console.log('>>> RESULT: Settings contact default tax dropdown populated.');
+    console.log('4. Changing default tax to IVA 0% and saving...');
+    const zeroOptionValue = await page.$$eval('#default_tax_id option', (els) => {
+      const o = els.find((e) => /IVA\s*0%/i.test(e.textContent || ''));
+      return o ? o.value : null;
+    });
+    if (!zeroOptionValue) {
+      console.log('FAIL: No IVA 0% option to select. Options:', optionTexts);
+      await browser.close();
+      process.exit(1);
+    }
+    await page.select('#default_tax_id', zeroOptionValue);
+    await sleep(300);
+    const saveBtn = await page.$('[data-testid="settings-default-tax-save"]');
+    if (!saveBtn) {
+      console.log('FAIL: default tax save button not found.');
+      await browser.close();
+      process.exit(1);
+    }
+    await saveBtn.click();
+    await sleep(2500);
+
+    console.log('5. Reloading Settings → Taxes and checking persistence...');
+    await openTaxesSection();
+    const selectedText = await page.$eval('#default_tax_id option:checked', (el) => el.textContent || '');
+    if (!/IVA\s*0%/i.test(selectedText)) {
+      console.log('FAIL: Expected IVA 0% after reload. Selected:', selectedText);
+      await browser.close();
+      process.exit(1);
+    }
+
+    // Restore to IVA 10% so the demo tenant stays on the usual default.
+    const tenOptionValue = await page.$$eval('#default_tax_id option', (els) => {
+      const o = els.find((e) => /IVA\s*10%/i.test(e.textContent || ''));
+      return o ? o.value : null;
+    });
+    if (tenOptionValue) {
+      await page.select('#default_tax_id', tenOptionValue);
+      await (await page.$('[data-testid="settings-default-tax-save"]')).click();
+      await sleep(1500);
+    }
+
+    console.log('>>> RESULT: Settings taxes default tax dropdown populated and save persists.');
     await browser.close();
     process.exit(0);
   } catch (err) {
@@ -169,4 +210,3 @@ async function main() {
 }
 
 main();
-

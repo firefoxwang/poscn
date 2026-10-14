@@ -126,7 +126,17 @@
     "GROUP_ADMIN": "प्रशासन",
     "CONTRACTS": "अनुबंध",
     "WAREHOUSES": "गोदाम",
-    "TALK": "बात करें"
+    "TALK": "बात करें",
+    "GROUP_CATALOG_TOGGLE": "कैटलॉग और इन्वेंटरी खोलें या बंद करें"
+  },
+  "PUBLIC_GUEST_NAV": {
+    "ARIA": "रेस्तरां पृष्ठ",
+    "MENU": "मेनू",
+    "BOOK": "बुक करें",
+    "WAITLIST": "प्रतीक्षा सूची",
+    "DELIVERY": "डिलीवरी",
+    "LOYALTY": "लॉयल्टी",
+    "FEEDBACK": "प्रतिक्रिया"
   },
   "STAFF_FLOW": {
     "TOOLBAR_ARIA": "स्टाफ नेविगेशन",
@@ -240,7 +250,8 @@
     "QR_DEMO_OPEN_MENU": "डेमो मेनू खोलें",
     "NAV_PRICING": "मूल्य",
     "NAV_ABOUT": "हमारे बारे में",
-    "COMPANY_OPERATOR": "Amvara Consulting S.L. द्वारा संचालित"
+    "COMPANY_OPERATOR": "Amvara Consulting S.L. द्वारा संचालित",
+    "USER_MANUAL": "उपयोगकर्ता मैनुअल"
   },
   "FEATURES_PAGE": {
     "BADGE": "पूरी सुविधा सूची",
@@ -317,7 +328,16 @@
   "PRICING_PAGE": {
     "BADGE": "सरल होस्टेड मूल्य",
     "TITLE": "मुफ़्त आज़माएँ, फिर एक फ्लैट मासिक प्लान",
-    "SUBTITLE": "होस्टेड Satisfecho में कार्ड के बिना मुफ़्त ट्रायल शामिल है। खुद चलाएँ तो AGPLv3 के तहत शून्य लाइसेंस लागत।",
+    "SUBTITLE": "हमेशा के लिए मुफ़्त QR मेनू से शुरू करें। पूर्ण प्लेटफ़ॉर्म के लिए होस्टेड Satisfecho में कार्ड के बिना मुफ़्त ट्रायल शामिल है। खुद चलाएँ तो AGPLv3 के तहत शून्य लाइसेंस लागत।",
+    "QR_CALLOUT": "QR मेनू हमेशा मुफ़्त — बिना लागत शुरू करें",
+    "QR_NAME": "QR मेनू",
+    "QR_LEDE": "अतिथियों के लिए डिजिटल मेनू और टेबल ऑर्डरिंग — कोई ऐप इंस्टॉल नहीं।",
+    "QR_PRICE": "मुफ़्त",
+    "QR_FOREVER": "हमेशा मुफ़्त",
+    "QR_INCLUDES_1": "टेबल QR कोड से मोबाइल मेनू प्रकाशित करें",
+    "QR_INCLUDES_2": "एक बार डिश अपडेट करें — हर QR नवीनतम मेनू दिखाता है",
+    "QR_INCLUDES_3": "तैयार होने पर किचन, रिपोर्ट और अधिक जोड़ें",
+    "CTA_QR": "अपना QR मेनू बनाएँ",
     "HOSTED_NAME": "होस्टेड",
     "HOSTED_LEDE": "आपके रेस्तराँ के लिए प्रबंधित Satisfecho — प्लेटफ़ॉर्म हम चलाते हैं।",
     "PER_MONTH": "/ माह",
@@ -335,6 +355,12 @@
     "SELFHOST_PRICE": "€0",
     "SELFHOST_LICENSE": "AGPLv3 ओपन सोर्स — कोई होस्टेड शुल्क नहीं",
     "CTA_GITHUB": "GitHub पर देखें",
+    "SUPPORT_NAME": "पेशेवर सहायता",
+    "SUPPORT_HEADLINE": "हम आपका साथ देते हैं!",
+    "SUPPORT_LEDE": "हमारी टीम से वैकल्पिक मदद — सेटअप, प्रशिक्षण और समस्या निवारण।",
+    "SUPPORT_PRICE": "€50/घं + कर",
+    "SUPPORT_NOTE": "प्रति घंटे बिलिंग। अपनी ज़रूरतों पर चर्चा के लिए संपर्क करें।",
+    "CTA_SUPPORT": "संपर्क करें",
     "LOAD_ERROR": "मूल्य लोड नहीं हो सके। बाद में पुनः प्रयास करें।"
   },
   "PUBLIC_MENU": {
@@ -400,7 +426,8 @@
     "BACK_HOME": "होम पर वापस",
     "INVALID_TENANT": "अमान्य रेस्तरां लिंक।",
     "TENANT_NOT_FOUND": "रेस्तरां नहीं मिला।",
-    "LOAD_FAILED": "डिलीवरी मेनू लोड नहीं हो सका। बाद में पुनः प्रयास करें।"
+    "LOAD_FAILED": "डिलीवरी मेनू लोड नहीं हो सका। बाद में पुनः प्रयास करें।",
+    "FLOATING_BAR_ARIA": "ऑर्डर कुल और आगे बढ़ें"
   },
   "DELIVERY_TRACK": {
     "TITLE": "Track your order",
@@ -534,7 +561,11 @@
     "ADDRESS": "पता",
     "WEBSITE": "वेबसाइट",
     "TENANT_NOT_FOUND": "टेनant नहीं मिला।",
-    "LOAD_FAILED": "प्लेटफ़ॉर्म डेटा लोड नहीं हो सका। कृपया फिर से साइन इन करें।"
+    "LOAD_FAILED": "प्लेटफ़ॉर्म डेटा लोड नहीं हो सका। कृपया फिर से साइन इन करें।",
+    "COL_OWNER_LOGINS": "मालिक लॉगिन",
+    "COL_OWNER_LAST_LOGIN": "मालिक अंतिम लॉगिन",
+    "COL_LOGIN_COUNT": "लॉगिन",
+    "COL_LAST_LOGIN": "अंतिम लॉगिन"
   },
   "COURIER_HOME": {
     "TITLE": "डिलीवरी",
@@ -621,9 +652,9 @@
     "HIDE_PASSWORD": "पासवर्ड छुपाएं",
     "ORGANIZATION_PLACEHOLDER": "आपके रेस्तरां का नाम",
     "NAME_PLACEHOLDER": "जॉन डो",
-    "OTP_ENTER_CODE": "अपने प्रमाणक ऐप से 6 अंकों का कोड दर्ज करें",
+    "OTP_ENTER_CODE": "Enter the 6-digit code from your authenticator app, or a recovery code",
     "OTP_CODE": "प्रमाणीकरण कोड",
-    "OTP_CODE_PLACEHOLDER": "000000",
+    "OTP_CODE_PLACEHOLDER": "000000 or XXXX-XXXX",
     "VERIFY_OTP": "सत्यापित करें",
     "VERIFYING": "सत्यापित हो रहा है…",
     "BACK": "वापस",
@@ -670,7 +701,8 @@
     "SIGNUP_COMPLETE_LEAD": "यह QR कोड साझा करें ताकि मेहमान मेनू देखकर ऑर्डर कर सकें।",
     "SIGNUP_GO_DASHBOARD": "स्टाफ डैशबोर्ड खोलें",
     "SIGNUP_CONTINUE_PAYWALL": "प्लान पर जारी रखें",
-    "LOGOUT": "लॉग आउट"
+    "LOGOUT": "लॉग आउट",
+    "OTP_RECOVERY_HINT": "Lost your phone? Use one unused recovery code instead. Each recovery code works only once."
   },
   "PAYWALL": {
     "TITLE": "जारी रखने के लिए एक प्लान चुनें",
@@ -733,7 +765,8 @@
     "SHARED_CART_HINT": "साझा टेबल कार्ट — मेज़ पर सभी ये आइटम देखते हैं। ऑर्डर केवल आपके आइटम भेजता है।",
     "ADDED_BY": "{{name}} द्वारा जोड़ा गया",
     "ADDED_BY_GUEST": "किसी अन्य अतिथि द्वारा जोड़ा गया",
-    "PLACE_OWN_ITEMS_ONLY": "ऑर्डर देने से पहले अपने आइटम जोड़ें। अन्य अतिथियों के आइटम साझा कार्ट में रहते हैं जब तक वे ऑर्डर न दें।"
+    "PLACE_OWN_ITEMS_ONLY": "ऑर्डर देने से पहले अपने आइटम जोड़ें। अन्य अतिथियों के आइटम साझा कार्ट में रहते हैं जब तक वे ऑर्डर न दें।",
+    "STOCK_ONLY_LEFT": "केवल {{count}} बचे हैं"
   },
   "PRODUCTS": {
     "TITLE": "उत्पाद",
@@ -935,7 +968,15 @@
     "BULK_IMPORT_CSV_PLACEHOLDER": "name,price,category\nMargherita,12.5,Main Course",
     "BULK_IMPORT_CSV_HINT": "Required: name. Price via price or price_cents. Optional: cost, category, subcategory, description, ingredients. Common aliases (producto, precio, …) are accepted. Unknown columns are rejected unless AI mapping is enabled.",
     "BULK_IMPORT_CSV_AI_MAPPING": "Use AI to map unknown column headers (sends headers + a few sample rows to the configured vision API; review preview before saving)",
-    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first."
+    "BULK_IMPORT_CSV_EMPTY": "Paste or upload CSV first.",
+    "STOCK_ALERT_ENABLED": "स्टॉक अलर्ट सक्षम करें",
+    "STOCK_ALERT_HINT": "जब बिकने योग्य स्टॉक अलर्ट स्तर पर या उससे कम हो तो चेतावनी दें। इस उत्पाद पर प्रबंधित।",
+    "STOCK_QTY": "वर्तमान स्टॉक",
+    "STOCK_ALERT_LEVEL": "इस पर या नीचे अलर्ट",
+    "STOCK_HEADER": "स्टॉक",
+    "STOCK_LOW": "कम",
+    "STOCK_OK": "ठीक",
+    "STOCK_BADGE_TITLE": "स्टॉक {{qty}} (अलर्ट {{level}} पर)"
   },
   "CATALOG": {
     "TITLE": "उत्पाद कैटलॉग",
@@ -1400,6 +1441,7 @@
     "DEFAULT_TABLE_NAME": "टेबल {{number}}",
     "DRAG_HINT": "कैनवास पर खींचें",
     "ACTIVE": "सक्रिय",
+    "ACTIVE_SESSION_META": "{{duration}} से सक्रिय · {{time}} से",
     "INACTIVE": "निष्क्रिय",
     "ACTIVATE": "सक्रिय करें",
     "CLOSE_TABLE": "टेबल बंद करें",
@@ -1796,6 +1838,7 @@
   },
   "SETTINGS": {
     "TITLE": "सेटिंग्स",
+    "SECTION_NAV_ARIA": "सेटिंग्स अनुभाग",
     "SUBTITLE": "अपनी व्यावसायिक जानकारी और ब्रांडिंग प्रबंधित करें",
     "NAVIGATION_UI_TAB": "नेविगेशन",
     "UI_MODULES_TITLE": "स्टाफ़ नेविगेशन",
@@ -1840,8 +1883,9 @@
     "DESCRIPTION": "विवरण",
     "DESCRIPTION_PLACEHOLDER": "आपके व्यवसाय का संक्षिप्त विवरण...",
     "PUBLIC_BACKGROUND_COLOR": "सार्वजनिक साइट पृष्ठभूमि रंग",
-    "PUBLIC_BACKGROUND_COLOR_HINT": "बुक, मेनू और आरक्षण पृष्ठों के लिए पृष्ठभूमि रंग। हेक्स उपयोग करें (जैसे #1E22AA) या प्रीसेट।",
-    "PRESET_RAL5002": "RAL5002 (नीला)",
+    "PUBLIC_BACKGROUND_COLOR_HINT": "बुक, मेनू और आरक्षण पृष्ठों के लिए पृष्ठभूमि रंग। हेक्स लिखें, रंग चुनें, या वैकल्पिक रूप से RAL5002 लागू करें। प्रीसेट केवल क्लिक पर मान बदलता है; फ़ील्ड लॉक नहीं होता।",
+    "PRESET_RAL5002": "RAL5002 लागू करें (#1E22AA)",
+    "PRESET_RAL5002_TITLE": "वैकल्पिक प्रीसेट: सार्वजनिक पृष्ठभूमि RAL5002 नीला (#1E22AA)। फ़ील्ड लॉक नहीं करता।",
     "TIMEZONE": "समय क्षेत्र",
     "SEARCH_TIMEZONE": "समय क्षेत्र खोजें...",
     "TIMEZONE_NOT_SET": "कोई समय क्षेत्र कॉन्फ़िगर नहीं है। आरक्षण समय सत्यापन के लिए UTC का उपयोग किया जाएगा।",
@@ -1934,6 +1978,8 @@
     "RESTAURANT_GROUP_THIS_LOCATION": "This location",
     "RESTAURANT_GROUP_LEAVE": "Leave group",
     "DELIVERY_INTEGRATIONS_TAB": "एकीकरण",
+    "DELIVERY_TAB": "डिलीवरी",
+    "DELIVERY_SECTION_SUBTITLE": "Satisfecho Delivery और मार्केटप्लेस एकीकरण कॉन्फ़िगर करें।",
     "DELIVERY_INTEGRATIONS_TITLE": "डिलीवरी मार्केटप्लेस एकीकरण",
     "DELIVERY_INTEGRATIONS_SUBTITLE": "तृतीय-पक्ष डिलीवरी ब्रांड कनेक्ट करें। क्रेडेंशियल सर्वर पर रहते हैं। बाहरी आइटम को POS उत्पादों से मैप करें; इनजेस्ट किए गए ऑर्डर उसी किचन ऑर्डर फ़्लो का उपयोग करते हैं।",
     "DELIVERY_INTEGRATIONS_EXPAND": "कॉन्फ़िगर करें",
@@ -2099,7 +2145,7 @@
     "STAFF_KITCHEN": "किचन",
     "STAFF_RECEPTIONIST": "रिसेप्शन",
     "PAYMENT_SETTINGS": "भुगतान सेटिंग्स",
-    "PAYMENT_SETTINGS_SUBTITLE": "भुगतान विधियां कॉन्फ़िगर करें",
+    "PAYMENT_SETTINGS_SUBTITLE": "मुद्रा, पेमेंट गेटवे, राजकोषीय विकल्प और टिप कॉन्फ़िगर करें।",
     "CURRENCY": "मुद्रा",
     "SELECT_CURRENCY": "मुद्रा चुनें",
     "CURRENCY_HINT": "मूल्यों के लिए ISO 4217 कोड (उत्पाद, मेनू, ऑर्डर, रिपोर्ट)। अपने भुगतान प्रदाता द्वारा अपेक्षित कोड उपयोग करें (जैसे EUR, USD, MXN)।",
@@ -2167,9 +2213,10 @@
     "OTP_ENABLE": "OTP सक्षम करें",
     "OTP_CONFIRMING": "सत्यापित हो रहा है…",
     "OTP_ENABLED": "दो-कारक प्रमाणीकरण (OTP) सक्षम है। साइन इन करते समय आपको अपने प्रमाणक ऐप से कोड दर्ज करना होगा।",
-    "OTP_DISABLE_ENTER_CODE": "अक्षम करने के लिए अपना वर्तमान OTP कोड दर्ज करें",
     "OTP_DISABLE": "OTP अक्षम करें",
     "OTP_DISABLING": "अक्षम हो रहा है…",
+    "OTP_SECRET_COPIED": "कॉपी हो गया",
+    "OTP_SECRET_COPY_FAILED": "कुंजी कॉपी नहीं हो सकी। इसे चुनकर मैन्युअल रूप से कॉपी करें, या क्लिपबोर्ड अनुमति दें।",
     "STRIPE_KEYS": "Stripe कुंजी",
     "LOCATION_VERIFICATION": "स्थान सत्यापन",
     "LOCATION_VERIFICATION_DESC": "नीचे रेस्तरां के स्थान के निर्देशांक और त्रिज्या सेट करें। वही बिंदु क्षेत्र के बाहर के ऑर्डर चिह्नित करता है; स्टाफ क्लॉक-इन QR के तहत चालू करने पर क्लॉक-इन पर GPS जाँच भी इसी का उपयोग करती है।",
@@ -2249,6 +2296,7 @@
     "EMAIL_FROM": "प्रेषक ईमेल पता",
     "EMAIL_FROM_NAME": "प्रेषक नाम",
     "EMAIL_FROM_PLACEHOLDER": "उदा. आपके रेस्तरां का नाम",
+    "EMAIL_FROM_NAME_HINT": "प्रेषक नाम के रूप में व्यवसाय का नाम उपयोग करने के लिए खाली छोड़ें।",
     "RESERVATION_CONFIRMATION_EMAIL_TITLE": "आरक्षण पुष्टि ईमेल",
     "RESERVATION_CONFIRMATION_EMAIL_DESC": "ईमेल सादे पाठ में लिखें। मान डालने के लिए अनुमत नाम को दोहरी कर्ली ब्रेस में लिखें (उदा. customer_name)। केवल ये नाम भरे जाते हैं—कोई कोड या स्क्रिप्ट नहीं। डिफ़ॉल्ट बिल्ट-इन टेक्स्ट के लिए खाली छोड़ें।",
     "RESERVATION_CONFIRMATION_SUBJECT": "ईमेल विषय",
@@ -2259,6 +2307,7 @@
     "LOYALTY_TAB": "Loyalty club",
     "LOYALTY_TITLE": "Club loyalty",
     "LOYALTY_SUBTITLE": "Points or stamps earned on paid orders. Guests join via a public link; staff redeem rewards at checkout.",
+    "LOYALTY_DOCS_LINK": "क्लब लॉयल्टी रनबुक (docs/0066)",
     "LOYALTY_ENABLED": "Enable loyalty program",
     "LOYALTY_PROGRAM_NAME": "Program name",
     "LOYALTY_MODE": "Mode",
@@ -2326,7 +2375,8 @@
     "PRINTING_REVOKED": "रद्द",
     "PRINTING_REVOKE": "रद्द करें",
     "PRINTING_REFRESH": "रिफ़्रेश",
-    "PRINTING_DOCS_HINT": "रनबुक: docs/0070-hardware-printing.md — python3 scripts/print-agent/print_agent.py",
+    "PRINTING_DOCS_LINK": "हार्डवेयर प्रिंटिंग रनबुक (docs/0070)",
+    "PRINTING_AGENT_CMD_HINT": "LAN एजेंट: python3 scripts/print-agent/print_agent.py",
     "TSE_TITLE": "German TSE (KassenSichV preparation)",
     "TSE_DESC": "Separate from Spain VeriFactu. In test mode, paid orders get a local stub TSE signature; receipts show serial, counter, time, and QR. Live mode stays locked until TSE_LIVE_UNLOCK and a cloud provider URL are set. Not certified by itself.",
     "FISCAL_COUNTRY": "Fiscal country hint",
@@ -2365,7 +2415,41 @@
     "LOYALTY_MEMBERS_EMPTY_HINT": "मेहमानों के नामांकन के लिए सार्वजनिक जॉइन URL साझा करें।",
     "LOYALTY_REFERRAL_INVITEE_HINT": "वैध रेफ़रल कोड से जॉइन करने वाले नए सदस्य को मिलने वाली यूनिट (0 = बंद)।",
     "LOYALTY_WALLET_ENABLED": "Apple / Google Wallet पास दें",
-    "LOYALTY_WALLET_ENABLED_HINT": "प्लेटफ़ॉर्म प्रमाणपत्र सेट होने पर सदस्य जॉइन पर वॉलेट पास जोड़ सकते हैं। केवल बैलेंस कार्ड के लिए बंद करें।"
+    "LOYALTY_WALLET_ENABLED_HINT": "प्लेटफ़ॉर्म प्रमाणपत्र सेट होने पर सदस्य जॉइन पर वॉलेट पास जोड़ सकते हैं। केवल बैलेंस कार्ड के लिए बंद करें।",
+    "OTP_DISABLE_ENTER_PASSWORD": "दो-कारक प्रमाणीकरण अक्षम करने के लिए अपना खाता पासवर्ड दर्ज करें",
+    "OTP_DISABLE_FAILED": "दो-कारक प्रमाणीकरण अक्षम नहीं हो सका। पासवर्ड जांचें और फिर कोशिश करें।",
+    "OTP_RECOVERY_TITLE": "Save your recovery codes",
+    "OTP_RECOVERY_HINT": "Store these codes in a safe place. Each code can be used once if you lose access to your authenticator app. They are shown only now.",
+    "OTP_RECOVERY_SAVED_CONFIRM": "I have saved these recovery codes in a safe place",
+    "OTP_RECOVERY_CONTINUE": "Continue",
+    "OTP_RECOVERY_COPY_ALL": "Copy all",
+    "OTP_RECOVERY_DOWNLOAD": "Download",
+    "OTP_RECOVERY_COPIED": "Copied",
+    "OTP_RECOVERY_REMAINING": "Unused recovery codes: {{count}}",
+    "OTP_RECOVERY_REGENERATE": "Generate new recovery codes",
+    "OTP_RECOVERY_REGENERATING": "Generating…",
+    "OTP_RECOVERY_REGENERATE_PASSWORD": "Enter your account password to generate new recovery codes (invalidates unused ones)",
+    "OTP_RECOVERY_REGENERATE_FAILED": "Could not generate recovery codes. Check your password and try again.",
+    "PUBLIC_PRIMARY_COLOR": "सार्वजनिक प्राथमिक बटन रंग",
+    "PUBLIC_PRIMARY_COLOR_HINT": "सार्वजनिक पृष्ठों पर मुख्य क्रियाओं (टेबल बुक करें, जमा करें आदि) का रंग। खाली = नीला। पृष्ठभूमि रंग अलग रहता है।",
+    "PRESET_PRIMARY_BLUE": "नीला (डिफ़ॉल्ट)",
+    "PRESET_PRIMARY_GREEN": "हरा",
+    "LOYALTY_MEMBERS_SEARCH": "सदस्य खोजें",
+    "LOYALTY_MEMBERS_SEARCH_HINT": "नाम, ईमेल या फ़ोन से खोजें",
+    "LOYALTY_MEMBERS_SEARCH_EMPTY": "उस खोज से कोई सदस्य मेल नहीं खाता।",
+    "LOYALTY_CARD_LINK": "कार्ड लिंक",
+    "LOYALTY_COPY_CARD": "कार्ड लिंक कॉपी करें",
+    "LOYALTY_COPIED": "कॉपी हो गया",
+    "LOYALTY_CONFIRM_DELETE_MEMBER": "लॉयल्टी सदस्य {{name}} हटाएँ? यह पूर्ववत नहीं होगा।",
+    "SERVICE_LABEL": "सेवा लेबल",
+    "SERVICE_LABEL_PLACEHOLDER": "उदा. नाश्ता (वैकल्पिक)",
+    "MORNING_LABEL": "सुबह की सेवा का लेबल",
+    "MORNING_LABEL_PLACEHOLDER": "लंच / नाश्ता",
+    "EVENING_LABEL": "शाम की सेवा का लेबल",
+    "EVENING_LABEL_PLACEHOLDER": "डिनर",
+    "CITY": "शहर",
+    "PUBLIC_SLUG": "सार्वजनिक मेनू URL स्लग",
+    "PUBLIC_SLUG_HINT": "/public-menu/{slug} और /{slug}/book (नाम-शहर) में उपयोग। अक्षर, अंक, हाइफ़न। खाली छोड़ें तो नाम और शहर से अपने आप बनेगा।"
   },
   "PAYMENTS": {
     "PAYMENT": "भुगतान",
@@ -2734,7 +2818,8 @@
       "BARTENDER": "बारटेंडर",
       "WAITER": "वेटर",
       "RECEPTIONIST": "रिसेप्शनिस्ट",
-      "COURIER": "कूरियर"
+      "COURIER": "कूरियर",
+      "PLATFORM_OPERATOR": "प्लेटफ़ॉर्म ऑपरेटर"
     }
   },
   "TRANSLATIONS": {
@@ -2870,6 +2955,9 @@
   "LOYALTY_PUBLIC": {
     "TITLE": "Loyalty club",
     "INVALID_TENANT": "Invalid restaurant link.",
+    "NEED_LINK": "इस पृष्ठ के लिए रेस्तरां लॉयल्टी लिंक चाहिए।",
+    "NEED_LINK_HINT": "रेस्तरां से उनकी जॉइन URL माँगें (उदाहरण /loyalty/1)। केवल /loyalty जॉइन पेज नहीं है।",
+    "BACK_HOME": "होम पर वापस",
     "NOT_ENABLED": "This restaurant has not enabled a loyalty club yet.",
     "LEDE": "Earn {{earn}} {{mode}} per paid visit. Redeem at {{threshold}} for a reward.",
     "NAME": "Your name",
@@ -2888,7 +2976,19 @@
     "REFERRAL_CODE": "रेफ़रल कोड (वैकल्पिक)",
     "REFERRAL_SHARE": "यह लिंक साझा करें ताकि मित्र आपके रेफ़रल से जुड़ें:",
     "ADD_APPLE_WALLET": "Apple Wallet में जोड़ें",
-    "ADD_GOOGLE_WALLET": "Google Wallet में जोड़ें"
+    "ADD_GOOGLE_WALLET": "Google Wallet में जोड़ें",
+    "ALREADY_MEMBER": "पहले से सदस्य हैं?",
+    "RECOVER_HINT": "कार्ड फिर खोलने के लिए वही ईमेल या फ़ोन दर्ज करें जिससे आप जुड़े थे।",
+    "FIND_CARD": "मेरा कार्ड खोजें",
+    "FINDING": "खोज रहे हैं…",
+    "FOUND": "हमने आपकी सदस्यता पा ली।",
+    "NOT_FOUND": "उस ईमेल या फ़ोन की कोई सदस्यता नहीं मिली।",
+    "OPEN_CARD": "मेरा कार्ड खोलें",
+    "CTA_NAV_ARIA": "अगले कदम",
+    "CTA_HEADING": "रेस्तरां के साथ जारी रखें",
+    "CTA_MENU": "मेनू देखें",
+    "CTA_BOOK": "टेबल बुक करें",
+    "CTA_DELIVERY": "डिलीवरी ऑर्डर करें"
   },
   "ABOUT_PAGE": {
     "BADGE": "कंपनी",
@@ -2901,7 +3001,9 @@
     "OPEN_SOURCE_TITLE": "ओपन सोर्स",
     "OPEN_SOURCE_BODY": "उत्पाद खुले रूप में विकसित होता है। आप कोड देख सकते हैं, AGPLv3 के तहत सेल्फ़-होस्ट कर सकते हैं, या satisfecho.de पर प्रबंधित सेवा उपयोग कर सकते हैं।",
     "CONTACT_TITLE": "संपर्क",
-    "CONTACT_BODY": "प्लेटफ़ॉर्म या होस्टेड सेवा के बारे में प्रश्न:"
+    "CONTACT_BODY": "प्लेटफ़ॉर्म या होस्टेड सेवा के बारे में प्रश्न:",
+    "MANUAL_TITLE": "उपयोगकर्ता मैनुअल",
+    "MANUAL_BODY": "सेटअप, दैनिक संचालन, आरक्षण, इन्वेंटरी और अधिक के लिए चरण-दर-चरण मार्गदर्शिकाएँ।"
   },
   "CUSTOMER_AUTH": {
     "TITLE": "Customer account",
@@ -3276,5 +3378,30 @@
         "HOW_3": "या प्रबंधित अपडेट के साथ होस्टेड Satisfecho के लिए रजिस्टर करें।"
       }
     }
+  },
+  "USER_MANUAL_PAGE": {
+    "LOADING": "उपयोगकर्ता मैनुअल लोड हो रहा है…",
+    "LOAD_ERROR": "उपयोगकर्ता मैनुअल लोड नहीं हो सका। पृष्ठ रीफ़्रेश करें या बाद में पुनः प्रयास करें।",
+    "DOC_TITLE": "उपयोगकर्ता मैनुअल | Satisfecho POS"
+  },
+  "CATALOG_INVENTORY_HUB": {
+    "TITLE": "कैटलॉग और इन्वेंटरी",
+    "INTRO": "यहाँ से उत्पाद, प्रदाता कैटलॉग और इन्वेंटरी टूल खोलें।",
+    "PRODUCTS_TITLE": "उत्पाद",
+    "PRODUCTS_DESC": "मेनू आइटम प्रबंधित करें",
+    "CATALOG_TITLE": "कैटलॉग",
+    "CATALOG_DESC": "प्रदाता कैटलॉग और मेनू आइटम",
+    "ITEMS_TITLE": "आइटम",
+    "ITEMS_DESC": "स्टॉक आइटम और इकाइयाँ",
+    "SUPPLIERS_TITLE": "आपूर्तिकर्ता",
+    "SUPPLIERS_DESC": "खरीद के लिए विक्रेता संपर्क",
+    "WAREHOUSES_TITLE": "गोदाम",
+    "WAREHOUSES_DESC": "भंडारण स्थान",
+    "PURCHASE_ORDERS_TITLE": "खरीद आदेश",
+    "PURCHASE_ORDERS_DESC": "स्टॉक ऑर्डर और प्राप्त करें",
+    "STOCK_TITLE": "स्टॉक डैशबोर्ड",
+    "STOCK_DESC": "स्तर और कम स्टॉक अलर्ट",
+    "REPORTS_TITLE": "इन्वेंटरी रिपोर्ट",
+    "REPORTS_DESC": "मूल्यांकन और स्टॉक गतियाँ"
   }
 }

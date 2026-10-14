@@ -6,6 +6,7 @@ import { ApiService, PublicTableLookupChoice, TenantSummary } from '../services/
 import { FormsModule } from '@angular/forms';
 import { LanguagePickerComponent } from '../shared/language-picker.component';
 import { LandingSiteFooterComponent } from '../shared/landing-site-footer.component';
+import { publicMenuTenantRef } from '../shared/public-menu-path';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
 
 /** Only tenant 1 is shown on the public landing page (displayed as Restaurant Demo). */
@@ -163,11 +164,11 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
               <figure class="landing-qr-demo__figure" aria-label="{{ 'LANDING.PUBLIC_MENU_QR_LABEL' | translate }}">
                 <a
                   class="landing-qr-demo__qr-link"
-                  [routerLink]="['/public-menu', tenant.id]"
+                  [routerLink]="['/public-menu', publicMenuRef(tenant)]"
                   [attr.aria-label]="'LANDING.PUBLIC_MENU_QR_LINK_ARIA' | translate: { name: getTenantDisplayName(tenant) }"
                 >
                   <qrcode
-                    [qrdata]="getPublicMenuUrl(tenant.id)"
+                    [qrdata]="getPublicMenuUrl(tenant)"
                     [width]="196"
                     [errorCorrectionLevel]="'M'"
                     cssClass="landing-qr-demo__code"
@@ -186,7 +187,7 @@ const LANDING_DEMO_TABLE_NAME = 'Take Away';
                   <li>{{ 'LANDING.QR_DEMO_STEP_3' | translate }}</li>
                 </ol>
                 <div class="landing-qr-demo__actions">
-                  <a [routerLink]="['/public-menu', tenant.id]" class="landing-qr-demo__action landing-qr-demo__action--primary">
+                  <a [routerLink]="['/public-menu', publicMenuRef(tenant)]" class="landing-qr-demo__action landing-qr-demo__action--primary">
                     {{ 'LANDING.QR_DEMO_OPEN_MENU' | translate }}
                   </a>
                 </div>
@@ -1135,10 +1136,15 @@ export class LandingComponent implements OnInit {
     return this.translate.instant('LANDING.RESTAURANT_DEMO_NAME');
   }
 
+  publicMenuRef(tenant: TenantSummary): string | number {
+    return publicMenuTenantRef(tenant);
+  }
+
   /** Absolute URL to the read-only public menu page (for landing QR codes). */
-  getPublicMenuUrl(tenantId: number): string {
-    if (typeof window === 'undefined') return `/public-menu/${tenantId}`;
-    return `${window.location.origin}/public-menu/${tenantId}`;
+  getPublicMenuUrl(tenant: TenantSummary): string {
+    const ref = publicMenuTenantRef(tenant);
+    if (typeof window === 'undefined') return `/public-menu/${ref}`;
+    return `${window.location.origin}/public-menu/${ref}`;
   }
 
   tryDemoTable(): void {

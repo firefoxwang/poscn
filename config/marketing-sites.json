@@ -93,6 +93,28 @@
       "branch": "main",
       "artifact": "french-kebab-satisfecho-deploy",
       "deploySubpath": "es"
+    },
+    {
+      "slug": "kebab-express",
+      "repo": "satisfecho/092_kebabexpress",
+      "branch": "main",
+      "artifact": "kebab-express-satisfecho-deploy",
+      "deploySubpath": "es"
+    },
+    {
+      "slug": "kebab-factory",
+      "repo": "satisfecho/092_kebabfactory",
+      "branch": "main",
+      "artifact": "kebab-factory-satisfecho-deploy",
+      "deploySubpath": "es",
+      "cloneDir": "092_kebabfactory"
+    },
+    {
+      "slug": "bar-jupiter",
+      "repo": "satisfecho/093_bar-jupiter",
+      "branch": "main",
+      "artifact": "bar-jupiter-satisfecho-deploy",
+      "deploySubpath": "es"
     }
   ]
 }

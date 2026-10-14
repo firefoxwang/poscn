@@ -32,6 +32,62 @@ import { PermissionService } from '../services/permission.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upload-limits';
 
+type SettingsSectionId =
+  | 'general'
+  | 'navigation'
+  | 'contact'
+  | 'hours'
+  | 'payments'
+  | 'delivery'
+  | 'email'
+  | 'reservations'
+  | 'taxes'
+  | 'kitchen-stations'
+  | 'loyalty'
+  | 'printing'
+  | 'promos'
+  | 'restaurant-group'
+  | 'social-posts'
+  | 'contract-templates'
+  | 'providers'
+  | 'translations'
+  | 'security'
+  | 'data-privacy';
+
+/**
+ * Extra deep-link ids (query `?section=` or hash `#…`) → canonical section.
+ * Legacy: delivery-integrations (#396). Docs-friendly: openinghours (#365).
+ */
+const SETTINGS_SECTION_ALIASES: Record<string, SettingsSectionId> = {
+  'delivery-integrations': 'delivery',
+  openinghours: 'hours',
+  'opening-hours': 'hours',
+};
+
+/** Public hash slug per section (e.g. `/settings#openinghours`). */
+const SETTINGS_SECTION_HASH: Record<SettingsSectionId, string> = {
+  general: 'general',
+  navigation: 'navigation',
+  contact: 'contact',
+  hours: 'openinghours',
+  payments: 'payments',
+  delivery: 'delivery',
+  email: 'email',
+  reservations: 'reservations',
+  taxes: 'taxes',
+  'kitchen-stations': 'kitchen-stations',
+  loyalty: 'loyalty',
+  printing: 'printing',
+  promos: 'promos',
+  'restaurant-group': 'restaurant-group',
+  'social-posts': 'social-posts',
+  'contract-templates': 'contract-templates',
+  providers: 'providers',
+  translations: 'translations',
+  security: 'security',
+  'data-privacy': 'data-privacy',
+};
+
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -57,15 +113,16 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
         <h1>{{ 'SETTINGS.TITLE' | translate }}</h1>
       </div>
 
-      <!-- Tab Navigation - Mobile First (horizontal scrollable tabs) -->
-      <div class="tabs-container">
-        <div class="tabs">
+      <div class="settings-layout" data-testid="settings-layout">
+      <!-- Vertical settings menu (desktop sidebar; stacked/scrollable on narrow viewports) -->
+      <nav class="settings-nav" data-testid="settings-nav" [attr.aria-label]="'SETTINGS.SECTION_NAV_ARIA' | translate">
+        <div class="settings-nav-list">
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             [class.active]="activeSection() === 'general'"
-            (click)="activeSection.set('general')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('general')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="7"/>
               <rect x="14" y="3" width="7" height="7"/>
               <rect x="14" y="14" width="7" height="7"/>
@@ -76,11 +133,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
 
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-navigation-tab"
             [class.active]="activeSection() === 'navigation'"
-            (click)="activeSection.set('navigation')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('navigation')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 6h16M4 12h16M4 18h10"/>
             </svg>
             <span>{{ 'SETTINGS.NAVIGATION_UI_TAB' | translate }}</span>
@@ -88,11 +145,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             data-testid="settings-contact-tab"
             [class.active]="activeSection() === 'contact'"
-            (click)="activeSection.set('contact')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('contact')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
             </svg>
             <span>{{ 'SETTINGS.CONTACT_INFO' | translate }}</span>
@@ -100,10 +157,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
+            data-testid="settings-hours-tab"
             [class.active]="activeSection() === 'hours'"
-            (click)="activeSection.set('hours')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('hours')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
             </svg>
@@ -112,11 +170,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             data-testid="settings-payments-tab"
             [class.active]="activeSection() === 'payments'"
-            (click)="activeSection.set('payments')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('payments')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
               <line x1="1" y1="10" x2="23" y2="10"/>
             </svg>
@@ -125,10 +183,10 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             [class.active]="activeSection() === 'email'"
-            (click)="activeSection.set('email')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('email')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
               <polyline points="22,6 12,13 2,6"/>
             </svg>
@@ -136,10 +194,10 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           </button>
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             [class.active]="activeSection() === 'reservations'"
-            (click)="activeSection.set('reservations')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('reservations')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
               <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
@@ -148,11 +206,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           @if (contractTemplatesTabVisible()) {
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-contract-templates-tab"
             [class.active]="activeSection() === 'contract-templates'"
-            (click)="activeSection.set('contract-templates')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('contract-templates')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
               <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
             </svg>
@@ -162,19 +220,23 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item"
+            data-testid="settings-taxes-tab"
             [class.active]="activeSection() === 'taxes'"
-            (click)="activeSection.set('taxes'); loadTaxesAll()">
+            (click)="selectSection('taxes')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
             <span>{{ 'SETTINGS.TAXES' | translate }}</span>
           </button>
           @if (settingsModuleTabVisible('kitchen_bar')) {
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-kitchen-stations-tab"
             [class.active]="activeSection() === 'kitchen-stations'"
-            (click)="activeSection.set('kitchen-stations')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('kitchen-stations')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="8" width="7" height="13" rx="1"/>
             </svg>
             <span>{{ 'SETTINGS.KITCHEN_STATIONS_TAB' | translate }}</span>
@@ -182,11 +244,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           }
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-loyalty-tab"
             [class.active]="activeSection() === 'loyalty'"
-            (click)="activeSection.set('loyalty')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('loyalty')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/>
             </svg>
             <span>{{ 'SETTINGS.LOYALTY_TAB' | translate }}</span>
@@ -194,11 +256,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
 
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-printing-tab"
             [class.active]="activeSection() === 'printing'"
-            (click)="activeSection.set('printing')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('printing')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 6 2 18 2 18 9"/>
               <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
               <rect x="6" y="14" width="12" height="8"/>
@@ -207,11 +269,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           </button>
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-promos-tab"
             [class.active]="activeSection() === 'promos'"
-            (click)="activeSection.set('promos')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('promos')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
               <line x1="7" y1="7" x2="7.01" y2="7"/>
             </svg>
@@ -219,24 +281,24 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           </button>
           <button
             type="button"
-            class="tab"
-            data-testid="settings-delivery-integrations-tab"
-            [class.active]="activeSection() === 'delivery-integrations'"
-            (click)="activeSection.set('delivery-integrations')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            class="settings-nav-item"
+            data-testid="settings-delivery-tab"
+            [class.active]="activeSection() === 'delivery'"
+            (click)="selectSection('delivery')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
             </svg>
-            <span>{{ 'SETTINGS.DELIVERY_INTEGRATIONS_TAB' | translate }}</span>
+            <span>{{ 'SETTINGS.DELIVERY_TAB' | translate }}</span>
           </button>
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-social-posts-tab"
             [class.active]="activeSection() === 'social-posts'"
-            (click)="activeSection.set('social-posts')"
+            (click)="selectSection('social-posts')"
           >
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h16v12H4z M8 20h8M12 16v4"/>
               <circle cx="9" cy="9" r="1.5"/><circle cx="15" cy="9" r="1.5"/><path d="M9 13h6"/>
             </svg>
@@ -245,11 +307,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           @if (settingsModuleTabVisible('providers')) {
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             data-testid="settings-providers-tab"
             [class.active]="activeSection() === 'providers'"
-            (click)="activeSection.set('providers'); loadProviders()">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('providers')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
@@ -258,10 +320,10 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           }
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             [class.active]="activeSection() === 'translations'"
-            (click)="activeSection.set('translations')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('translations')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <line x1="2" y1="12" x2="22" y2="12"/>
               <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
@@ -270,10 +332,10 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           </button>
           <button 
             type="button" 
-            class="tab" 
+            class="settings-nav-item" 
             [class.active]="activeSection() === 'security'"
-            (click)="activeSection.set('security'); loadOtpStatus()">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('security')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
@@ -282,11 +344,11 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           @if (isTenantOwnerOrAdmin()) {
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-restaurant-group-tab"
             [class.active]="activeSection() === 'restaurant-group'"
-            (click)="activeSection.set('restaurant-group')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('restaurant-group')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
               <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
@@ -296,18 +358,18 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           @if (isTenantOwner()) {
           <button
             type="button"
-            class="tab"
+            class="settings-nav-item"
             data-testid="settings-data-privacy-tab"
             [class.active]="activeSection() === 'data-privacy'"
-            (click)="activeSection.set('data-privacy')">
-            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            (click)="selectSection('data-privacy')">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
             <span>{{ 'SETTINGS.DATA_AND_PRIVACY_TAB' | translate }}</span>
           </button>
           }
         </div>
-      </div>
+      </nav>
 
       <div class="content">
         @if (loading()) {
@@ -360,11 +422,52 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
             </form>
           </div>
         } @else if (activeSection() === 'taxes') {
-          <!-- Taxes Section -->
-          <div class="section">
+          <!-- Taxes (IVA) Section -->
+          <div class="section" data-testid="settings-taxes-section">
             <div class="section-header">
               <h2>{{ 'SETTINGS.TAXES' | translate }}</h2>
               <p>{{ 'SETTINGS.TAXES_SUBTITLE' | translate }}</p>
+            </div>
+            <div class="form-card" style="margin-bottom: 1rem;">
+              <form (ngSubmit)="saveDefaultTax()" class="settings-form">
+                <div class="form-group">
+                  <label for="default_tax_id">{{ 'SETTINGS.DEFAULT_TAX' | translate }}</label>
+                  <select
+                    id="default_tax_id"
+                    data-testid="settings-default-tax-select"
+                    [(ngModel)]="formData.default_tax_id"
+                    name="default_tax_id"
+                  >
+                    <option [ngValue]="null">{{ 'SETTINGS.NO_DEFAULT_TAX' | translate }}</option>
+                    @for (t of taxes(); track t.id) {
+                      <option [ngValue]="t.id">{{ t.name }} ({{ t.rate_percent }}%)</option>
+                    }
+                  </select>
+                  <small class="field-hint">{{ 'SETTINGS.DEFAULT_TAX_HINT' | translate }}</small>
+                </div>
+                <div class="form-actions" style="margin-top: 0.75rem;">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    data-testid="settings-default-tax-save"
+                    [disabled]="saving()"
+                  >
+                    {{ saving() ? ('SETTINGS.SAVING' | translate) : ('SETTINGS.SAVE_CHANGES' | translate) }}
+                  </button>
+                </div>
+              </form>
+              @if (error()) {
+                <div class="toast error">
+                  <span>{{ error() }}</span>
+                  <button type="button" class="toast-close" (click)="error.set(null)" aria-label="Dismiss">×</button>
+                </div>
+              }
+              @if (success()) {
+                <div class="toast success">
+                  <span>{{ success() }}</span>
+                  <button type="button" class="toast-close" (click)="dismissSuccessToast()" aria-label="Dismiss">×</button>
+                </div>
+              }
             </div>
             <div class="taxes-list">
               <table class="settings-table">
@@ -422,47 +525,49 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
               <div class="form-card" style="margin-bottom: 1rem;">
                 <button type="button" class="btn btn-primary" data-testid="settings-add-provider-btn" (click)="openAddProviderModal()">{{ 'SETTINGS.ADD_PROVIDER' | translate }}</button>
               </div>
-              <table class="settings-table">
-                <thead>
-                  <tr>
-                    <th>{{ 'SETTINGS.PROVIDER_NAME' | translate }}</th>
-                    <th>{{ 'SETTINGS.PROVIDER_TYPE' | translate }}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (p of providers(); track p.id) {
+              @if (providers().length > 0) {
+                <table class="settings-table" data-testid="settings-providers-table">
+                  <thead>
                     <tr>
-                      <td>{{ p.name }}</td>
-                      <td>{{ isOwnProvider(p) ? ('SETTINGS.PROVIDER_PERSONAL' | translate) : ('SETTINGS.PROVIDER_CATALOG' | translate) }}</td>
-                      <td>
-                        @if (isOwnProvider(p)) {
-                          <button type="button" class="btn btn-sm btn-secondary" (click)="openEditProviderModal(p)" data-testid="settings-edit-provider-btn">{{ 'SETTINGS.EDIT_PROVIDER' | translate }}</button>
-                          <button type="button" class="btn btn-sm btn-secondary" (click)="openAddProductModal(p)" style="margin-left: 0.25rem;">{{ 'SETTINGS.ADD_PRODUCT_TO_PROVIDER' | translate }}</button>
-                          <button type="button" class="btn btn-sm btn-secondary" (click)="toggleProviderProducts(p)" style="margin-left: 0.25rem;">
-                            {{ (p.id != null && providerProductsExpanded().has(p.id)) ? ('SETTINGS.HIDE_PRODUCTS' | translate) : ('SETTINGS.SHOW_PRODUCTS' | translate) }}
-                          </button>
-                        }
-                      </td>
+                      <th>{{ 'SETTINGS.PROVIDER_NAME' | translate }}</th>
+                      <th>{{ 'SETTINGS.PROVIDER_TYPE' | translate }}</th>
+                      <th></th>
                     </tr>
-                    @if (isOwnProvider(p) && p.id != null && providerProductsExpanded().has(p.id)) {
+                  </thead>
+                  <tbody>
+                    @for (p of providers(); track p.id) {
                       <tr>
-                        <td colspan="3" style="padding-left: 1.5rem;">
-                          @if ((providerProductsMap()[p.id] || []).length === 0) {
-                            <span class="hint">{{ 'SETTINGS.NO_PRODUCTS_YET' | translate }}</span>
-                          } @else {
-                            <ul class="provider-products-list">
-                              @for (prod of providerProductsMap()[p.id] || []; track prod.id) {
-                                <li>{{ prod.name }} – {{ formatProviderPrice(prod.price_cents) }}</li>
-                              }
-                            </ul>
+                        <td>{{ p.name }}</td>
+                        <td>{{ isOwnProvider(p) ? ('SETTINGS.PROVIDER_PERSONAL' | translate) : ('SETTINGS.PROVIDER_CATALOG' | translate) }}</td>
+                        <td>
+                          @if (isOwnProvider(p)) {
+                            <button type="button" class="btn btn-sm btn-secondary" (click)="openEditProviderModal(p)" data-testid="settings-edit-provider-btn">{{ 'SETTINGS.EDIT_PROVIDER' | translate }}</button>
+                            <button type="button" class="btn btn-sm btn-secondary" (click)="openAddProductModal(p)" style="margin-left: 0.25rem;">{{ 'SETTINGS.ADD_PRODUCT_TO_PROVIDER' | translate }}</button>
+                            <button type="button" class="btn btn-sm btn-secondary" (click)="toggleProviderProducts(p)" style="margin-left: 0.25rem;">
+                              {{ (p.id != null && providerProductsExpanded().has(p.id)) ? ('SETTINGS.HIDE_PRODUCTS' | translate) : ('SETTINGS.SHOW_PRODUCTS' | translate) }}
+                            </button>
                           }
                         </td>
                       </tr>
+                      @if (isOwnProvider(p) && p.id != null && providerProductsExpanded().has(p.id)) {
+                        <tr>
+                          <td colspan="3" style="padding-left: 1.5rem;">
+                            @if ((providerProductsMap()[p.id] || []).length === 0) {
+                              <span class="hint">{{ 'SETTINGS.NO_PRODUCTS_YET' | translate }}</span>
+                            } @else {
+                              <ul class="provider-products-list">
+                                @for (prod of providerProductsMap()[p.id] || []; track prod.id) {
+                                  <li>{{ prod.name }} – {{ formatProviderPrice(prod.price_cents) }}</li>
+                                }
+                              </ul>
+                            }
+                          </td>
+                        </tr>
+                      }
                     }
-                  }
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              }
               @if (providersError()) {
                 <p class="field-error">{{ providersError() }}</p>
               }
@@ -592,8 +697,6 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
           <app-print-settings />
         } @else if (activeSection() === 'promos') {
           <app-promo-settings />
-        } @else if (activeSection() === 'delivery-integrations') {
-          <app-delivery-integrations-settings />
         } @else if (activeSection() === 'social-posts') {
           <app-social-posts-settings />
         } @else if (activeSection() === 'contract-templates') {
@@ -616,18 +719,74 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
             </div>
             @if (otpStatusLoading()) {
               <div class="loading-state"><div class="spinner"></div><p>{{ 'SETTINGS.LOADING_SETTINGS' | translate }}</p></div>
+            } @else if (otpRecoveryCodes()?.length) {
+              <div class="form-card" data-testid="otp-recovery-codes-panel">
+                <h3>{{ 'SETTINGS.OTP_RECOVERY_TITLE' | translate }}</h3>
+                <p class="hint">{{ 'SETTINGS.OTP_RECOVERY_HINT' | translate }}</p>
+                <ul class="otp-recovery-list" data-testid="otp-recovery-codes-list">
+                  @for (code of otpRecoveryCodes(); track code) {
+                    <li><code>{{ code }}</code></li>
+                  }
+                </ul>
+                <div class="otp-secret-row" style="margin-top: 0.75rem;">
+                  <button type="button" class="btn btn-secondary btn-sm" data-testid="otp-recovery-copy" (click)="copyOtpRecoveryCodes()">
+                    {{
+                      otpRecoveryCopied()
+                        ? ('SETTINGS.OTP_RECOVERY_COPIED' | translate)
+                        : ('SETTINGS.OTP_RECOVERY_COPY_ALL' | translate)
+                    }}
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-testid="otp-recovery-download" (click)="downloadOtpRecoveryCodes()">
+                    {{ 'SETTINGS.OTP_RECOVERY_DOWNLOAD' | translate }}
+                  </button>
+                </div>
+                <div class="form-group checkbox-row" style="margin-top: 1rem;">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="otpRecoverySavedConfirm"
+                      name="otpRecoverySavedConfirm"
+                      data-testid="otp-recovery-saved-confirm"
+                    />
+                    {{ 'SETTINGS.OTP_RECOVERY_SAVED_CONFIRM' | translate }}
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-testid="otp-recovery-continue"
+                  (click)="dismissOtpRecoveryCodes()"
+                  [disabled]="!otpRecoverySavedConfirm"
+                >
+                  {{ 'SETTINGS.OTP_RECOVERY_CONTINUE' | translate }}
+                </button>
+                @if (otpError()) {
+                  <p class="field-error">{{ otpError() }}</p>
+                }
+              </div>
             } @else if (otpSetupResult()) {
               <div class="form-card">
                 <h3>{{ 'SETTINGS.OTP_SCAN_OR_ENTER' | translate }}</h3>
                 <p class="hint">{{ 'SETTINGS.OTP_ADD_TO_APP' | translate }}</p>
                 <div class="otp-secret-row">
-                  <code class="otp-secret">{{ otpSetupResult()?.secret }}</code>
-                  <button type="button" class="btn btn-secondary btn-sm" (click)="copyOtpSecret()">{{ 'COMMON.COPY' | translate }}</button>
+                  <code class="otp-secret" data-testid="otp-secret-value">{{ otpSetupResult()?.secret }}</code>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    data-testid="otp-secret-copy"
+                    (click)="copyOtpSecret()"
+                  >
+                    {{
+                      otpSecretCopied()
+                        ? ('SETTINGS.OTP_SECRET_COPIED' | translate)
+                        : ('COMMON.COPY' | translate)
+                    }}
+                  </button>
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
                   <label for="otp-confirm-code">{{ 'SETTINGS.OTP_ENTER_CODE' | translate }}</label>
-                  <input id="otp-confirm-code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" [(ngModel)]="otpConfirmCode" name="otpConfirmCode" [placeholder]="'SETTINGS.OTP_CODE_PLACEHOLDER' | translate" />
-                  <button type="button" class="btn btn-primary" (click)="confirmOtpEnable()" [disabled]="!otpConfirmCode || otpConfirmCode.length !== 6 || otpConfirming()">
+                  <input id="otp-confirm-code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" [(ngModel)]="otpConfirmCode" name="otpConfirmCode" data-testid="otp-confirm-code" [placeholder]="'SETTINGS.OTP_CODE_PLACEHOLDER' | translate" />
+                  <button type="button" class="btn btn-primary" data-testid="otp-confirm-submit" (click)="confirmOtpEnable()" [disabled]="!otpConfirmCode || otpConfirmCode.length !== 6 || otpConfirming()">
                     {{ otpConfirming() ? ('SETTINGS.OTP_CONFIRMING' | translate) : ('SETTINGS.OTP_ENABLE' | translate) }}
                   </button>
                   <button type="button" class="btn btn-secondary" (click)="cancelOtpSetup()">{{ 'COMMON.CANCEL' | translate }}</button>
@@ -639,10 +798,55 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
             } @else if (otpStatus()?.otp_enabled) {
               <div class="form-card">
                 <p class="otp-enabled-msg">{{ 'SETTINGS.OTP_ENABLED' | translate }}</p>
-                <div class="form-group">
-                  <label for="otp-disable-code">{{ 'SETTINGS.OTP_DISABLE_ENTER_CODE' | translate }}</label>
-                  <input id="otp-disable-code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" [(ngModel)]="otpDisableCode" name="otpDisableCode" [placeholder]="'SETTINGS.OTP_CODE_PLACEHOLDER' | translate" />
-                  <button type="button" class="btn btn-secondary" (click)="disableOtp()" [disabled]="!otpDisableCode || otpDisableCode.length !== 6 || otpDisabling()">
+                <p class="hint" data-testid="otp-recovery-remaining">
+                  {{
+                    'SETTINGS.OTP_RECOVERY_REMAINING'
+                      | translate: { count: otpStatus()?.recovery_codes_remaining ?? 0 }
+                  }}
+                </p>
+                <div class="form-group" style="margin-top: 1rem;">
+                  <label for="otp-regen-password">{{ 'SETTINGS.OTP_RECOVERY_REGENERATE_PASSWORD' | translate }}</label>
+                  <input
+                    id="otp-regen-password"
+                    type="password"
+                    autocomplete="current-password"
+                    [(ngModel)]="otpRegenPassword"
+                    name="otpRegenPassword"
+                    data-testid="otp-regen-password"
+                    [placeholder]="'AUTH.PASSWORD' | translate"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-testid="otp-regen-submit"
+                    (click)="regenerateOtpRecoveryCodes()"
+                    [disabled]="!otpRegenPassword.trim() || otpRegenerating()"
+                  >
+                    {{
+                      otpRegenerating()
+                        ? ('SETTINGS.OTP_RECOVERY_REGENERATING' | translate)
+                        : ('SETTINGS.OTP_RECOVERY_REGENERATE' | translate)
+                    }}
+                  </button>
+                </div>
+                <div class="form-group" style="margin-top: 1.25rem;">
+                  <label for="otp-disable-password">{{ 'SETTINGS.OTP_DISABLE_ENTER_PASSWORD' | translate }}</label>
+                  <input
+                    id="otp-disable-password"
+                    type="password"
+                    autocomplete="current-password"
+                    [(ngModel)]="otpDisablePassword"
+                    name="otpDisablePassword"
+                    data-testid="otp-disable-password"
+                    [placeholder]="'AUTH.PASSWORD' | translate"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-testid="otp-disable-submit"
+                    (click)="disableOtp()"
+                    [disabled]="!otpDisablePassword.trim() || otpDisabling()"
+                  >
                     {{ otpDisabling() ? ('SETTINGS.OTP_DISABLING' | translate) : ('SETTINGS.OTP_DISABLE' | translate) }}
                   </button>
                 </div>
@@ -861,22 +1065,71 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                       <input
                         type="color"
                         id="public_background_color"
-                        [value]="formData.public_background_color || '#f5f5f5'"
-                        (input)="formData.public_background_color = $any($event.target).value"
+                        [value]="publicBackgroundColorPickerValue()"
+                        (input)="onPublicBackgroundColorPicked($any($event.target).value)"
                         class="color-input"
+                        data-testid="settings-public-background-color"
                       />
                       <input
                         type="text"
                         [(ngModel)]="formData.public_background_color"
+                        (ngModelChange)="onPublicBackgroundHexModelChange($event)"
                         name="public_background_color_hex"
                         placeholder="#1E22AA"
                         class="hex-input"
+                        data-testid="settings-public-background-color-hex"
+                        (blur)="normalizePublicBackgroundHex()"
                       />
-                      <button type="button" class="btn btn-secondary btn-sm" (click)="formData.public_background_color = '#1E22AA'" title="RAL5002 Azul">
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        (click)="applyPublicBackgroundRal5002Preset()"
+                        [attr.title]="'SETTINGS.PRESET_RAL5002_TITLE' | translate"
+                        data-testid="settings-preset-ral5002"
+                      >
                         {{ 'SETTINGS.PRESET_RAL5002' | translate }}
                       </button>
                     </div>
                     <small class="field-hint">{{ 'SETTINGS.PUBLIC_BACKGROUND_COLOR_HINT' | translate }}</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="public_primary_color">{{ 'SETTINGS.PUBLIC_PRIMARY_COLOR' | translate }}</label>
+                    <div class="background-color-row">
+                      <input
+                        type="color"
+                        id="public_primary_color"
+                        [value]="formData.public_primary_color || '#2563EB'"
+                        (input)="formData.public_primary_color = $any($event.target).value"
+                        class="color-input"
+                        data-testid="settings-public-primary-color"
+                      />
+                      <input
+                        type="text"
+                        [(ngModel)]="formData.public_primary_color"
+                        name="public_primary_color_hex"
+                        placeholder="#2563EB"
+                        class="hex-input"
+                        data-testid="settings-public-primary-color-hex"
+                      />
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        (click)="formData.public_primary_color = '#2563EB'"
+                        [attr.title]="'SETTINGS.PRESET_PRIMARY_BLUE' | translate"
+                      >
+                        {{ 'SETTINGS.PRESET_PRIMARY_BLUE' | translate }}
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        (click)="formData.public_primary_color = '#16A34A'"
+                        [attr.title]="'SETTINGS.PRESET_PRIMARY_GREEN' | translate"
+                      >
+                        {{ 'SETTINGS.PRESET_PRIMARY_GREEN' | translate }}
+                      </button>
+                    </div>
+                    <small class="field-hint">{{ 'SETTINGS.PUBLIC_PRIMARY_COLOR_HINT' | translate }}</small>
                   </div>
 
                   <div class="form-group">
@@ -927,6 +1180,49 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                     />
                     <small class="field-hint">{{ 'SETTINGS.COUNTRY_CODE_HINT' | translate }}</small>
                   </div>
+
+                  <div class="divider"></div>
+
+                  <h3>{{ 'SETTINGS.LOCATION_VERIFICATION' | translate }}</h3>
+                  <p class="section-desc">{{ 'SETTINGS.LOCATION_VERIFICATION_DESC' | translate }}</p>
+
+                  <div class="form-group checkbox-row">
+                    <label class="switch">
+                      <input type="checkbox" [(ngModel)]="formData.location_check_enabled" name="location_check_enabled">
+                      <span class="slider round"></span>
+                    </label>
+                    <div>
+                      <label class="check-label">{{ 'SETTINGS.ENABLE_LOCATION_CHECK' | translate }}</label>
+                      <p class="hint">{{ 'SETTINGS.ENABLE_LOCATION_CHECK_HINT' | translate }}</p>
+                    </div>
+                  </div>
+
+                  @if (formData.location_check_enabled) {
+                    <div class="location-settings">
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label>{{ 'SETTINGS.LATITUDE' | translate }}</label>
+                          <input type="number" step="0.000001" [(ngModel)]="formData.latitude" name="latitude" placeholder="e.g. 41.385064" />
+                        </div>
+                        <div class="form-group">
+                          <label>{{ 'SETTINGS.LONGITUDE' | translate }}</label>
+                          <input type="number" step="0.000001" [(ngModel)]="formData.longitude" name="longitude" placeholder="e.g. 2.173404" />
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>{{ 'SETTINGS.LOCATION_RADIUS' | translate }}</label>
+                        <input type="number" [(ngModel)]="formData.location_radius_meters" name="location_radius_meters" placeholder="100" />
+                        <p class="hint">{{ 'SETTINGS.LOCATION_RADIUS_HINT' | translate }}</p>
+                      </div>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="useCurrentLocation()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        {{ 'SETTINGS.USE_CURRENT_LOCATION' | translate }}
+                      </button>
+                    </div>
+                  }
                 </div>
               }
 
@@ -957,6 +1253,25 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                   <div class="form-group">
                     <label for="address">{{ 'SETTINGS.ADDRESS' | translate }}</label>
                     <input type="text" id="address" [(ngModel)]="formData.address" name="address" />
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="city">{{ 'SETTINGS.CITY' | translate }}</label>
+                      <input type="text" id="city" [(ngModel)]="formData.city" name="city" />
+                    </div>
+                    <div class="form-group">
+                      <label for="public_slug">{{ 'SETTINGS.PUBLIC_SLUG' | translate }}</label>
+                      <input
+                        type="text"
+                        id="public_slug"
+                        [(ngModel)]="formData.public_slug"
+                        name="public_slug"
+                        data-testid="settings-public-slug"
+                        autocomplete="off"
+                      />
+                      <small class="field-hint">{{ 'SETTINGS.PUBLIC_SLUG_HINT' | translate }}</small>
+                    </div>
                   </div>
                   
                   <div class="form-group">
@@ -1096,27 +1411,12 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                     />
                     <small class="field-hint">{{ 'SETTINGS.CCC_HINT' | translate }}</small>
                   </div>
-                  <div class="form-group">
-                    <label for="default_tax_id">{{ 'SETTINGS.DEFAULT_TAX' | translate }}</label>
-                    <select
-                      id="default_tax_id"
-                      data-testid="settings-default-tax-select"
-                      [(ngModel)]="formData.default_tax_id"
-                      name="default_tax_id"
-                    >
-                      <option [ngValue]="null">{{ 'SETTINGS.NO_DEFAULT_TAX' | translate }}</option>
-                      @for (t of taxes(); track t.id) {
-                        <option [ngValue]="t.id">{{ t.name }} ({{ t.rate_percent }}%)</option>
-                      }
-                    </select>
-                    <small class="field-hint">{{ 'SETTINGS.DEFAULT_TAX_HINT' | translate }}</small>
-                  </div>
                 </div>
               }
 
               <!-- Hours Section -->
               @if (activeSection() === 'hours') {
-                <div class="section">
+                <div class="section" data-testid="settings-hours-section">
                   <div class="section-header">
                     <h2>{{ 'SETTINGS.OPENING_HOURS' | translate }}</h2>
                     <p>{{ 'SETTINGS.OPENING_HOURS_SUBTITLE' | translate }}</p>
@@ -1169,6 +1469,18 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                                   }
                                 </select>
                               </div>
+                              <div class="service-label-field">
+                                <label [for]="'svc-label-' + day.key">{{ 'SETTINGS.SERVICE_LABEL' | translate }}</label>
+                                <input
+                                  type="text"
+                                  [id]="'svc-label-' + day.key"
+                                  [name]="'svc-label-' + day.key"
+                                  [ngModel]="openingHours[day.key]?.serviceLabel || ''"
+                                  (ngModelChange)="setServiceLabelValue(day.key, 'serviceLabel', $event)"
+                                  [placeholder]="'SETTINGS.SERVICE_LABEL_PLACEHOLDER' | translate"
+                                  maxlength="64"
+                                />
+                              </div>
                             } @else {
                               <div class="split-shifts">
                                 <div class="shift">
@@ -1184,6 +1496,16 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                                       <option [value]="t">{{ t }}</option>
                                     }
                                   </select>
+                                  <input
+                                    type="text"
+                                    class="shift-service-label"
+                                    [name]="'ml-' + day.key"
+                                    [ngModel]="openingHours[day.key]?.morningLabel || ''"
+                                    (ngModelChange)="setServiceLabelValue(day.key, 'morningLabel', $event)"
+                                    [placeholder]="'SETTINGS.MORNING_LABEL_PLACEHOLDER' | translate"
+                                    [attr.aria-label]="'SETTINGS.MORNING_LABEL' | translate"
+                                    maxlength="64"
+                                  />
                                 </div>
                                 <div class="shift">
                                   <span class="shift-label">{{ 'SETTINGS.EVENING_SHIFT' | translate }}</span>
@@ -1198,6 +1520,16 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                                       <option [value]="t">{{ t }}</option>
                                     }
                                   </select>
+                                  <input
+                                    type="text"
+                                    class="shift-service-label"
+                                    [name]="'el-' + day.key"
+                                    [ngModel]="openingHours[day.key]?.eveningLabel || ''"
+                                    (ngModelChange)="setServiceLabelValue(day.key, 'eveningLabel', $event)"
+                                    [placeholder]="'SETTINGS.EVENING_LABEL_PLACEHOLDER' | translate"
+                                    [attr.aria-label]="'SETTINGS.EVENING_LABEL' | translate"
+                                    maxlength="64"
+                                  />
                                 </div>
                               </div>
                             }
@@ -1392,14 +1724,6 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                   <h3>{{ 'SETTINGS.FISCAL_INVOICING_TITLE' | translate }}</h3>
                   <p class="hint">{{ 'SETTINGS.FISCAL_INVOICING_DESC' | translate }}</p>
                   <div class="form-group">
-                    <label for="fiscal_mode">{{ 'SETTINGS.FISCAL_MODE' | translate }}</label>
-                    <select id="fiscal_mode" class="form-select" [(ngModel)]="formData.fiscal_mode" name="fiscal_mode">
-                      <option value="off">{{ 'SETTINGS.FISCAL_MODE_OFF' | translate }}</option>
-                      <option value="test">{{ 'SETTINGS.FISCAL_MODE_TEST' | translate }}</option>
-                      <option value="live">{{ 'SETTINGS.FISCAL_MODE_LIVE' | translate }}</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
                     <label for="fiscal_country">{{ 'SETTINGS.FISCAL_COUNTRY' | translate }}</label>
                     <select id="fiscal_country" class="form-select" [(ngModel)]="formData.fiscal_country" name="fiscal_country">
                       <option value="CN">{{ 'SETTINGS.FISCAL_COUNTRY_CN' | translate }}</option>
@@ -1407,6 +1731,14 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                       <option value="DE">{{ 'SETTINGS.FISCAL_COUNTRY_DE' | translate }}</option>
                     </select>
                     <p class="hint">{{ 'SETTINGS.FISCAL_COUNTRY_HINT' | translate }}</p>
+                  </div>
+                  <div class="form-group">
+                    <label for="fiscal_mode">{{ 'SETTINGS.FISCAL_MODE' | translate }}</label>
+                    <select id="fiscal_mode" class="form-select" [(ngModel)]="formData.fiscal_mode" name="fiscal_mode">
+                      <option value="off">{{ 'SETTINGS.FISCAL_MODE_OFF' | translate }}</option>
+                      <option value="test">{{ 'SETTINGS.FISCAL_MODE_TEST' | translate }}</option>
+                      <option value="live">{{ 'SETTINGS.FISCAL_MODE_LIVE' | translate }}</option>
+                    </select>
                   </div>
                   <div class="form-group">
                     <label for="fiscal_invoice_series">{{ 'SETTINGS.FISCAL_SERIES' | translate }}</label>
@@ -1420,55 +1752,60 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                     />
                     <p class="hint">{{ 'SETTINGS.FISCAL_SERIES_HINT' | translate }}</p>
                   </div>
-                  <div class="form-group">
-                    <label for="fiscal_aeat_api_secret">{{ 'SETTINGS.FISCAL_AEAT_SECRET' | translate }}</label>
-                    <input
-                      type="password"
-                      id="fiscal_aeat_api_secret"
-                      [(ngModel)]="formData.fiscal_aeat_api_secret"
-                      name="fiscal_aeat_api_secret"
-                      placeholder="••••••••••••••••"
-                      autocomplete="off"
-                    />
-                    <p class="hint">{{ 'SETTINGS.FISCAL_AEAT_SECRET_HINT' | translate }}</p>
-                  </div>
 
-                  <div class="divider"></div>
-                  <h3>{{ 'SETTINGS.TSE_TITLE' | translate }}</h3>
-                  <p class="hint">{{ 'SETTINGS.TSE_DESC' | translate }}</p>
-                  <div class="form-group">
-                    <label for="tse_mode">{{ 'SETTINGS.TSE_MODE' | translate }}</label>
-                    <select id="tse_mode" class="form-select" [(ngModel)]="formData.tse_mode" name="tse_mode">
-                      <option value="off">{{ 'SETTINGS.TSE_MODE_OFF' | translate }}</option>
-                      <option value="test">{{ 'SETTINGS.TSE_MODE_TEST' | translate }}</option>
-                      <option value="live">{{ 'SETTINGS.TSE_MODE_LIVE' | translate }}</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="tse_client_id">{{ 'SETTINGS.TSE_CLIENT_ID' | translate }}</label>
-                    <input
-                      type="text"
-                      id="tse_client_id"
-                      [(ngModel)]="formData.tse_client_id"
-                      name="tse_client_id"
-                      maxlength="128"
-                      class="input-medium"
-                      autocomplete="off"
-                    />
-                    <p class="hint">{{ 'SETTINGS.TSE_CLIENT_ID_HINT' | translate }}</p>
-                  </div>
-                  <div class="form-group">
-                    <label for="tse_api_secret">{{ 'SETTINGS.TSE_API_SECRET' | translate }}</label>
-                    <input
-                      type="password"
-                      id="tse_api_secret"
-                      [(ngModel)]="formData.tse_api_secret"
-                      name="tse_api_secret"
-                      placeholder="••••••••••••••••"
-                      autocomplete="off"
-                    />
-                    <p class="hint">{{ 'SETTINGS.TSE_API_SECRET_HINT' | translate }}</p>
-                  </div>
+                  @if (showVeriFactuFiscalPrep()) {
+                    <div class="form-group">
+                      <label for="fiscal_aeat_api_secret">{{ 'SETTINGS.FISCAL_AEAT_SECRET' | translate }}</label>
+                      <input
+                        type="password"
+                        id="fiscal_aeat_api_secret"
+                        [(ngModel)]="formData.fiscal_aeat_api_secret"
+                        name="fiscal_aeat_api_secret"
+                        placeholder="••••••••••••••••"
+                        autocomplete="off"
+                      />
+                      <p class="hint">{{ 'SETTINGS.FISCAL_AEAT_SECRET_HINT' | translate }}</p>
+                    </div>
+                  }
+
+                  @if (showGermanyTsePrep()) {
+                    <div class="divider"></div>
+                    <h3>{{ 'SETTINGS.TSE_TITLE' | translate }}</h3>
+                    <p class="hint">{{ 'SETTINGS.TSE_DESC' | translate }}</p>
+                    <div class="form-group">
+                      <label for="tse_mode">{{ 'SETTINGS.TSE_MODE' | translate }}</label>
+                      <select id="tse_mode" class="form-select" [(ngModel)]="formData.tse_mode" name="tse_mode">
+                        <option value="off">{{ 'SETTINGS.TSE_MODE_OFF' | translate }}</option>
+                        <option value="test">{{ 'SETTINGS.TSE_MODE_TEST' | translate }}</option>
+                        <option value="live">{{ 'SETTINGS.TSE_MODE_LIVE' | translate }}</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="tse_client_id">{{ 'SETTINGS.TSE_CLIENT_ID' | translate }}</label>
+                      <input
+                        type="text"
+                        id="tse_client_id"
+                        [(ngModel)]="formData.tse_client_id"
+                        name="tse_client_id"
+                        maxlength="128"
+                        class="input-medium"
+                        autocomplete="off"
+                      />
+                      <p class="hint">{{ 'SETTINGS.TSE_CLIENT_ID_HINT' | translate }}</p>
+                    </div>
+                    <div class="form-group">
+                      <label for="tse_api_secret">{{ 'SETTINGS.TSE_API_SECRET' | translate }}</label>
+                      <input
+                        type="password"
+                        id="tse_api_secret"
+                        [(ngModel)]="formData.tse_api_secret"
+                        name="tse_api_secret"
+                        placeholder="••••••••••••••••"
+                        autocomplete="off"
+                      />
+                      <p class="hint">{{ 'SETTINGS.TSE_API_SECRET_HINT' | translate }}</p>
+                    </div>
+                  }
                   
                   <div class="form-group checkbox-row">
                     <label class="switch">
@@ -1527,51 +1864,17 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                     </select>
                     <p class="hint">{{ 'SETTINGS.TIP_ENTRY_MODE_HINT' | translate }}</p>
                   </div>
+                </div>
+              }
 
-                  <div class="divider"></div>
-                  
-                  <h3>{{ 'SETTINGS.LOCATION_VERIFICATION' | translate }}</h3>
-                  <p class="section-desc">{{ 'SETTINGS.LOCATION_VERIFICATION_DESC' | translate }}</p>
-                  
-                  <div class="form-group checkbox-row">
-                    <label class="switch">
-                      <input type="checkbox" [(ngModel)]="formData.location_check_enabled" name="location_check_enabled">
-                      <span class="slider round"></span>
-                    </label>
-                    <div>
-                      <label class="check-label">{{ 'SETTINGS.ENABLE_LOCATION_CHECK' | translate }}</label>
-                      <p class="hint">{{ 'SETTINGS.ENABLE_LOCATION_CHECK_HINT' | translate }}</p>
-                    </div>
+              <!-- Delivery Section (first-party + marketplace integrations) -->
+              @if (activeSection() === 'delivery') {
+                <div class="section" data-testid="settings-delivery-section">
+                  <div class="section-header">
+                    <h2>{{ 'SETTINGS.DELIVERY_TAB' | translate }}</h2>
+                    <p>{{ 'SETTINGS.DELIVERY_SECTION_SUBTITLE' | translate }}</p>
                   </div>
-                  
-                  @if (formData.location_check_enabled) {
-                    <div class="location-settings">
-                      <div class="form-row">
-                        <div class="form-group">
-                          <label>{{ 'SETTINGS.LATITUDE' | translate }}</label>
-                          <input type="number" step="0.000001" [(ngModel)]="formData.latitude" name="latitude" placeholder="e.g. 41.385064" />
-                        </div>
-                        <div class="form-group">
-                          <label>{{ 'SETTINGS.LONGITUDE' | translate }}</label>
-                          <input type="number" step="0.000001" [(ngModel)]="formData.longitude" name="longitude" placeholder="e.g. 2.173404" />
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label>{{ 'SETTINGS.LOCATION_RADIUS' | translate }}</label>
-                        <input type="number" [(ngModel)]="formData.location_radius_meters" name="location_radius_meters" placeholder="100" />
-                        <p class="hint">{{ 'SETTINGS.LOCATION_RADIUS_HINT' | translate }}</p>
-                      </div>
-                      <button type="button" class="btn btn-secondary btn-sm" (click)="useCurrentLocation()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="10"/>
-                          <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        {{ 'SETTINGS.USE_CURRENT_LOCATION' | translate }}
-                      </button>
-                    </div>
-                  }
 
-                  <div class="divider"></div>
                   <h3>{{ 'SETTINGS.SATISFECHO_DELIVERY_TITLE' | translate }}</h3>
                   <p class="section-desc">{{ 'SETTINGS.SATISFECHO_DELIVERY_DESC' | translate }}</p>
                   <div class="form-group">
@@ -1611,6 +1914,9 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                     ></textarea>
                     <p class="hint">{{ 'SETTINGS.DELIVERY_POSTAL_CODES_HINT' | translate }}</p>
                   </div>
+
+                  <div class="divider"></div>
+                  <app-delivery-integrations-settings />
                 </div>
               }
 
@@ -1809,7 +2115,14 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
                   </div>
                   <div class="form-group">
                     <label for="email_from_name">{{ 'SETTINGS.EMAIL_FROM_NAME' | translate }}</label>
-                    <input type="text" id="email_from_name" [(ngModel)]="formData.email_from_name" name="email_from_name" [placeholder]="'SETTINGS.EMAIL_FROM_PLACEHOLDER' | translate" />
+                    <input
+                      type="text"
+                      id="email_from_name"
+                      [(ngModel)]="formData.email_from_name"
+                      name="email_from_name"
+                      [placeholder]="emailFromNamePlaceholder()"
+                    />
+                    <p class="hint">{{ 'SETTINGS.EMAIL_FROM_NAME_HINT' | translate }}</p>
                   </div>
                   <div class="section-header" style="margin-top: 1.5rem;">
                     <h3>{{ 'SETTINGS.RESERVATION_CONFIRMATION_EMAIL_TITLE' | translate }}</h3>
@@ -1851,6 +2164,7 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
             </form>
           }
       </div>
+      </div>
     </app-sidebar>
   `,
   styles: [`
@@ -1880,83 +2194,90 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
     }
 
     /* ==========================================
-       TABS - Mobile First (Horizontal Scroll)
+       SETTINGS NAV - Vertical menu (Invoice Ninja–style)
        ========================================== */
-    .tabs-container {
-      margin-bottom: var(--space-4);
-      margin-left: calc(-1 * var(--space-4));
-      margin-right: calc(-1 * var(--space-4));
-      padding: 0 var(--space-4);
-      overflow-x: auto;
+    .settings-layout {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      align-items: stretch;
+    }
+
+    .settings-nav {
+      flex-shrink: 0;
+    }
+
+    .settings-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      max-height: min(40vh, 20rem);
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      display: block;
-      max-width: calc(100% + (2 * var(--space-4)));
-    }
-
-    .tabs {
-      display: flex;
-      gap: var(--space-2);
-      padding-bottom: var(--space-3);
-      width: max-content;
-      min-width: 100%;
-    }
-
-    /* Mobile: Icon-only tabs with smaller padding */
-    .tab {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-2);
-      padding: var(--space-3);
+      padding: var(--space-1);
       background: var(--color-surface);
       border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+
+    .settings-nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: var(--space-2);
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      border: 1px solid transparent;
       border-radius: var(--radius-md);
       color: var(--color-text-muted);
       font-size: 0.875rem;
       font-weight: 500;
+      text-align: left;
       white-space: nowrap;
       cursor: pointer;
-      transition: all 0.15s ease;
-      min-height: 44px; /* Touch-friendly minimum */
-      min-width: 44px;
-      flex-shrink: 0;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      min-height: 44px;
     }
 
-    /* Hide text on small screens */
-    .tab span {
-      display: none;
-    }
-
-    .tab:hover {
+    .settings-nav-item:hover {
       color: var(--color-text);
-      border-color: var(--color-primary);
+      background: var(--color-bg, rgba(0, 0, 0, 0.04));
+      border-color: var(--color-border);
     }
 
-    .tab.active {
+    .settings-nav-item.active {
       background: var(--color-primary);
       border-color: var(--color-primary);
       color: white;
     }
 
-    .tab-icon {
-      width: 20px;
-      height: 20px;
+    .settings-nav-icon {
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
     }
 
-    /* Tablet+: Show text labels */
-    @media (min-width: 480px) {
-      .tab {
-        padding: var(--space-3) var(--space-4);
+    .settings-layout > .content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    @media (min-width: 900px) {
+      .settings-layout {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: var(--space-5);
       }
-      
-      .tab span {
-        display: inline;
+
+      .settings-nav {
+        width: 15.5rem;
+        position: sticky;
+        top: var(--space-4);
       }
-      
-      .tab-icon {
-        width: 18px;
-        height: 18px;
+
+      .settings-nav-list {
+        max-height: calc(100vh - 6rem);
       }
     }
 
@@ -2330,6 +2651,36 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
         width: 110px;
         min-width: unset;
       }
+    }
+
+    .service-label-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      margin-top: var(--space-2);
+      max-width: 280px;
+
+      label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+
+      input {
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: 0.95rem;
+        min-height: 40px;
+        background: var(--color-bg);
+        color: var(--color-text);
+        text-align: left;
+      }
+    }
+
+    .shift-service-label {
+      max-width: 180px !important;
+      text-align: left !important;
     }
 
     /* Split Shifts - Mobile First (Stacked) */
@@ -2914,6 +3265,20 @@ import { MAX_IMAGE_UPLOAD_BYTES, MAX_IMAGE_UPLOAD_MB } from '../shared/image-upl
       margin-bottom: var(--space-4);
       color: var(--color-text);
     }
+    .otp-recovery-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.75rem 0 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+      gap: 0.5rem;
+    }
+    .otp-recovery-list code {
+      display: block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.9375rem;
+      letter-spacing: 0.04em;
+    }
 
     /* Security / OTP: separate explanatory copy from actions (GitHub #83) */
     [data-testid='settings-security-section'] .form-card > p.hint {
@@ -3063,6 +3428,36 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return sym && sym !== code ? `${code} (${sym})` : code;
   }
 
+  /**
+   * ISO used for Payments fiscal prep visibility.
+   * Primary: Country (ISO) on Business profile. Fallback: fiscal_country hint (docs/0072).
+   * Currency alone is not used (EUR is multi-country; fiscal modes are ES vs DE per docs/0074).
+   */
+  private fiscalVisibilityCountryIso(): string {
+    const primary = (this.formData.country_code || '').toString().trim().toUpperCase();
+    if (primary.length === 2) {
+      return primary;
+    }
+    const hint = (this.formData.fiscal_country || '').toString().trim().toUpperCase();
+    return hint.length === 2 ? hint : '';
+  }
+
+  /** Spain VeriFactu prep (Settings → Payments). Still shown if fiscal_mode is already on. */
+  showVeriFactuFiscalPrep(): boolean {
+    if (this.formData.fiscal_mode === 'test' || this.formData.fiscal_mode === 'live') {
+      return true;
+    }
+    return this.fiscalVisibilityCountryIso() === 'ES';
+  }
+
+  /** Germany TSE / KassenSichV prep. Still shown if tse_mode is already on. */
+  showGermanyTsePrep(): boolean {
+    if (this.formData.tse_mode === 'test' || this.formData.tse_mode === 'live') {
+      return true;
+    }
+    return this.fiscalVisibilityCountryIso() === 'DE';
+  }
+
   onTenantCurrencyCodeChange(): void {
     this.syncPrepaymentFieldsFromCents();
   }
@@ -3100,28 +3495,30 @@ export class SettingsComponent implements OnInit, OnDestroy {
   newTaxRate = 10;
   newTaxValidFrom = new Date().toISOString().slice(0, 10);
   newTaxValidTo = '';
-  activeSection = signal<
-    | 'general'
-    | 'navigation'
-    | 'contact'
-    | 'hours'
-    | 'payments'
-    | 'email'
-    | 'reservations'
-    | 'taxes'
-    | 'kitchen-stations'
-    | 'loyalty'
-    | 'printing'
-    | 'promos'
-    | 'restaurant-group'
-    | 'delivery-integrations'
-    | 'social-posts'
-    | 'contract-templates'
-    | 'providers'
-    | 'translations'
-    | 'security'
-    | 'data-privacy'
-  >('general');
+  activeSection = signal<SettingsSectionId>('general');
+
+  private static readonly SETTINGS_SECTION_IDS: readonly SettingsSectionId[] = [
+    'general',
+    'navigation',
+    'contact',
+    'hours',
+    'payments',
+    'email',
+    'reservations',
+    'taxes',
+    'kitchen-stations',
+    'loyalty',
+    'printing',
+    'promos',
+    'restaurant-group',
+    'delivery',
+    'social-posts',
+    'contract-templates',
+    'providers',
+    'translations',
+    'security',
+    'data-privacy',
+  ];
 
   readonly uiModuleRows: { key: TenantUiModuleKey; labelKey: string; descKey: string }[] = [
     { key: 'tables', labelKey: 'SETTINGS.UI_MODULE_TABLES', descKey: 'SETTINGS.UI_MODULE_TABLES_DESC' },
@@ -3193,15 +3590,26 @@ export class SettingsComponent implements OnInit, OnDestroy {
   newProductOnSale = true;
   providerProductError = signal('');
 
-  otpStatus = signal<{ otp_enabled: boolean } | null>(null);
+  otpStatus = signal<{ otp_enabled: boolean; recovery_codes_remaining: number } | null>(null);
   otpStatusLoading = signal(false);
   otpSetupResult = signal<{ secret: string; provisioning_uri: string } | null>(null);
   otpConfirmCode = '';
   otpError = signal<string | null>(null);
   otpConfirming = signal(false);
-  otpDisableCode = '';
+  /** Account password for disable (replaces OTP code re-entry while logged in; #401). */
+  otpDisablePassword = '';
   otpDisabling = signal(false);
   otpSettingUp = signal(false);
+  /** One-time plaintext recovery codes after enable/regenerate (#400). */
+  otpRecoveryCodes = signal<string[] | null>(null);
+  otpRecoverySavedConfirm = false;
+  otpRecoveryCopied = signal(false);
+  private otpRecoveryCopiedClearTimer: ReturnType<typeof setTimeout> | null = null;
+  otpRegenPassword = '';
+  otpRegenerating = signal(false);
+  /** Brief “Copied” feedback after a successful TOTP secret copy (#377). */
+  otpSecretCopied = signal(false);
+  private otpSecretCopiedClearTimer: ReturnType<typeof setTimeout> | null = null;
 
   clockQrBusy = signal(false);
   clockQrDownloadBusy = signal(false);
@@ -3269,6 +3677,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     morningClose?: string;
     eveningOpen?: string;
     eveningClose?: string;
+    /** Custom booking label when the day has no break (or combined “all”). */
+    serviceLabel?: string;
+    /** Custom booking label for the first window (API: lunch). */
+    morningLabel?: string;
+    /** Custom booking label for the second window (API: dinner). */
+    eveningLabel?: string;
     bar?: number;
     waiter?: number;
     kitchen?: number;
@@ -3283,6 +3697,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     whatsapp: null,
     email: null,
     address: null,
+    city: null,
+    public_slug: null,
     website: null,
     tax_id: null,
     cif: null,
@@ -3306,6 +3722,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     reservation_confirmation_email_subject: null,
     reservation_confirmation_email_body: null,
     public_background_color: null,
+    public_primary_color: null,
     reservation_prepayment_cents: null,
     reservation_prepayment_text: null,
     reservation_cancellation_policy: null,
@@ -3323,6 +3740,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     delivery_fee_cents: 0,
     delivery_radius_meters: null,
     delivery_postal_codes: null,
+    latitude: null,
+    longitude: null,
+    location_radius_meters: 100,
+    location_check_enabled: false,
     public_google_review_url: null,
     public_google_maps_url: null,
     public_openstreetmap_url: null,
@@ -3356,35 +3777,98 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.allTimezones = [];
     }
     this.filteredTimezones = this.allTimezones;
-    const section = this.route.snapshot.queryParams['section'];
-    if (section === 'reservations') {
-      this.activeSection.set('reservations');
+    // Prefer `#hash` (#365); fall back to legacy `?section=` (#395).
+    const initial =
+      this.resolveSectionId(this.route.snapshot.fragment) ??
+      this.resolveSectionId(this.route.snapshot.queryParams['section']);
+    if (initial) {
+      this.selectSection(initial, true);
+      this.scrollActiveSectionIntoView();
     }
-    if (section === 'contract-templates') {
-      this.activeSection.set('contract-templates');
-    }
-    if (section === 'delivery-integrations') {
-      this.activeSection.set('delivery-integrations');
-    }
-    if (section === 'social-posts') {
-      this.activeSection.set('social-posts');
-    }
-    this.route.queryParams.subscribe((params) => {
-      const s = params['section'];
-      if (s === 'reservations') {
-        this.activeSection.set('reservations');
+    this.route.fragment.subscribe((fragment) => {
+      const resolved = this.resolveSectionId(fragment);
+      if (resolved) {
+        this.applySectionFromUrl(fragment, true);
+        return;
       }
-      if (s === 'contract-templates') {
-        this.activeSection.set('contract-templates');
-      }
-      if (s === 'delivery-integrations') {
-        this.activeSection.set('delivery-integrations');
-      }
-      if (s === 'social-posts') {
-        this.activeSection.set('social-posts');
+      // Unknown non-empty hash: ignore safely → default section (#365).
+      if (fragment && fragment.trim() && this.activeSection() !== 'general') {
+        this.selectSection('general', false);
       }
     });
+    this.route.queryParams.subscribe((params) => {
+      // Only apply query when there is no known hash (hash wins).
+      if (this.resolveSectionId(this.route.snapshot.fragment)) {
+        return;
+      }
+      this.applySectionFromUrl(params['section'], false);
+    });
     this.loadSettings();
+  }
+
+  /** Open a settings section; sync `?section=` and `#hash` for deep links / refresh. */
+  selectSection(section: SettingsSectionId, updateUrl = true): void {
+    this.activeSection.set(section);
+    if (section === 'taxes') {
+      this.loadTaxesAll();
+    } else if (section === 'providers') {
+      this.loadProviders();
+    } else if (section === 'security') {
+      this.loadOtpStatus();
+    }
+    if (updateUrl) {
+      const hash = SETTINGS_SECTION_HASH[section];
+      const currentQ = this.route.snapshot.queryParams['section'];
+      const currentF = this.route.snapshot.fragment;
+      if (currentQ !== section || currentF !== hash) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { section },
+          queryParamsHandling: 'merge',
+          fragment: hash,
+          replaceUrl: true,
+        });
+      }
+    }
+  }
+
+  private resolveSectionId(raw: string | null | undefined): SettingsSectionId | null {
+    if (!raw || typeof raw !== 'string') {
+      return null;
+    }
+    const key = raw.trim().toLowerCase().replace(/^#/, '');
+    if (!key) {
+      return null;
+    }
+    return (
+      SETTINGS_SECTION_ALIASES[key] ??
+      ((SettingsComponent.SETTINGS_SECTION_IDS as readonly string[]).includes(key)
+        ? (key as SettingsSectionId)
+        : null)
+    );
+  }
+
+  private applySectionFromUrl(raw: string | null | undefined, scroll: boolean): void {
+    const resolved = this.resolveSectionId(raw);
+    if (!resolved) {
+      return;
+    }
+    const changed = this.activeSection() !== resolved;
+    if (changed) {
+      this.selectSection(resolved, false);
+    }
+    if (scroll && changed) {
+      this.scrollActiveSectionIntoView();
+    }
+  }
+
+  private scrollActiveSectionIntoView(): void {
+    queueMicrotask(() => {
+      const el =
+        document.querySelector<HTMLElement>('.content .section') ??
+        document.querySelector<HTMLElement>('.content');
+      el?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
   }
 
   settingsModuleTabVisible(key: TenantUiModuleKey): boolean {
@@ -3397,6 +3881,61 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const u = this.api.getCurrentUser();
     if (!u) return false;
     return this.permissions.hasPermission(u, 'staff_contract:manage');
+  }
+
+  /**
+   * Placeholder for From name: show Business Name when set.
+   * Empty saved value stays empty; send path falls back to Business Name.
+   */
+  emailFromNamePlaceholder(): string {
+    const business = (this.formData.name || '').trim();
+    if (business) {
+      return business;
+    }
+    return this.translate.instant('SETTINGS.EMAIL_FROM_PLACEHOLDER');
+  }
+
+  /** Optional one-click fill for public page background (RAL5002 Azul). */
+  readonly publicBackgroundRal5002 = '#1E22AA';
+
+  /** Colour input only accepts #RRGGBB; keep last valid value while the hex field is mid-edit. */
+  private publicBackgroundColorPickerFallback = '#f5f5f5';
+
+  private normalizeHex6(value: string | null | undefined): string | null {
+    const raw = (value || '').trim();
+    if (!raw) return null;
+    const body = raw.startsWith('#') ? raw.slice(1) : raw;
+    if (!/^[0-9A-Fa-f]{6}$/.test(body)) return null;
+    return `#${body.toUpperCase()}`;
+  }
+
+  publicBackgroundColorPickerValue(): string {
+    return this.normalizeHex6(this.formData.public_background_color) ?? this.publicBackgroundColorPickerFallback;
+  }
+
+  onPublicBackgroundColorPicked(value: string): void {
+    this.formData.public_background_color = value;
+    this.publicBackgroundColorPickerFallback = value;
+  }
+
+  onPublicBackgroundHexModelChange(value: string | null): void {
+    const normalized = this.normalizeHex6(value);
+    if (normalized) {
+      this.publicBackgroundColorPickerFallback = normalized;
+    }
+  }
+
+  normalizePublicBackgroundHex(): void {
+    const normalized = this.normalizeHex6(this.formData.public_background_color);
+    if (normalized) {
+      this.formData.public_background_color = normalized;
+      this.publicBackgroundColorPickerFallback = normalized;
+    }
+  }
+
+  applyPublicBackgroundRal5002Preset(): void {
+    this.formData.public_background_color = this.publicBackgroundRal5002;
+    this.publicBackgroundColorPickerFallback = this.publicBackgroundRal5002;
   }
 
   loadSettings() {
@@ -3412,6 +3951,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
           whatsapp: settings.whatsapp || null,
           email: settings.email || null,
           address: settings.address || null,
+          city: settings.city || null,
+          public_slug: settings.public_slug || null,
           website: settings.website || null,
           tax_id: settings.tax_id || null,
           cif: settings.cif || null,
@@ -3435,6 +3976,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           reservation_confirmation_email_subject: settings.reservation_confirmation_email_subject ?? null,
           reservation_confirmation_email_body: settings.reservation_confirmation_email_body ?? null,
           public_background_color: settings.public_background_color ?? null,
+          public_primary_color: settings.public_primary_color ?? null,
           reservation_prepayment_cents: settings.reservation_prepayment_cents ?? null,
           reservation_prepayment_text: settings.reservation_prepayment_text ?? null,
           reservation_cancellation_policy: settings.reservation_cancellation_policy ?? null,
@@ -3452,6 +3994,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
           delivery_fee_cents: settings.delivery_fee_cents ?? 0,
           delivery_radius_meters: settings.delivery_radius_meters ?? null,
           delivery_postal_codes: this.formatDeliveryPostalCodesForForm(settings.delivery_postal_codes),
+          latitude: settings.latitude ?? null,
+          longitude: settings.longitude ?? null,
+          location_radius_meters: settings.location_radius_meters ?? 100,
+          location_check_enabled: settings.location_check_enabled ?? false,
           public_google_review_url: settings.public_google_review_url ?? null,
           public_google_maps_url: settings.public_google_maps_url ?? null,
           public_openstreetmap_url: settings.public_openstreetmap_url ?? null,
@@ -3481,6 +4027,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
           tse_client_id: settings.tse_client_id?.trim() || null,
           tse_api_secret: null,
         };
+        this.publicBackgroundColorPickerFallback =
+          this.normalizeHex6(settings.public_background_color) ?? '#f5f5f5';
         this.clockQrLastToken.set(null);
         this.clockQrTokenLoading.set(false);
         if (settings.clock_qr_active && settings.clock_qr_downloadable) {
@@ -3880,9 +4428,59 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   copyOtpSecret() {
     const secret = this.otpSetupResult()?.secret;
-    if (secret && navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(secret);
+    if (!secret) return;
+    this.otpError.set(null);
+
+    const onOk = () => this.flashOtpSecretCopied();
+    const onFail = () =>
+      this.otpError.set(this.translate.instant('SETTINGS.OTP_SECRET_COPY_FAILED'));
+
+    // Clipboard API often fails in strict browsers (e.g. LibreWolf). Fall back to execCommand.
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(secret).then(onOk).catch(() => {
+        if (!this.copyTextViaExecCommand(secret)) onFail();
+        else onOk();
+      });
+      return;
     }
+    if (!this.copyTextViaExecCommand(secret)) onFail();
+    else onOk();
+  }
+
+  private flashOtpSecretCopied(): void {
+    if (this.otpSecretCopiedClearTimer) {
+      clearTimeout(this.otpSecretCopiedClearTimer);
+      this.otpSecretCopiedClearTimer = null;
+    }
+    this.otpSecretCopied.set(true);
+    this.otpSecretCopiedClearTimer = setTimeout(() => {
+      this.otpSecretCopied.set(false);
+      this.otpSecretCopiedClearTimer = null;
+    }, 2000);
+  }
+
+  /** Sync copy fallback for browsers that block Clipboard API (Firefox/LibreWolf). */
+  private copyTextViaExecCommand(text: string): boolean {
+    if (typeof document === 'undefined') return false;
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, text.length);
+    let ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch {
+      ok = false;
+    } finally {
+      document.body.removeChild(textarea);
+    }
+    return ok;
   }
 
   confirmOtpEnable() {
@@ -3890,11 +4488,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.otpError.set(null);
     this.otpConfirming.set(true);
     this.api.confirmOtp(this.otpConfirmCode).subscribe({
-      next: () => {
-        this.otpStatus.set({ otp_enabled: true });
+      next: (res) => {
+        const codes = Array.isArray(res?.recovery_codes) ? res.recovery_codes : [];
+        this.otpStatus.set({
+          otp_enabled: true,
+          recovery_codes_remaining: codes.length,
+        });
         this.otpSetupResult.set(null);
         this.otpConfirmCode = '';
         this.otpConfirming.set(false);
+        this.otpRecoverySavedConfirm = false;
+        this.otpRecoveryCodes.set(codes);
       },
       error: (err) => {
         this.otpError.set(err?.error?.detail || 'Invalid code');
@@ -3907,21 +4511,117 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.otpSetupResult.set(null);
     this.otpConfirmCode = '';
     this.otpError.set(null);
+    this.otpSecretCopied.set(false);
+    if (this.otpSecretCopiedClearTimer) {
+      clearTimeout(this.otpSecretCopiedClearTimer);
+      this.otpSecretCopiedClearTimer = null;
+    }
     this.loadOtpStatus();
   }
 
-  disableOtp() {
-    if (!this.otpDisableCode || this.otpDisableCode.length !== 6) return;
+  dismissOtpRecoveryCodes() {
+    if (!this.otpRecoverySavedConfirm) return;
+    this.otpRecoveryCodes.set(null);
+    this.otpRecoverySavedConfirm = false;
+    this.otpRecoveryCopied.set(false);
+    if (this.otpRecoveryCopiedClearTimer) {
+      clearTimeout(this.otpRecoveryCopiedClearTimer);
+      this.otpRecoveryCopiedClearTimer = null;
+    }
+    this.otpRegenPassword = '';
+    this.loadOtpStatus();
+  }
+
+  copyOtpRecoveryCodes() {
+    const codes = this.otpRecoveryCodes();
+    if (!codes?.length) return;
     this.otpError.set(null);
-    this.otpDisabling.set(true);
-    this.api.disableOtp(this.otpDisableCode).subscribe({
-      next: () => {
-        this.otpStatus.set({ otp_enabled: false });
-        this.otpDisableCode = '';
-        this.otpDisabling.set(false);
+    const text = codes.join('\n');
+    const onOk = () => {
+      if (this.otpRecoveryCopiedClearTimer) {
+        clearTimeout(this.otpRecoveryCopiedClearTimer);
+        this.otpRecoveryCopiedClearTimer = null;
+      }
+      this.otpRecoveryCopied.set(true);
+      this.otpRecoveryCopiedClearTimer = setTimeout(() => {
+        this.otpRecoveryCopied.set(false);
+        this.otpRecoveryCopiedClearTimer = null;
+      }, 2000);
+    };
+    const onFail = () =>
+      this.otpError.set(this.translate.instant('SETTINGS.OTP_SECRET_COPY_FAILED'));
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(onOk).catch(() => {
+        if (!this.copyTextViaExecCommand(text)) onFail();
+        else onOk();
+      });
+      return;
+    }
+    if (!this.copyTextViaExecCommand(text)) onFail();
+    else onOk();
+  }
+
+  downloadOtpRecoveryCodes() {
+    const codes = this.otpRecoveryCodes();
+    if (!codes?.length) return;
+    const blob = new Blob([codes.join('\n') + '\n'], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pos-otp-recovery-codes.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  regenerateOtpRecoveryCodes() {
+    const password = (this.otpRegenPassword || '').trim();
+    if (!password) return;
+    this.otpError.set(null);
+    this.otpRegenerating.set(true);
+    this.api.regenerateOtpRecoveryCodes(password).subscribe({
+      next: (res) => {
+        const codes = Array.isArray(res?.recovery_codes) ? res.recovery_codes : [];
+        this.otpRegenPassword = '';
+        this.otpRegenerating.set(false);
+        this.otpRecoverySavedConfirm = false;
+        this.otpRecoveryCodes.set(codes);
+        this.otpStatus.set({
+          otp_enabled: true,
+          recovery_codes_remaining: codes.length,
+        });
       },
       error: (err) => {
-        this.otpError.set(err?.error?.detail || 'Invalid code');
+        const detail = err?.error?.detail;
+        this.otpError.set(
+          typeof detail === 'string'
+            ? detail
+            : detail?.message || this.translate.instant('SETTINGS.OTP_RECOVERY_REGENERATE_FAILED'),
+        );
+        this.otpRegenerating.set(false);
+      },
+    });
+  }
+
+  disableOtp() {
+    const password = (this.otpDisablePassword || '').trim();
+    if (!password) return;
+    this.otpError.set(null);
+    this.otpDisabling.set(true);
+    this.api.disableOtp(password).subscribe({
+      next: () => {
+        this.otpStatus.set({ otp_enabled: false, recovery_codes_remaining: 0 });
+        this.otpDisablePassword = '';
+        this.otpDisabling.set(false);
+        this.otpRecoveryCodes.set(null);
+        this.otpRegenPassword = '';
+      },
+      error: (err) => {
+        const detail = err?.error?.detail;
+        this.otpError.set(
+          typeof detail === 'string'
+            ? detail
+            : detail?.message || this.translate.instant('SETTINGS.OTP_DISABLE_FAILED'),
+        );
         this.otpDisabling.set(false);
       },
     });
@@ -3999,6 +4699,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         morningClose: '14:00',
         eveningOpen: '17:00',
         eveningClose: '22:00',
+        serviceLabel: '',
+        morningLabel: '',
+        eveningLabel: '',
         bar: 0,
         waiter: 0,
         kitchen: 0,
@@ -4014,6 +4717,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           if (parsed[day.key]) {
             const dayData = parsed[day.key];
             const num = (v: unknown) => (typeof v === 'number' && v >= 0 && Number.isInteger(v) ? v : 0);
+            const label = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 64) : '');
             this.openingHours[day.key] = {
               open: this.roundTimeToQuarter(dayData.open || '09:00'),
               close: this.roundTimeToQuarter(dayData.close || '22:00'),
@@ -4023,6 +4727,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
               morningClose: this.roundTimeToQuarter(dayData.morningClose || '14:00'),
               eveningOpen: this.roundTimeToQuarter(dayData.eveningOpen || '17:00'),
               eveningClose: this.roundTimeToQuarter(dayData.eveningClose || dayData.close || '22:00'),
+              serviceLabel: label(dayData.serviceLabel),
+              morningLabel: label(dayData.morningLabel),
+              eveningLabel: label(dayData.eveningLabel),
               bar: num(dayData.bar),
               waiter: num(dayData.waiter),
               kitchen: num(dayData.kitchen),
@@ -4083,6 +4790,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.serializeOpeningHours();
   }
 
+  setServiceLabelValue(
+    dayKey: string,
+    field: 'serviceLabel' | 'morningLabel' | 'eveningLabel',
+    value: string,
+  ): void {
+    (this.openingHours[dayKey] as any)[field] = (value || '').trim().slice(0, 64);
+    this.serializeOpeningHours();
+  }
+
   copyDayToOtherDays(sourceKey: string) {
     const source = this.openingHours[sourceKey];
     if (!source) return;
@@ -4098,6 +4814,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         morningClose: source.morningClose,
         eveningOpen: source.eveningOpen,
         eveningClose: source.eveningClose,
+        serviceLabel: source.serviceLabel || '',
+        morningLabel: source.morningLabel || '',
+        eveningLabel: source.eveningLabel || '',
         bar: source.bar ?? 0,
         waiter: source.waiter ?? 0,
         kitchen: source.kitchen ?? 0,
@@ -4166,6 +4885,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         kitchen: dayData.kitchen ?? 0,
         receptionist: dayData.receptionist ?? 0,
       };
+      const morningLabel = (dayData.morningLabel || '').trim().slice(0, 64);
+      const eveningLabel = (dayData.eveningLabel || '').trim().slice(0, 64);
+      const serviceLabel = (dayData.serviceLabel || '').trim().slice(0, 64);
       if (dayData.hasBreak) {
         serialized[day.key] = {
           closed: dayData.closed,
@@ -4176,6 +4898,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           eveningClose: dayData.eveningClose,
           open: dayData.morningOpen,
           close: dayData.eveningClose,
+          ...(morningLabel ? { morningLabel } : {}),
+          ...(eveningLabel ? { eveningLabel } : {}),
+          ...(serviceLabel ? { serviceLabel } : {}),
           ...staff,
         };
       } else {
@@ -4183,6 +4908,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           closed: dayData.closed,
           open: dayData.open,
           close: dayData.close,
+          ...(serviceLabel ? { serviceLabel } : {}),
           ...staff,
         };
       }
@@ -4462,6 +5188,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.api.updateTenantSettings(updateData).subscribe({
       next: (updatedSettings) => {
         this.settings.set(updatedSettings);
+        this.formData.default_tax_id = updatedSettings.default_tax_id ?? null;
+        this.formData.latitude = updatedSettings.latitude ?? null;
+        this.formData.longitude = updatedSettings.longitude ?? null;
+        this.formData.location_radius_meters = updatedSettings.location_radius_meters ?? 100;
+        this.formData.location_check_enabled = updatedSettings.location_check_enabled ?? false;
         this.api.applyTenantUiModulesFromSettings(updatedSettings);
         this.success.set('Settings saved successfully!');
         this.scheduleSuccessDismiss();
@@ -4472,6 +5203,28 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.saving.set(false);
         console.error('Error updating settings:', err);
       }
+    });
+  }
+
+  /** Persist default tax (IVA) from the Taxes section without a full settings save. */
+  saveDefaultTax(): void {
+    this.saving.set(true);
+    this.error.set(null);
+    this.clearSuccessDismissTimer();
+    this.success.set(null);
+    this.api.updateTenantSettings({ default_tax_id: this.formData.default_tax_id ?? null }).subscribe({
+      next: (updatedSettings) => {
+        this.settings.set(updatedSettings);
+        this.formData.default_tax_id = updatedSettings.default_tax_id ?? null;
+        this.success.set(this.translate.instant('SETTINGS.SAVE_CHANGES'));
+        this.scheduleSuccessDismiss();
+        this.saving.set(false);
+      },
+      error: (err) => {
+        this.error.set('Failed to save settings. Please try again.');
+        this.saving.set(false);
+        console.error('Error updating default tax:', err);
+      },
     });
   }
 

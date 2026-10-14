@@ -18,6 +18,7 @@ import {
   CanvasTable,
   TableOperationalStatus,
   TablePaymentStatus,
+  TenantSettings,
   User,
 } from '../services/api.service';
 import { PermissionService } from '../services/permission.service';
@@ -28,7 +29,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { StaffPosToolbarComponent } from '../shared/staff-pos-toolbar.component';
 import { TablesAreaPreferenceService } from '../services/tables-area-preference.service';
 import { ApiErrorMessageService } from '../services/api-error-message.service';
+import { LanguageService } from '../services/language.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { formatActivatedAtTime, formatElapsedActiveDuration } from './table-active-duration.util';
 
 interface TableShape {
   id: string;
@@ -530,6 +533,11 @@ const STAFF_ORDERS_ROLES = new Set([
                 </button>
               </div>
               <div class="panel-body">
+                @if (selectedActiveSessionMeta(); as meta) {
+                  <p class="panel-active-session" data-testid="table-active-duration">
+                    {{ 'TABLES.ACTIVE_SESSION_META' | translate: meta }}
+                  </p>
+                }
                 @if (selectedTable()?.table_group_id) {
                   <p class="panel-group-line">{{ 'TABLES.GROUP_MEMBERS' | translate }}: {{ groupLineForSelected() }}</p>
                 }
@@ -712,6 +720,11 @@ const STAFF_ORDERS_ROLES = new Set([
     }
     .panel-group-line {
       font-size: 13px;
+      margin: 0 0 12px;
+      color: var(--text-muted, #64748b);
+    }
+    .panel-active-session {
+      font-size: 0.8125rem;
       margin: 0 0 12px;
       color: var(--text-muted, #64748b);
     }
@@ -1618,6 +1631,7 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private tablesArea = inject(TablesAreaPreferenceService);
   private apiErr = inject(ApiErrorMessageService);
+  private language = inject(LanguageService);
 
   @ViewChild('canvasArea') canvasAreaRef!: ElementRef;
   @ViewChild('canvasSvg') canvasSvgRef!: ElementRef<SVGSVGElement>;
@@ -1628,6 +1642,10 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   tables = signal<CanvasTable[]>([]);
   selectedFloorId = signal<number | null>(null);
   selectedTable = signal<CanvasTable | null>(null);
+  tenantSettings = signal<TenantSettings | null>(null);
+  /** Ticks so live active-session duration refreshes without a full reload. */
+  private nowTick = signal(Date.now());
+  private activeDurationTimer: ReturnType<typeof setInterval> | null = null;
   /** Ctrl/Cmd+click table ids for Join (same floor, not already grouped). */
   joinSelectionIds = signal<number[]>([]);
   /** Prevents duplicate DELETE /table-group calls (stale id → 404 / error banner). */
@@ -1770,6 +1788,11 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.tablesArea.setArea('canvas');
     this.loadData();
+    this.api.getTenantSettings().subscribe({
+      next: s => this.tenantSettings.set(s),
+      error: () => this.tenantSettings.set(null),
+    });
+    this.activeDurationTimer = setInterval(() => this.nowTick.set(Date.now()), 30_000);
     this.api.waitForInitialAuthCheck().subscribe(() => {
       if (this.canManageTableAssignments()) {
         this.api.getWaiters().subscribe({
@@ -1788,12 +1811,30 @@ export class TablesCanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.activeDurationTimer) {
+      clearInterval(this.activeDurationTimer);
+      this.activeDurationTimer = null;
+    }
     this.clearLayoutAutoSaveTimer();
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('mouseup', this.onMouseUp);
     document.removeEventListener('touchmove', this.onTouchMove);
     document.removeEventListener('touchend', this.onTouchEnd);
     document.removeEventListener('touchcancel', this.onTouchEnd);
+  }
+
+  /** Live duration + start time for the selected active table session. */
+  selectedActiveSessionMeta(): { duration: string; time: string } | null {
+    const table = this.selectedTable();
+    if (!table?.is_active || !table.activated_at) return null;
+    const duration = formatElapsedActiveDuration(table.activated_at, this.nowTick());
+    const time = formatActivatedAtTime(
+      table.activated_at,
+      this.language.currentLocale(),
+      this.tenantSettings()?.timezone,
+    );
+    if (!duration || !time) return null;
+    return { duration, time };
   }
 
   /** Router `canDeactivate`: try to save; if save fails, optional browser confirm to discard. */

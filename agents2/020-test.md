@@ -36,6 +36,7 @@ If verification fails **more than three** times for the same change, stop cyclin
 4. Puppeteer: **`docs/testing.md`**, **`BASE_URL`** (e.g. `http://127.0.0.1:4202`), **`HEADLESS=1`** where applicable.
 5. Browser flows: record **every full URL** visited.
 6. Collect evidence from **`docker logs`** (`pos-front`, `pos-back`, …) for the UTC window.
+7. **Contrast check (mandatory for UI):** For any task that changes colours, backgrounds, nav/chrome, or tenant branding, verify text and icons stay readable on their backgrounds (aim WCAG AA ~4.5:1 where practical). If contrast fails, do **not** mark **CLOSED** / overall **PASS** — open or reopen a GitHub issue titled for contrast (or comment on the linked issue), rename the task **TESTING → WIP**, and cite the fail in the **Test report**. See `.cursor/rules/ui-contrast.mdc` and `docs/0028-tenant-public-branding.md`.
 
 ### Production / amvara9 — wait for deploy, do not “sleep and hope”
 

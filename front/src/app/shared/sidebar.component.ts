@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, computed, AfterViewInit, OnDestroy, ViewChild, ElementRef, DestroyRef } from '@angular/core';
+import { Component, inject, signal, OnInit, computed, AfterViewInit, OnDestroy, ViewChild, ElementRef, DestroyRef, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { ApiService, TenantUiModuleKey, User } from '../services/api.service';
 import { PermissionService, Permission } from '../services/permission.service';
 import { environment } from '../../environments/environment';
+import { ChangelogModalComponent } from './changelog-modal.component';
 import { LanguagePickerComponent } from './language-picker.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TablesAreaPreferenceService } from '../services/tables-area-preference.service';
@@ -18,7 +19,7 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, LanguagePickerComponent, TranslateModule],
+  imports: [RouterLink, RouterLinkActive, LanguagePickerComponent, ChangelogModalComponent, TranslateModule],
   template: `
     <div class="layout" [class.sidebar-open]="sidebarOpen()" [class.layout--nav-collapsed]="staffLayout.sidebarCollapsed()">
       <header class="mobile-header">
@@ -27,21 +28,61 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
           <span></span>
           <span></span>
         </button>
-        <div class="mobile-brand" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
-          <span class="header-title">POS</span>
-          @if (tenantOrgName()) {
+        <div class="mobile-brand" [attr.title]="brandTitle()">
+          <a
+            routerLink="/dashboard"
+            class="header-title"
+            [attr.aria-label]="brandTitle()"
+            data-testid="mobile-brand-home"
+            (click)="closeSidebar()"
+          >
             <span class="header-org-name" [attr.title]="tenantOrgName()!" [attr.aria-label]="tenantOrgName()!">{{
               tenantOrgName()
             }}</span>
-          }
+          </a>
         </div>
       </header>
 
       <aside class="sidebar">
         <div class="sidebar-header">
-          <div class="logo-container" [attr.title]="brandTitle()" [attr.aria-label]="brandTitle()">
-            <span class="logo">POS</span>
-            <span class="version">{{ version }} <span class="commit-hash">{{ commitHash }}</span></span>
+          <div class="logo-container" [attr.title]="brandTitle()">
+            <div class="logo-row">
+              <button
+                type="button"
+                class="logout-icon-btn"
+                (click)="logout()"
+                [attr.aria-label]="'NAV.LOGOUT' | translate"
+                [attr.title]="'NAV.LOGOUT' | translate"
+                data-testid="sidebar-logout"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                  <polyline points="16,17 21,12 16,7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+              <a
+                routerLink="/dashboard"
+                class="logo"
+                [attr.aria-label]="brandTitle()"
+                data-testid="sidebar-brand-home"
+                (click)="closeSidebar()"
+              >POS</a>
+              <app-language-picker appearance="icon" class="sidebar-lang"></app-language-picker>
+            </div>
+            <button
+              type="button"
+              class="version version-btn"
+              (click)="openChangelog()"
+              [attr.aria-label]="'DASHBOARD.CHANGELOG_TITLE' | translate"
+              data-testid="sidebar-version-changelog"
+            >
+              {{ version }}
+              <span class="commit-hash">{{ commitHash }}</span>
+              @if (tenantId(); as tid) {
+                <span class="tenant-id" title="Tenant ID">{{ tid }}</span>
+              }
+            </button>
             @if (tenantOrgName()) {
               <span class="sidebar-org-name" [attr.title]="tenantOrgName()!" [attr.aria-label]="tenantOrgName()!">{{
                 tenantOrgName()
@@ -180,21 +221,36 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
 
           @if (showCatalogGroup()) {
             <div class="nav-section">
-              <button
-                type="button"
-                class="nav-section-header"
-                [attr.aria-expanded]="catalogOpen()"
-                aria-controls="nav-group-catalog"
-                (click)="toggleNavGroup('catalog')"
+              <div
+                class="nav-section-header nav-section-header--split"
+                [class.active]="isCatalogHubNavActive()"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                </svg>
-                <span>{{ 'NAV.GROUP_CATALOG' | translate }}</span>
-                <svg class="chevron" [class.open]="catalogOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </button>
+                <a
+                  routerLink="/catalog-inventory"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="nav-section-link"
+                  data-testid="nav-catalog-inventory-hub"
+                  (click)="openCatalogHub()"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                  </svg>
+                  <span>{{ 'NAV.GROUP_CATALOG' | translate }}</span>
+                </a>
+                <button
+                  type="button"
+                  class="nav-section-chevron"
+                  [attr.aria-expanded]="catalogOpen()"
+                  aria-controls="nav-group-catalog"
+                  [attr.aria-label]="'NAV.GROUP_CATALOG_TOGGLE' | translate"
+                  (click)="toggleNavGroup('catalog')"
+                >
+                  <svg class="chevron" [class.open]="catalogOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+              </div>
               @if (catalogOpen()) {
                 <div class="nav-submenu" id="nav-group-catalog">
                   <a routerLink="/products" routerLinkActive="active" class="nav-sublink" (click)="closeSidebar()">
@@ -294,23 +350,14 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
           }
         </nav>
 
-        <div class="sidebar-footer">
-          <app-language-picker></app-language-picker>
-          @if (user()) {
+        @if (user()) {
+          <div class="sidebar-footer">
             <div class="user-info">
               <span class="user-email">{{ user()?.email }}</span>
               <span class="user-role">{{ getRoleDisplayName() }}</span>
             </div>
-          }
-          <button class="logout-btn" (click)="logout()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-              <polyline points="16,17 21,12 16,7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span>{{ 'NAV.LOGOUT' | translate }}</span>
-          </button>
-        </div>
+          </div>
+        }
       </aside>
 
       <div class="overlay" (click)="closeSidebar()"></div>
@@ -334,6 +381,7 @@ type NavGroupKey = 'operations' | 'planning' | 'catalog' | 'admin';
         }
         <ng-content></ng-content>
       </main>
+      <app-changelog-modal #changelogModal />
     </div>
   `,
   styleUrl: './sidebar.component.scss'
@@ -350,6 +398,7 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly offlineQueue = inject(OfflineOrderQueueService);
 
   @ViewChild('navScroll') navScroll?: ElementRef<HTMLElement>;
+  private changelogModal = viewChild.required<ChangelogModalComponent>('changelogModal');
 
   user = signal<User | null>(null);
   sidebarOpen = signal(false);
@@ -404,10 +453,19 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   tenantOrgName = computed(() => this.api.tenantDisplayName()?.trim() ?? '');
 
+  tenantId = computed(() => {
+    const id = this.user()?.tenant_id;
+    return id != null ? id : null;
+  });
+
   brandTitle = computed(() => {
     const org = this.tenantOrgName();
     return org ? `POS (${org})` : 'POS';
   });
+
+  openChangelog() {
+    this.changelogModal().show();
+  }
 
   ngOnInit() {
     this.api.ensureTenantUiModulesLoaded().subscribe();
@@ -502,6 +560,7 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     if (
       path.startsWith('/products') ||
       path.startsWith('/catalog') ||
+      path.startsWith('/catalog-inventory') ||
       path.startsWith('/inventory')
     ) {
       this.catalogOpen.set(true);
@@ -566,12 +625,23 @@ export class SidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     signalMap[group].update(v => !v);
   }
 
+  isCatalogHubNavActive(): boolean {
+    const path = this.router.url.split('?')[0];
+    return path === '/catalog-inventory';
+  }
+
+  /** Navigate to hub: expand group and close mobile drawer. */
+  openCatalogHub() {
+    this.catalogOpen.set(true);
+    this.closeSidebar();
+  }
+
   toggleInventory(event: Event) {
     event.stopPropagation();
     this.inventoryOpen.update(v => !v);
   }
 
   logout() {
-    this.api.logout().subscribe(() => this.router.navigate(['/']));
+    this.api.logout().subscribe(() => this.router.navigate(['/login']));
   }
 }

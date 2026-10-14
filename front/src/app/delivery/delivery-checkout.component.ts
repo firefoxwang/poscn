@@ -23,10 +23,14 @@ import {
   PublicTenantMenuResponse,
   TenantSummary,
 } from '../services/api.service';
-import { LanguagePickerComponent } from '../shared/language-picker.component';
+import { PublicGuestHeaderComponent } from '../shared/public-guest-header.component';
+import { resolvePublicPrimaryColor } from '../shared/public-brand-colors';
+import { publicBookRouterLink } from '../shared/public-book-path';
 import { LanguageService } from '../services/language.service';
 import { LegalLinksComponent } from '../shared/legal-links.component';
 import { contactPhoneValid } from '../shared/contact-validators';
+import { productStockLeft } from '../shared/product-stock.util';
+import { formatMoneyCents } from '../shared/currency-symbol';
 
 interface CartLine {
   product: PublicTenantMenuProduct;
@@ -38,11 +42,12 @@ type CheckoutStep = 'menu' | 'cart' | 'address' | 'pay' | 'success';
 @Component({
   selector: 'app-delivery-checkout',
   standalone: true,
-  imports: [FormsModule, RouterLink, TranslateModule, LanguagePickerComponent, LegalLinksComponent],
+  imports: [FormsModule, RouterLink, TranslateModule, PublicGuestHeaderComponent, LegalLinksComponent],
   templateUrl: './delivery-checkout.component.html',
   styleUrls: ['../book/book.component.scss', './delivery-checkout.component.scss'],
 })
 export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
+  readonly resolvePublicPrimaryColor = resolvePublicPrimaryColor;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);
@@ -103,6 +108,20 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
   cartSubtotalCents = computed(() =>
     this.cart().reduce((sum, l) => sum + l.product.price_cents * l.quantity, 0),
   );
+
+  /**
+   * Fixed bottom total + next-step CTA (#360): menu only.
+   * Cart / address already have inline total + primary actions; a second fixed bar overlaps them.
+   */
+  showFloatingCheckoutBar = computed(() => this.step() === 'menu' && this.cartCount() > 0);
+
+  floatingCtaKey = computed(() => 'DELIVERY_CHECKOUT.VIEW_CART');
+
+  onFloatingCta(): void {
+    if (this.step() === 'menu') {
+      this.goToCart();
+    }
+  }
 
   constructor() {
     afterNextRender(() => this.updateDocumentTitle());
@@ -259,16 +278,15 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
   }
 
   formatPrice(product: PublicTenantMenuProduct): string {
-    return product.price_formatted || `${(product.price_cents / 100).toFixed(2)}`;
+    return formatMoneyCents(this.translate, product.price_cents, this.menu()?.currency);
+  }
+
+  stockLeft(product: PublicTenantMenuProduct): number | null {
+    return productStockLeft(product);
   }
 
   formatCents(cents: number): string {
-    const currency = this.menu()?.currency || 'CNY';
-    try {
-      return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(cents / 100);
-    } catch {
-      return `${(cents / 100).toFixed(2)} ${currency}`;
-    }
+    return formatMoneyCents(this.translate, cents, this.menu()?.currency || 'CNY');
   }
 
   productImageUrl(url: string): string {
@@ -564,6 +582,13 @@ export class DeliveryCheckoutComponent implements OnInit, OnDestroy {
     const url = this.api.getTenantHeaderBackgroundUrl(fn, this.tenantId());
     if (!url) return null;
     return this.sanitizer.bypassSecurityTrustStyle(`url("${url}")`);
+  }
+
+  /** Canonical guest booking link (#415). */
+  bookRouterLink(): (string | number)[] {
+    const t = this.tenant();
+    if (t) return publicBookRouterLink(t);
+    return ['/book', this.tenantId()];
   }
 
   getLogoSafeUrl(url: string | null): SafeResourceUrl | null {

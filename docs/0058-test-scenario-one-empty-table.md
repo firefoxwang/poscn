@@ -29,4 +29,4 @@ This document maps the **Reservations – overbooking detection and seating warn
 
 ## How to verify
 
-Run the automated check: `docker compose exec back python -m app.seeds.check_overbooking_0025` (exit 0 = pass). It creates test data if needed, runs two scenarios (one empty table; full slot), asserts, then cleans up. Unittest: `docker compose exec back python -m tests.test_overbooking_0025 -v`.
+Run the automated check: `docker compose exec back python -m app.seeds.check_overbooking_0025` (exit 0 = pass). It creates test data if needed, runs two scenarios (one empty table; full slot), asserts, then cleans up. Isolated pytest (own tenant, no demo seed): `docker compose exec back python3 -m pytest tests/test_overbooking_0025.py -q`.

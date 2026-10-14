@@ -1,4 +1,13 @@
-<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null">
+<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null" [style.--color-primary]="primaryColorCss()">
+  <app-public-guest-header
+    [tenantId]="tenantId()"
+    [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+    [publicBookSlug]="tenant()?.public_slug?.trim() || null"
+    [tenantName]="tenant()?.name ?? null"
+    [logoUrl]="logoUrl()"
+    [headerBackgroundColor]="tenant()?.public_background_color ?? null"
+    activePage="book"
+  />
   @if (loading()) {
     <div class="loading-screen">
       <div class="loading-content">
@@ -23,7 +32,6 @@
     <!-- Hero Header (same structure as /menu) -->
     <header class="hero-header" [class.has-bg-image]="tenant()?.header_background_filename" [style.background-image]="headerBackgroundStyle()">
       <div class="hero-overlay"></div>
-      <app-language-picker class="book-language-picker"></app-language-picker>
       <div class="hero-content">
         <div class="hero-content-panel">
           <div class="hero-top-row">
@@ -65,13 +73,18 @@
               </a>
             </p>
           }
-          <div class="table-pill book-pill">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button
+            type="button"
+            class="table-pill book-pill"
+            data-testid="book-hero-cta"
+            (click)="scrollToBookingForm()"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
               <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
             <span>{{ 'BOOK.TITLE' | translate }}</span>
-          </div>
+          </button>
           @if (tenant()?.phone || tenant()?.email || tenant()?.whatsapp) {
             <div class="restaurant-contact">
               @if (tenant()?.phone) {
@@ -131,7 +144,7 @@
       </div>
     </header>
 
-    <main class="book-content">
+    <main class="book-content" id="book-content">
       @if (!successReservation()) {
         @if (tenant()?.reservation_cancellation_policy || tenant()?.reservation_prepayment_text || tenant()?.reservation_arrival_tolerance_minutes != null || tenant()?.reservation_dress_code) {
           <div class="book-card book-guidelines">
@@ -162,8 +175,8 @@
             }
           </div>
         }
-        <div class="book-card">
-          <form (ngSubmit)="submit()" class="book-form">
+        <div class="book-card" id="book-form-card">
+          <form (ngSubmit)="submit()" class="book-form" id="book-form" data-testid="book-form">
             <div class="book-booking-controls">
               <div class="form-group">
                 <label for="book-party">{{ 'RESERVATIONS.PARTY_SIZE' | translate }}</label>
@@ -181,9 +194,9 @@
                 <div class="form-group">
                   <label for="book-service">{{ 'BOOK.SERVICE_TYPE' | translate }}</label>
                   <select id="book-service" [(ngModel)]="formService" name="serviceType">
-                    <option value="all">{{ 'BOOK.SERVICE_ALL' | translate }}</option>
-                    <option value="lunch">{{ 'BOOK.SERVICE_LUNCH' | translate }}</option>
-                    <option value="dinner">{{ 'BOOK.SERVICE_DINNER' | translate }}</option>
+                    <option value="all">{{ serviceOptionLabel('all') }}</option>
+                    <option value="lunch">{{ serviceOptionLabel('lunch') }}</option>
+                    <option value="dinner">{{ serviceOptionLabel('dinner') }}</option>
                   </select>
                 </div>
               }
@@ -236,6 +249,7 @@
               [timezone]="tenant()?.timezone ?? null"
               [weekAnchorSeed]="formDate"
               [serviceType]="hasMealSplit() ? formService : 'all'"
+              [openingHoursJson]="tenant()?.opening_hours ?? null"
               [bookFloorId]="formFloorId"
               [(selectedDate)]="formDate"
               [(selectedTime)]="formTime"

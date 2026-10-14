@@ -1,4 +1,13 @@
-<div class="view-page" [style.--hero-header-bg]="tenant()?.public_background_color ?? null">
+<div class="view-page" [style.--hero-header-bg]="tenant()?.public_background_color ?? null" [style.--color-primary]="resolvePublicPrimaryColor(tenant()?.public_primary_color)">
+  @if (tenant(); as t) {
+    <app-public-guest-header
+      [tenantId]="t.id"
+      [tenantName]="t.name"
+      [logoUrl]="logoUrl()"
+      [headerBackgroundColor]="t.public_background_color ?? null"
+      activePage="book"
+    />
+  }
   @if (loading()) {
     <div class="loading-screen">
       <div class="loading-content">
@@ -25,7 +34,6 @@
     @if (tenant()) {
       <header class="hero-header" [class.has-bg-image]="tenant()?.header_background_filename" [style.background-image]="headerBackgroundStyle()">
         <div class="hero-overlay"></div>
-        <app-language-picker class="view-language-picker"></app-language-picker>
         <div class="hero-content">
           <div class="hero-top-row">
             @if (logoUrl()) {

@@ -260,6 +260,66 @@ open_demo_tables_repair_owner() {
   return 1
 }
 
+# First open root task that owns a demo soft-check repair (products / delivery), or empty.
+# $1 = meta basename substring to exclude (never owns its own SIGNAL)
+# $2 = ERE matched against basename for direct ownership
+# $3 = ERE for body when basename already looks demo-related ($4)
+# $4 = optional basename ERE gate before body grep (default: always try body if $2 missed)
+open_demo_soft_check_owner() {
+  local meta_excl="$1"
+  local base_re="$2"
+  local body_re="$3"
+  local slug_re="${4:-.}"
+  local f base
+  shopt -s nullglob
+  for f in "$TASKDIR"/NEW-*.md "$TASKDIR"/FEAT-*.md "$TASKDIR"/WIP-*.md \
+    "$TASKDIR"/UNTESTED-*.md "$TASKDIR"/TESTING-*.md; do
+    [[ -f "$f" ]] || continue
+    base=$(basename "$f")
+    case "$base" in
+      *"${meta_excl}"*) continue ;;
+    esac
+    if printf '%s' "$base" | grep -qE -- "$base_re"; then
+      echo "$base"
+      shopt -u nullglob
+      return 0
+    fi
+    if printf '%s' "$base" | grep -qE -- "$slug_re"; then
+      if grep -qE -- "$body_re" "$f" 2>/dev/null; then
+        echo "$base"
+        shopt -u nullglob
+        return 0
+      fi
+    fi
+  done
+  shopt -u nullglob
+  return 1
+}
+
+open_demo_products_repair_owner() {
+  open_demo_soft_check_owner \
+    "preflight-wire-demo-products" \
+    'repair-demo-products|repair_demo_products|missing-products|check_demo_products|seed_demo_products|check-demo-products|seed-demo-products' \
+    'check_demo_products|seed_demo_products|repair-demo-products' \
+    'demo-product|demo_product|seed-demo-product|check-demo-product'
+}
+
+open_demo_delivery_orders_repair_owner() {
+  open_demo_soft_check_owner \
+    "preflight-wire-demo-products" \
+    'repair-demo-delivery-orders|missing-delivery-orders|check_demo_delivery_orders|check-demo-delivery-orders|seed-demo-delivery-order|seed_demo_delivery' \
+    'check_demo_delivery_orders|seed_demo_orders|repair-demo-delivery' \
+    'demo-delivery|demo_delivery|delivery-order|delivery_order|satisfecho.delivery'
+}
+
+open_demo_delivery_settings_repair_owner() {
+  open_demo_soft_check_owner \
+    "preflight-wire-demo-products" \
+    'repair-demo-delivery-settings|missing-delivery-settings|check_demo_delivery_settings|check-demo-delivery-settings|seed_demo_delivery_settings|seed-demo-delivery-settings|delivery-zone|delivery-fee' \
+    'check_demo_delivery_settings|seed_demo_delivery_settings|repair-demo-delivery-settings' \
+    'demo-delivery|demo_delivery|delivery-setting|delivery_setting|delivery-zone|delivery-fee'
+}
+
 mkdir -p "$STATE_DIR"
 [[ -f "$STATE_FILE" ]] || echo '{"last_run":null,"findings":[]}' >"$STATE_FILE"
 
@@ -384,6 +444,9 @@ emit "reset_script=scripts/reset-demo-data-on-server.sh"
 emit "seed_module=back/app/seeds/reset_demo_data.py (idempotent orders+reservations reset)"
 emit "check_tables=back/app/seeds/check_demo_tables.py"
 emit "check_waiting_list=back/app/seeds/check_demo_waiting_list.py"
+emit "check_products=back/app/seeds/check_demo_products.py"
+emit "check_delivery_orders=back/app/seeds/check_demo_delivery_orders.py"
+emit "check_delivery_settings=back/app/seeds/check_demo_delivery_settings.py"
 if [[ -x "${ROOT}/scripts/reset-demo-data-on-server.sh" ]]; then
   if grep -qR '0 4 \* \* \*.*reset-demo-data-on-server\.sh' "${ROOT}/docs" 2>/dev/null; then
     emit "demo_daily_reset=documented (docs mention 04:00 UTC cron + reset-demo-data-on-server.sh)"
@@ -413,13 +476,52 @@ if command -v docker >/dev/null 2>&1; then
       G008_DEMO_SIGNALS=$((G008_DEMO_SIGNALS + 1))
       emit "SIGNAL demo_waiting_list_check=fail (run seed_demo_waiting_list or reset_demo_data)"
     fi
+    if docker compose -f "${ROOT}/docker-compose.yml" -f "${ROOT}/docker-compose.dev.yml" exec -T back python -m app.seeds.check_demo_products 2>/dev/null; then
+      emit "demo_products_check=ok"
+    else
+      demo_products_owner="$(open_demo_products_repair_owner || true)"
+      if [[ -n "$demo_products_owner" ]]; then
+        emit "demo_products_check=fail (owned by open task ${demo_products_owner})"
+      else
+        G008_DEMO_SIGNALS=$((G008_DEMO_SIGNALS + 1))
+        emit "SIGNAL demo_products_check=fail (run seed_demo_products)"
+      fi
+    fi
+    if docker compose -f "${ROOT}/docker-compose.yml" -f "${ROOT}/docker-compose.dev.yml" exec -T back python -m app.seeds.check_demo_delivery_orders 2>/dev/null; then
+      emit "demo_delivery_orders_check=ok"
+    else
+      demo_delivery_orders_owner="$(open_demo_delivery_orders_repair_owner || true)"
+      if [[ -n "$demo_delivery_orders_owner" ]]; then
+        emit "demo_delivery_orders_check=fail (owned by open task ${demo_delivery_orders_owner})"
+      else
+        G008_DEMO_SIGNALS=$((G008_DEMO_SIGNALS + 1))
+        emit "SIGNAL demo_delivery_orders_check=fail (run seed_demo_orders or reset_demo_data)"
+      fi
+    fi
+    if docker compose -f "${ROOT}/docker-compose.yml" -f "${ROOT}/docker-compose.dev.yml" exec -T back python -m app.seeds.check_demo_delivery_settings 2>/dev/null; then
+      emit "demo_delivery_settings_check=ok"
+    else
+      demo_delivery_settings_owner="$(open_demo_delivery_settings_repair_owner || true)"
+      if [[ -n "$demo_delivery_settings_owner" ]]; then
+        emit "demo_delivery_settings_check=fail (owned by open task ${demo_delivery_settings_owner})"
+      else
+        G008_DEMO_SIGNALS=$((G008_DEMO_SIGNALS + 1))
+        emit "SIGNAL demo_delivery_settings_check=fail (run seed_demo_delivery_settings)"
+      fi
+    fi
   else
     emit "demo_tables_check=skipped (back container not running)"
     emit "demo_waiting_list_check=skipped (back container not running)"
+    emit "demo_products_check=skipped (back container not running)"
+    emit "demo_delivery_orders_check=skipped (back container not running)"
+    emit "demo_delivery_settings_check=skipped (back container not running)"
   fi
 else
   emit "demo_tables_check=skipped (docker not on PATH)"
   emit "demo_waiting_list_check=skipped (docker not on PATH)"
+  emit "demo_products_check=skipped (docker not on PATH)"
+  emit "demo_delivery_orders_check=skipped (docker not on PATH)"
+  emit "demo_delivery_settings_check=skipped (docker not on PATH)"
 fi
 emit ""
 

@@ -1,4 +1,4 @@
-<div class="menu-page" [style.--hero-header-bg]="tenantPublicBackgroundColor() ?? null">
+<div class="menu-page" [style.--hero-header-bg]="tenantPublicBackgroundColor() ?? null" [style.--color-bg]="tenantPublicBackgroundColor() ?? null" [style.--color-primary]="resolvePublicPrimaryColor(tenantPublicPrimaryColor())">
   @if (loading()) {
   <div class="loading-screen">
     <div class="loading-content">
@@ -324,6 +324,9 @@
           </div>
           <div class="featured-info">
             <h3 class="featured-name">{{ product.name }}</h3>
+            @if (stockLeft(product); as left) {
+            <span class="stock-left-badge">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</span>
+            }
             <span class="featured-price">
               @if (product.list_price_cents != null && product.list_price_cents > product.price_cents) {
                 <span class="list-price">{{ formatPrice(product.list_price_cents) }}</span>
@@ -405,6 +408,9 @@
                 }
               </span>
             </div>
+            @if (stockLeft(product); as left) {
+            <p class="stock-left-badge">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</p>
+            }
 
             <!-- Origin / Winery -->
             @if (product.country || product.region || product.winery) {
@@ -492,13 +498,25 @@
           </svg>
           <span class="cart-count-badge">{{ getTotalItems() }}</span>
         </div>
-        <span class="cart-summary-text">{{ getTotalItems() }} {{ 'COMMON.ITEMS' | translate }}</span>
+        <div class="cart-summary-text-block">
+          <span class="cart-summary-text">{{ getTotalItems() }} {{ 'COMMON.ITEMS' | translate }}</span>
+          <span class="cart-summary-total">{{ formatPrice(getTotal()) }}</span>
+        </div>
       </div>
-      <span class="cart-summary-total">{{ formatPrice(getTotal()) }}</span>
-      <svg class="cart-chevron" [class.expanded]="cartExpanded()" width="20" height="20" viewBox="0 0 24 24" fill="none"
+      @if (!cartExpanded()) {
+      <button
+        type="button"
+        class="cart-summary-cta"
+        (click)="openCartCheckout($event)"
+      >
+        {{ 'MENU.CHECKOUT' | translate }}
+      </button>
+      } @else {
+      <svg class="cart-chevron expanded" width="20" height="20" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2">
         <polyline points="18,15 12,9 6,15" />
       </svg>
+      }
     </div>
 
     <!-- Expanded state -->
@@ -666,6 +684,9 @@
               }
             </span>
           </div>
+          @if (stockLeft(selectedProduct()!); as left) {
+          <p class="stock-left-badge stock-left-badge--detail">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</p>
+          }
 
           <!-- Tags row -->
           @if (selectedProduct()!.vintage || selectedProduct()!.winery || selectedProduct()!.grape_variety ||

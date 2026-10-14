@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Puppeteer smoke test: Dashboard "What's new" tile and changelog modal.
+ * Puppeteer smoke test: Dashboard "What's new" tile, sidebar version, and changelog modal.
  * Asserts that the changelog is loaded from the API (GET /api/changelog) and shown in the modal.
  *
  * Usage (from repo root):
@@ -184,8 +184,62 @@ async function main() {
     }
     console.log('   Changelog loaded; content length:', bodyText.length);
 
+    console.log('5. Closing modal and opening changelog from sidebar version...');
+    const closeBtn = await page.$('.changelog-close');
+    if (closeBtn) {
+      await closeBtn.click();
+      await sleep(500);
+    }
+    const overlayGone = await page.$('[data-testid="changelog-overlay"]');
+    if (overlayGone) {
+      console.log('   FAIL: Overlay still present after close.');
+      await browser.close();
+      process.exit(1);
+    }
+
+    const versionBtn = await page.$('[data-testid="sidebar-version-changelog"]');
+    if (!versionBtn) {
+      console.log('   FAIL: Sidebar version (data-testid="sidebar-version-changelog") not found.');
+      await browser.close();
+      process.exit(1);
+    }
+    await versionBtn.click();
+    await sleep(1500);
+
+    const overlayFromVersion = await page.waitForSelector('[data-testid="changelog-overlay"]', {
+      timeout: 5000,
+    });
+    if (!overlayFromVersion) {
+      console.log('   FAIL: Changelog overlay not visible after sidebar version click.');
+      await browser.close();
+      process.exit(1);
+    }
+    await page.waitForFunction(
+      () => {
+        const loading = document.querySelector('.changelog-loading');
+        const content = document.querySelector('.changelog-content');
+        const err = document.querySelector('.changelog-error');
+        return !loading && (content || err);
+      },
+      { timeout: 10000 }
+    );
+    const errFromVersion = await page.$('.changelog-error');
+    if (errFromVersion) {
+      const errText = await page.evaluate((el) => el?.textContent || '', errFromVersion);
+      console.log('   FAIL: Changelog error after sidebar version click:', errText);
+      await browser.close();
+      process.exit(1);
+    }
+    const contentFromVersion = await page.$('.changelog-content');
+    if (!contentFromVersion) {
+      console.log('   FAIL: Changelog content not found after sidebar version click.');
+      await browser.close();
+      process.exit(1);
+    }
+    console.log('   Sidebar version opened changelog modal.');
+
     await browser.close();
-    console.log('\n>>> RESULT: Changelog (What\'s new) test passed.');
+    console.log('\n>>> RESULT: Changelog (What\'s new + sidebar version) test passed.');
     process.exit(0);
   } catch (err) {
     console.error('Error:', err.message);

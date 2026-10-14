@@ -21,7 +21,7 @@ import { SidebarComponent } from '../shared/sidebar.component';
 import { ConfirmationModalComponent } from '../shared/confirmation-modal.component';
 import { FocusFirstInputDirective } from '../shared/focus-first-input.directive';
 import { ReservationWeekSlotGridComponent } from '../shared/reservation-week-slot-grid.component';
-import { tenantOpeningHoursHasMealSplit } from '../shared/booking-meal-split';
+import { tenantOpeningHoursHasMealSplit, resolveBookingServiceLabel } from '../shared/booking-meal-split';
 import { reservationDietaryNotesDisplay, reservationDietaryNotesFormValue } from '../shared/reservation-dietary-notes';
 import { contactEmailValid, contactPhoneValid } from '../shared/contact-validators';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -259,9 +259,9 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
                     <div class="form-group">
                       <label for="res-modal-service">{{ 'BOOK.SERVICE_TYPE' | translate }}</label>
                       <select id="res-modal-service" [(ngModel)]="formService" name="formService" (ngModelChange)="loadSlotCapacity()">
-                        <option value="all">{{ 'BOOK.SERVICE_ALL' | translate }}</option>
-                        <option value="lunch">{{ 'BOOK.SERVICE_LUNCH' | translate }}</option>
-                        <option value="dinner">{{ 'BOOK.SERVICE_DINNER' | translate }}</option>
+                        <option value="all">{{ serviceOptionLabel('all') }}</option>
+                        <option value="lunch">{{ serviceOptionLabel('lunch') }}</option>
+                        <option value="dinner">{{ serviceOptionLabel('dinner') }}</option>
                       </select>
                     </div>
                   }
@@ -316,6 +316,7 @@ import { ApiErrorMessageService } from '../services/api-error-message.service';
                     [weekAnchorSeed]="formDate"
                     [excludeReservationId]="editingReservation()?.id ?? null"
                     [serviceType]="hasMealSplit() ? formService : 'all'"
+                    [openingHoursJson]="tenantSummary()?.opening_hours ?? null"
                     [bookFloorId]="formFloorId"
                     [(selectedDate)]="formDate"
                     [(selectedTime)]="formTime"
@@ -616,6 +617,19 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   hasMealSplit = computed(() => tenantOpeningHoursHasMealSplit(this.tenantSummary()?.opening_hours ?? null));
 
+  serviceOptionLabel(service: 'all' | 'lunch' | 'dinner'): string {
+    return resolveBookingServiceLabel(
+      this.tenantSummary()?.opening_hours ?? null,
+      service,
+      {
+        all: this.translate.instant('BOOK.SERVICE_ALL'),
+        lunch: this.translate.instant('BOOK.SERVICE_LUNCH'),
+        dinner: this.translate.instant('BOOK.SERVICE_DINNER'),
+      },
+      this.formDate || null,
+    );
+  }
+
   maxPartySize = computed(() => {
     const cap = this.tenantSummary()?.reservation_max_guests_per_slot;
     if (cap != null && cap > 0) return Math.min(20, cap);
@@ -768,8 +782,18 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   }
 
   serviceTypeLabel(s: string): string {
-    const k: Record<string, string> = { lunch: 'BOOK.SERVICE_LUNCH', dinner: 'BOOK.SERVICE_DINNER' };
-    return this.translate.instant(k[s] || s);
+    if (s === 'lunch' || s === 'dinner') {
+      return resolveBookingServiceLabel(
+        this.tenantSummary()?.opening_hours ?? null,
+        s,
+        {
+          all: this.translate.instant('BOOK.SERVICE_ALL'),
+          lunch: this.translate.instant('BOOK.SERVICE_LUNCH'),
+          dinner: this.translate.instant('BOOK.SERVICE_DINNER'),
+        },
+      );
+    }
+    return s;
   }
 
   seatingLabel(s: string): string {

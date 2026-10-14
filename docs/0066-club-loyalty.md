@@ -7,6 +7,7 @@
 Tenant-scoped loyalty distinct from pricing promos (**#322**):
 
 - Guests join via public URL `/loyalty/{tenantId}` (optional `?ref=` referral code)
+- Bare `/loyalty` (no tenant id) shows a short “need a restaurant link” page — it does **not** redirect to the Satisfecho marketing landing (#373)
 - Staff enable rules under **Settings → Loyalty club**
 - Units (points or stamps) earn **once per paid order** when the order is linked to a membership
 - Staff redeem a reward at checkout → `order.loyalty_discount_cents` (order-level discount via `order_discounts.order_level_discount_cents`, shared with #322)
@@ -52,16 +53,30 @@ Membership API payloads include `vip_tier` (`null` \| `"silver"` \| `"gold"`). S
 - **Birthday bonus (#331):** when `birthday_bonus_units > 0` and the member’s month/day matches `paid_at` (UTC), extra units are folded into that earn row (or a standalone earn with `order_id` null if the order already had an earn). Once per calendar year (`birthday_bonus_year`). Join accepts optional birthday; linked `BillingCustomer.birth_date` can seed month/day.
 - **Redeem:** `POST /orders/{id}/loyalty/redeem` with `membership_id` or `member_token`. Requires balance ≥ threshold; writes `redeem` ledger row and sets order discount fields.
 - **Manual adjust:** `POST /loyalty/memberships/{id}/adjust` — **owner/admin** (`loyalty:write`) only. Adjust does **not** change lifetime earn / VIP.
-- **Permissions:** `loyalty:read`, `loyalty:write` (program + adjust), `loyalty:redeem` (waiter+).
+- **Delete member:** `DELETE /loyalty/memberships/{id}` — **owner/admin** (`loyalty:write`) only; hard delete (see below).
+- **Permissions:** `loyalty:read`, `loyalty:write` (program + adjust + delete), `loyalty:redeem` (waiter+).
 - **Wallet push:** every ledger change best-effort notifies Apple (tag bump + APNs when configured) and Google (object PATCH).
 
 ## APIs (summary)
 
-- Public: `GET/POST /public/tenants/{id}/loyalty`, `GET /public/loyalty/members/{token}`, wallet status, `…/wallet/apple.pkpass`, `…/wallet/google`
+- Public: `GET/POST /public/tenants/{id}/loyalty`, `POST /public/tenants/{id}/loyalty/recover` (email/phone → card token, #372), `GET /public/loyalty/members/{token}`, wallet status, `…/wallet/apple.pkpass`, `…/wallet/google`
 - PassKit web service: `/public/passkit/v1/devices/…`, `/public/passkit/v1/passes/…`, `/public/passkit/v1/log`
-- Staff: `GET/PUT /loyalty/program` (includes `wallet_passes_enabled`), memberships list/detail/adjust, order link + redeem
+- Staff: `GET/PUT /loyalty/program` (includes `wallet_passes_enabled`), memberships list/detail/adjust/delete (`GET /loyalty/memberships?search=`, `DELETE /loyalty/memberships/{id}`), order link + redeem
 
-Public loyalty GETs use `@public_menu_ip_limit()` (not `@limiter.limit(public_menu_ip_limit)` — that passes the helper function instead of a rate string and 500s under live SlowAPI). Join uses a dedicated per-hour limit. All SlowAPI-wrapped handlers take `request: Request` and `response: Response` so rate-limit headers inject correctly.
+Public loyalty GETs use `@public_menu_ip_limit()` (not `@limiter.limit(public_menu_ip_limit)` — that passes the helper function instead of a rate string and 500s under live SlowAPI). Join and recover use a dedicated per-hour limit. All SlowAPI-wrapped handlers take `request: Request` and `response: Response` so rate-limit headers inject correctly.
+
+### Recovering a lost card (#372)
+
+- Guests who lost wallet/bookmark use **Already a member?** on `/loyalty/{tenantId}` with the same email or phone used at join. `POST …/loyalty/recover` returns the opaque `member_token` and card URL (does not create a new membership).
+- Re-joining with the same email/phone still returns the existing membership (unchanged).
+- Staff: Settings → Loyalty club member list supports search (name/email/phone) and **Copy card link** to share `/loyalty/card/{token}` without pasting raw tokens into docs.
+- After join/recover, the public page always shows the balance card link (not only when Wallet buttons are available).
+
+### Deleting a member (#362)
+
+- Staff with **`loyalty:write`** (owner/admin) can remove a membership from Settings → Loyalty club (confirm dialog) via `DELETE /loyalty/memberships/{id}`.
+- **Hard delete** (no soft-delete column): ledger rows and Apple device registrations cascade; `order.loyalty_membership_id` and `referred_by_membership_id` become null.
+- Waiters (`loyalty:redeem` only) and other tenants cannot delete. Public card/recover for that token returns 404 after delete.
 
 ## Interaction with #322 (price promos)
 
@@ -114,10 +129,10 @@ Returned on public program/join/balance and staff program GET:
 |-------|---------|
 | `apple_wallet_configured` / `google_wallet_configured` | Env vars non-empty |
 | `apple_wallet_available` / `google_wallet_available` | Env set **and** cert/JSON files exist on disk **and** tenant `wallet_passes_enabled` |
-| `detail` | Human-readable status (fallback explanation when unavailable) |
+| `detail` | Human-readable **operator** status (staff Settings only). Omitted from public guest APIs (#393). |
 | `apple_pkpass_path` / `google_save_url` | Present when download/save is ready for that member |
 
-When unavailable: join still works; balance card is `/loyalty/card/{memberToken}`. No error on join.
+When unavailable: join still works; balance card URL `/loyalty/card/{memberToken}` still works if the guest has the link. Public `/loyalty/{tenantId}` does **not** show certificate/issuer setup copy or Add-to-Wallet buttons when Wallet is unavailable (#393). The post-join “Save this card link” block is shown only when at least one Wallet action is available.
 
 ### Issuance + push-update
 

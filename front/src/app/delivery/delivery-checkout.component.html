@@ -2,21 +2,25 @@
   class="book-page delivery-checkout-page"
   [style.--color-bg]="tenant()?.public_background_color ?? null"
   [style.--hero-header-bg]="tenant()?.public_background_color ?? null"
+  [style.--color-primary]="resolvePublicPrimaryColor(tenant()?.public_primary_color)"
 >
+  <app-public-guest-header
+    [tenantId]="tenantId()"
+    [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+    [publicBookSlug]="tenant()?.public_slug?.trim() || null"
+    [tenantName]="tenant()?.name ?? null"
+    [logoUrl]="logoUrl()"
+    [headerBackgroundColor]="tenant()?.public_background_color ?? null"
+    activePage="delivery"
+  />
   @if (loading()) {
     <div class="delivery-shell">
-      <div class="delivery-top-bar">
-        <app-language-picker class="book-language-picker"></app-language-picker>
-      </div>
       <div class="loading-screen">
         <p>{{ 'DELIVERY_CHECKOUT.LOADING' | translate }}</p>
       </div>
     </div>
   } @else if (errorKind()) {
     <div class="delivery-shell">
-      <div class="delivery-top-bar">
-        <app-language-picker class="book-language-picker"></app-language-picker>
-      </div>
       <main class="book-content">
         <div class="book-card">
           <h1>{{ 'DELIVERY_CHECKOUT.PAGE_TITLE' | translate }}</h1>
@@ -29,7 +33,17 @@
               {{ 'DELIVERY_CHECKOUT.LOAD_FAILED' | translate }}
             }
           </p>
-          <a routerLink="/" class="delivery-back-link">{{ 'DELIVERY_CHECKOUT.BACK_HOME' | translate }}</a>
+          @if (tenantId() > 0) {
+            <a
+              [routerLink]="bookRouterLink()"
+              class="delivery-back-link"
+              data-testid="delivery-back-home"
+            >{{ 'DELIVERY_CHECKOUT.BACK_HOME' | translate }}</a>
+          } @else {
+            <a routerLink="/features" class="delivery-back-link" data-testid="delivery-back-home">{{
+              'DELIVERY_CHECKOUT.BACK_HOME' | translate
+            }}</a>
+          }
         </div>
       </main>
     </div>
@@ -40,7 +54,6 @@
       [style.background-image]="headerBackgroundStyle()"
     >
       <div class="hero-overlay"></div>
-      <app-language-picker class="book-language-picker"></app-language-picker>
       <div class="hero-content">
         <div class="hero-top-row">
           @if (logoUrl()) {
@@ -60,14 +73,6 @@
       @if (step() === 'menu') {
         <div class="delivery-toolbar">
           <p class="delivery-hint">{{ 'DELIVERY_CHECKOUT.MENU_HINT' | translate }}</p>
-          <button
-            type="button"
-            class="btn btn-primary delivery-cart-btn"
-            [disabled]="cartCount() < 1"
-            (click)="goToCart()"
-          >
-            {{ 'DELIVERY_CHECKOUT.VIEW_CART' | translate }} ({{ cartCount() }})
-          </button>
         </div>
 
         @if (menuLoading()) {
@@ -107,6 +112,9 @@
                           <span class="delivery-product-name">{{ product.name }}</span>
                           <span class="delivery-product-price">{{ formatPrice(product) }}</span>
                         </div>
+                        @if (stockLeft(product); as left) {
+                          <p class="delivery-stock-left">{{ 'MENU.STOCK_ONLY_LEFT' | translate:{ count: left } }}</p>
+                        }
                         @if (product.description?.trim()) {
                           <p class="delivery-product-desc">{{ product.description }}</p>
                         }
@@ -334,15 +342,41 @@
       }
 
       <div class="delivery-footer-actions">
-        <a [routerLink]="['/public-menu', tenantId()]" class="delivery-back-link">
+        <a [routerLink]="['/public-menu', tenant()?.public_slug?.trim() || tenantId()]" class="delivery-back-link">
           {{ 'DELIVERY_CHECKOUT.VIEW_MENU_ONLY' | translate }}
         </a>
-        <a routerLink="/" class="delivery-back-link">{{ 'DELIVERY_CHECKOUT.BACK_HOME' | translate }}</a>
+        <a
+          [routerLink]="bookRouterLink()"
+          class="delivery-back-link"
+          data-testid="delivery-back-home"
+        >{{ 'DELIVERY_CHECKOUT.BACK_HOME' | translate }}</a>
         <app-legal-links
           [termsUrl]="tenant()?.terms_of_service_url"
           [privacyUrl]="tenant()?.privacy_policy_url"
         />
       </div>
     </main>
+
+    @if (showFloatingCheckoutBar()) {
+      <div
+        class="delivery-floating-bar"
+        role="region"
+        [attr.aria-label]="'DELIVERY_CHECKOUT.FLOATING_BAR_ARIA' | translate"
+      >
+        <div class="delivery-floating-meta">
+          <span class="delivery-floating-count"
+            >{{ cartCount() }} {{ 'COMMON.ITEMS' | translate }}</span
+          >
+          <strong class="delivery-floating-total">{{ formatCents(cartTotalCents()) }}</strong>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary delivery-floating-cta"
+          (click)="onFloatingCta()"
+        >
+          {{ floatingCtaKey() | translate }}
+        </button>
+      </div>
+    }
   }
 </div>

@@ -264,6 +264,35 @@ def _award_referral_on_join(
     session.flush()
 
 
+def find_membership_by_contact(
+    session: Session,
+    *,
+    tenant_id: int,
+    email: str | None = None,
+    phone: str | None = None,
+) -> models.LoyaltyMembership | None:
+    """Return an existing membership for email (preferred) or phone within the tenant (#372)."""
+    if email:
+        existing = session.exec(
+            select(models.LoyaltyMembership).where(
+                models.LoyaltyMembership.tenant_id == tenant_id,
+                models.LoyaltyMembership.email == email,
+            )
+        ).first()
+        if existing:
+            return existing
+    if phone:
+        existing = session.exec(
+            select(models.LoyaltyMembership).where(
+                models.LoyaltyMembership.tenant_id == tenant_id,
+                models.LoyaltyMembership.phone == phone,
+            )
+        ).first()
+        if existing:
+            return existing
+    return None
+
+
 def join_program(
     session: Session,
     *,
@@ -289,41 +318,20 @@ def join_program(
     if referral_code and (referral_code or "").strip() and not referrer:
         raise HTTPException(status_code=400, detail="Invalid referral code")
 
-    if email:
-        existing = session.exec(
-            select(models.LoyaltyMembership).where(
-                models.LoyaltyMembership.tenant_id == tenant_id,
-                models.LoyaltyMembership.email == email,
-            )
-        ).first()
-        if existing:
-            if bday and (
-                getattr(existing, "birthday_month", None) is None
-                or getattr(existing, "birthday_day", None) is None
-            ):
-                existing.birthday_month, existing.birthday_day = bday
-                existing.updated_at = _now()
-                session.add(existing)
-                session.flush()
-            # Returning member: do not award referral again.
-            return existing
-    if phone:
-        existing = session.exec(
-            select(models.LoyaltyMembership).where(
-                models.LoyaltyMembership.tenant_id == tenant_id,
-                models.LoyaltyMembership.phone == phone,
-            )
-        ).first()
-        if existing:
-            if bday and (
-                getattr(existing, "birthday_month", None) is None
-                or getattr(existing, "birthday_day", None) is None
-            ):
-                existing.birthday_month, existing.birthday_day = bday
-                existing.updated_at = _now()
-                session.add(existing)
-                session.flush()
-            return existing
+    existing = find_membership_by_contact(
+        session, tenant_id=tenant_id, email=email, phone=phone
+    )
+    if existing:
+        if bday and (
+            getattr(existing, "birthday_month", None) is None
+            or getattr(existing, "birthday_day", None) is None
+        ):
+            existing.birthday_month, existing.birthday_day = bday
+            existing.updated_at = _now()
+            session.add(existing)
+            session.flush()
+        # Returning member: do not award referral again.
+        return existing
 
     if referrer and (
         (email and referrer.email and email.lower() == (referrer.email or "").lower())
@@ -572,8 +580,12 @@ def adjust_balance(
     )
 
 
-def wallet_pass_status(program: models.LoyaltyProgram | None = None) -> dict:
+def wallet_pass_status(
+    program: models.LoyaltyProgram | None = None,
+    *,
+    include_detail: bool = True,
+) -> dict:
     """Operational status for Apple/Google Wallet (certs required; see docs/0066)."""
     from . import loyalty_wallet
 
-    return loyalty_wallet.wallet_pass_status(program)
+    return loyalty_wallet.wallet_pass_status(program, include_detail=include_detail)

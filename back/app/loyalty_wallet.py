@@ -87,8 +87,16 @@ def tenant_wallet_enabled(program: models.LoyaltyProgram | None) -> bool:
     return bool(getattr(program, "wallet_passes_enabled", True))
 
 
-def wallet_pass_status(program: models.LoyaltyProgram | None = None) -> dict:
-    """Operational status for Apple/Google Wallet."""
+def wallet_pass_status(
+    program: models.LoyaltyProgram | None = None,
+    *,
+    include_detail: bool = True,
+) -> dict:
+    """Operational status for Apple/Google Wallet.
+
+    Set ``include_detail=False`` for public guest APIs (#393) so operator
+    certificate / issuer setup copy is not exposed to guests.
+    """
     apple_cfg = apple_env_configured()
     google_cfg = google_env_configured()
     apple_ok = apple_files_ready()
@@ -96,6 +104,15 @@ def wallet_pass_status(program: models.LoyaltyProgram | None = None) -> dict:
     tenant_ok = tenant_wallet_enabled(program)
     apple_avail = apple_ok and tenant_ok
     google_avail = google_ok and tenant_ok
+
+    payload: dict = {
+        "apple_wallet_configured": apple_cfg,
+        "google_wallet_configured": google_cfg,
+        "apple_wallet_available": apple_avail,
+        "google_wallet_available": google_avail,
+    }
+    if not include_detail:
+        return payload
 
     if apple_avail and google_avail:
         detail = "Apple Wallet and Google Wallet passes are available for this program."
@@ -132,13 +149,8 @@ def wallet_pass_status(program: models.LoyaltyProgram | None = None) -> dict:
             "See docs/0066-club-loyalty.md."
         )
 
-    return {
-        "apple_wallet_configured": apple_cfg,
-        "google_wallet_configured": google_cfg,
-        "apple_wallet_available": apple_avail,
-        "google_wallet_available": google_avail,
-        "detail": detail,
-    }
+    payload["detail"] = detail
+    return payload
 
 
 def passkit_web_service_base_url() -> str:
@@ -629,7 +641,7 @@ def prepare_passes_on_join(
     tenant: models.Tenant,
 ) -> dict[str, Any]:
     """Assign Apple identity + create Google object when platform is ready."""
-    status = wallet_pass_status(program)
+    status = wallet_pass_status(program, include_detail=False)
     out: dict[str, Any] = {"wallet": status}
     if not tenant_wallet_enabled(program):
         return out

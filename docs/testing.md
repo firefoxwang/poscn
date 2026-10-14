@@ -10,6 +10,14 @@ This document describes the UI test suite maintained for the POS project. All UI
 
 Tests auto-detect the first responding port among **4203, 4202, 4200** when `BASE_URL` is not set. For production (e.g. satisfecho.de), set `BASE_URL` explicitly.
 
+## Contrast (UI colour)
+
+When verifying UI that changes colours, backgrounds, or chrome (nav, buttons, tenant branding):
+
+1. Confirm text and icons stay readable on their background (aim **WCAG AA** ~4.5:1).
+2. For public guest pages, check sticky `app-public-guest-header` on both light and dark tenant washes (`docs/0028-tenant-public-branding.md`, #411).
+3. On fail: open or reopen a contrast GitHub issue; do not close the task as pass. Tester playbook: `agents2/020-test.md`.
+
 ## Environment variables (common)
 
 | Variable | Description |
@@ -270,7 +278,7 @@ npm run debug:working-plan-calendar --prefix front
 
 ### 2c. Changelog (What's new)
 
-Smoke test for the dashboard "What's new" tile and changelog modal. Logs in, opens the dashboard, clicks the What's new tile, and asserts the changelog is loaded from the API and shown (no 404).
+Smoke test for the dashboard "What's new" tile, the staff sidebar version control, and the changelog modal. Logs in, opens the dashboard, clicks the What's new tile, then closes the modal and clicks the sidebar version. Both paths must load changelog content from the API (no 404).
 
 ```bash
 npm run test:changelog --prefix front
@@ -279,7 +287,7 @@ npm run test:changelog --prefix front
 ```
 
 - **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`). `HEADLESS`.
-- **Asserts:** After login, dashboard "What's new" tile is present; clicking it opens the modal; changelog content loads (no error); body contains version-like headings or "Unreleased". Requires backend to serve `CHANGELOG.md` (single file at project root; Docker: `./CHANGELOG.md` mounted at `/app/CHANGELOG.md` in back container).
+- **Asserts:** After login, dashboard "What's new" tile is present; clicking it opens the modal; changelog content loads (no error); body contains version-like headings or "Unreleased". Then the modal is closed and the sidebar version (`data-testid="sidebar-version-changelog"`) opens the same modal. Requires backend to serve `CHANGELOG.md` (single file at project root; Docker: `./CHANGELOG.md` mounted at `/app/CHANGELOG.md` in back container).
 
 ---
 
@@ -294,7 +302,50 @@ npm run test:settings-providers --prefix front
 ```
 
 - **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `TENANT_ID` (default `1`). `HEADLESS`.
-- **Asserts:** After login, `/settings` loads; Providers tab is present; clicking it shows the Providers section and the Add provider button (`data-testid="settings-providers-section"`, `data-testid="settings-add-provider-btn"`). Personal providers also show **Edit provider** (`data-testid="settings-edit-provider-btn"`).
+- **Asserts:** After login, `/settings` loads; Providers tab is present; clicking it shows the Providers section and the Add provider button (`data-testid="settings-providers-section"`, `data-testid="settings-add-provider-btn"`). If any providers exist, `data-testid="settings-providers-table"` is present with Name/Type headers; if the list is empty, those headers must not appear (#398). Personal providers also show **Edit provider** (`data-testid="settings-edit-provider-btn"`).
+
+---
+
+### 2d2. Settings vertical nav (#395, #365)
+
+Smoke test for the settings section menu. Logs in, opens `/settings`, asserts a vertical nav (`data-testid="settings-nav"`) in a row layout on desktop, clicks Payment Settings and confirms `?section=payments` and `#payments` survive reload, checks `#openinghours` / `#loyalty` hash deep links, then checks column layout + Security deep link on a narrow viewport.
+
+Example anchors: `/settings#openinghours`, `/settings#payments`, `/settings#loyalty` (legacy `?section=` still works).
+
+```bash
+npm run test:settings-vertical-nav --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:settings-vertical-nav --prefix front
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_EMAIL`/`DEMO_LOGIN_PASSWORD` (from `.env`). `HEADLESS`.
+
+---
+
+### 2e. Settings → Printing docs link
+
+Smoke test for the hardware printing runbook link (#397). Logs in, opens Settings → Printing, and asserts `data-testid="settings-printing-docs-link"` points at `docs/0070-hardware-printing.md` on GitHub (`target="_blank"`).
+
+```bash
+npm run test:settings-printing-docs --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:settings-printing-docs --prefix front
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_*`. `TENANT_ID` (default `1`). `HEADLESS`.
+- **Asserts:** Printing tab and docs link present; href is `https://github.com/satisfecho/pos/blob/master/docs/0070-hardware-printing.md`.
+
+---
+
+### 2f. Settings → Loyalty club docs link
+
+Smoke test for the club loyalty runbook link (#394). Logs in, opens Settings → Loyalty club, and asserts `data-testid="settings-loyalty-docs-link"` points at `docs/0066-club-loyalty.md` on GitHub (`target="_blank"`).
+
+```bash
+npm run test:settings-loyalty-docs --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:settings-loyalty-docs --prefix front
+```
+
+- **Env:** `BASE_URL`, `LOGIN_EMAIL`/`LOGIN_PASSWORD` or `DEMO_LOGIN_*`. `TENANT_ID` (default `1`). `HEADLESS`.
+- **Asserts:** Loyalty club tab and docs link present; href is `https://github.com/satisfecho/pos/blob/master/docs/0066-club-loyalty.md`.
 
 ---
 
@@ -364,7 +415,7 @@ npm run test:pricing --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 node front/scripts/test-pricing.mjs
 ```
 
-- No login. Fetches `GET /api/saas/config`, opens `/pricing` (must not redirect home), asserts translated hero, price and trial text matching config, self-host card, register CTA, and billing-active vs inactive note matching `enabled`. Fails on pageerror.
+- No login. Fetches `GET /api/saas/config`, opens `/pricing` (must not redirect home), asserts translated hero, QR Menu free-forever tier and callout, support block (€50/h), price and trial text matching config, self-host card, register/QR/support CTAs, and billing-active vs inactive note matching `enabled`. Fails on pageerror.
 
 **Public about page (`/about`):**
 
@@ -554,14 +605,14 @@ npm run test:websocket --prefix front
 
 ### 11b. API docs (`/api/docs`)
 
-Swagger UI and OpenAPI spec load at `/api/docs` (no login).
+Swagger UI and OpenAPI spec load at `/api/docs` (no login) in **dev/local** (`PRODUCTION` unset/false). In production (`PRODUCTION=true`), `/api/docs`, `/api/redoc`, and `/api/openapi.json` are unmounted (404) unless `ENABLE_API_DOCS=true`. Backend unit coverage: `back/tests/test_api_docs_production.py`.
 
 ```bash
 npm run test:api-docs --prefix front
 # Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 npm run test:api-docs --prefix front
 ```
 
-- **Env:** `BASE_URL` (auto-detect 4203/4202/4200), `HEADLESS`.
+- **Env:** `BASE_URL` (auto-detect 4203/4202/4200), `HEADLESS`. Run against local/dev only; do not expect this smoke to pass against production.
 
 ---
 
@@ -578,9 +629,9 @@ npm run test:amvara9-smoke --prefix front
 
 ---
 
-### 11d. Settings → Contact default tax dropdown
+### 11d. Settings → Taxes default tax dropdown
 
-Login, open Settings → Contact information, assert the default tax select has at least one IVA option (not an empty wrapper).
+Login, open Settings → Taxes, assert the default tax select has at least one IVA option (not an empty wrapper), change to IVA 0%, save, reload, and assert the value sticks.
 
 ```bash
 npm run test:settings-contact-tax --prefix front
@@ -692,6 +743,17 @@ npm run test:book-whatsapp --prefix front
 # API on another origin: API_BASE=http://127.0.0.1:8020 npm run test:book-whatsapp --prefix front
 ```
 
+### 13g. Public sticky guest header (#376)
+
+Public `/book/:tenantId` (no login): compact sticky header stays at the top after scroll and menu link opens `/public-menu/:tenantId`.
+
+```bash
+npm run test:public-guest-header --prefix front
+# Or: BASE_URL=http://127.0.0.1:4202 HEADLESS=1 node front/scripts/test-public-guest-header.mjs
+```
+
+- **Env:** `BASE_URL`, `TENANT_ID` (default `1`), `HEADLESS`.
+
 - **Env:** `BASE_URL`, `HEADLESS`, `API_BASE` (optional; defaults to `BASE_URL`). No login credentials.
 
 ---
@@ -729,7 +791,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:landing-version` | `scripts/test-landing-version.mjs` |
 | `record-promo-video` | `scripts/record-promo-video.mjs` (marketing walkthrough screencast → 1080p MP4 + copyleft bed; see `docs/0075-promo-videos.md`; outputs under `tmp/promo/`) |
 | `test:features` | `scripts/test-features.mjs` (public `/features`: hero title, category sections, home/register nav; no login) |
-| `test:pricing` | `scripts/test-pricing.mjs` (public `/pricing`: live `GET /saas/config` price/trial, self-host card, billing note vs `enabled`; no login) |
+| `test:pricing` | `scripts/test-pricing.mjs` (public `/pricing`: QR free tier, support €50/h, live `GET /saas/config` price/trial, self-host card, billing note vs `enabled`; no login) |
 | `test:about` | `scripts/test-about.mjs` (public `/about`: footer About link, Amvara Consulting S.L. on page + footer; no login) |
 | Print agent (manual / API) | Backend: `pytest tests/test_print_jobs.py`; LAN dry-run: create agent in Settings → Printing, then `PRINT_AGENT_API_BASE=http://127.0.0.1:4202/api PRINT_AGENT_TOKEN=… PRINT_AGENT_DRY_RUN=1 python3 scripts/print-agent/print_agent.py` and enqueue via Orders → Print kitchen / invoice (`docs/0070-hardware-printing.md`) |
 | `test:feedback-public-i18n` | `scripts/test-feedback-public-i18n.mjs` (public `/feedback/:tenant` and `?token=`; locale picker en/de/fr/es/ca/zh-CN/hi; invalid `/feedback/0`; no raw `FEEDBACK.*` in DOM; document titles localized) |
@@ -746,15 +808,25 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:guided-signup-wizard` | `scripts/test-guided-signup-wizard.mjs` (guided `/register` wizard: step 0 intro → Get started → account fields + Back/Next; no tenant create) |
 | `test:reports` | `scripts/test-reports.mjs` (Reports page smoke; owner/admin) |
 | `test:order-tip-flows` | `scripts/test-order-tip-flows.mjs` (Settings tip entry mode + Reports tips card; owner/admin) |
-| `test:changelog` | `scripts/test-changelog.mjs` (Dashboard What's new → changelog modal; API serves CHANGELOG.md) |
+| `test:changelog` | `scripts/test-changelog.mjs` (Dashboard What's new + sidebar version → changelog modal; API serves CHANGELOG.md) |
+| `test:sidebar-brand-home` | `scripts/test-sidebar-brand-home.mjs` (sidebar POS brand → `/dashboard`; #390) |
+| `test:sidebar-logout` | `scripts/test-sidebar-logout.mjs` (sidebar logout icon left of POS → `/login`; #383) |
 | `test:settings-providers` | `scripts/test-settings-providers.mjs` (Settings → Providers tab; personal providers smoke; uses .env, tenant=1) |
+| `test:settings-vertical-nav` | `scripts/test-settings-vertical-nav.mjs` (Settings vertical section menu + `?section=` / `#hash` deep links; #395, #365) |
+| `test:settings-printing-docs` | `scripts/test-settings-printing-docs.mjs` (Settings → Printing runbook link to docs/0070 on GitHub; #397) |
+| `test:settings-loyalty-docs` | `scripts/test-settings-loyalty-docs.mjs` (Settings → Loyalty club runbook link to docs/0066 on GitHub; #394) |
 | `test:bartender-role` | `scripts/test-bartender-role.mjs` (Users → Add user → role dropdown includes Bartender) |
 | `test:kitchen-status-dropdown` | `scripts/test-kitchen-status-dropdown.mjs` (Kitchen display: status dropdown visible, not clipped) |
 | `test:bar-display` | `scripts/test-bar-display.mjs` (Bar display `/bar`: route + chrome + Bar title) |
 | `test:settings-logo` | `scripts/test-settings-logo-upload.mjs` (Settings logo upload; owner/admin `LOGIN_*` / `DEMO_LOGIN_*`) |
+| `test:settings-otp-copy` | `scripts/test-settings-otp-copy.mjs` (Settings → Security OTP secret Copy; starts setup, checks clipboard, cancels; #377) |
+| `test:settings-otp-disable-password` | `scripts/test-settings-otp-disable-password.mjs` (Settings → Security disable OTP with account password while logged in; #401) |
+| `test:otp-recovery-codes` | `scripts/test-otp-recovery-codes.mjs` (enable OTP → save recovery codes → login with one code → reuse fails; #400) |
 | `test:support-access` | `scripts/test-support-access.mjs` (Users → Add Satisfecho support pre-fills `support@satisfecho.de`; admin/owner) |
 | `test:kitchen-timer` | `scripts/test-kitchen-timer.mjs` (Kitchen `/kitchen`: Timer settings + Waiting timer when orders exist) |
 | `test:book-whatsapp` | `scripts/test-book-whatsapp-puppeteer.mjs` (public `/book/1` WhatsApp CTA; optional `API_BASE`; no login) |
+| `test:public-book-slug` | `scripts/test-public-book-slug.mjs` (public `/{slug}/book` + numeric `/book/1` canonicalize; no login; #415) |
+| `test:public-guest-header` | `scripts/test-public-guest-header.mjs` (public `/book/:id` sticky header + menu link; no login; #376) |
 | `test:my-shift-clock-qr` | `scripts/test-my-shift-clock-qr.mjs` (My shift venue clock QR / `.scan-cta`; waiter `LOGIN_*` + optional `OWNER_*`) |
 | `test:rate-limit` | `scripts/test-rate-limit.mjs` (API rate limiting: login 5/15min, register 3/hour; expects 429 after limit) |
 | `test:rate-limit-puppeteer` | `scripts/test-rate-limit-puppeteer.mjs` (Puppeteer: login page, 6 wrong attempts, expects error banner) |
@@ -771,7 +843,7 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 | `test:websocket` | `scripts/test-websocket.mjs` (post-login WS on `/orders`; needs ws-bridge + `LOGIN_*` / `DEMO_LOGIN_*`) |
 | `test:amvara9-smoke` | `scripts/test-amvara9-smoke.mjs` (prod smoke: landing/login/book + `/api/health`; **default `BASE_URL=https://www.satisfecho.de`**) |
 | `test:menu-logo` | `scripts/test-menu-logo.mjs` (customer `/menu/:token` shows restaurant logo; needs `LOGIN_*` or `TABLE_TOKEN`) |
-| `test:settings-contact-tax` | `scripts/test-settings-contact-tax-dropdown.mjs` (Settings → Contact default tax IVA options; needs `LOGIN_*` / `DEMO_LOGIN_*`) |
+| `test:settings-contact-tax` | `scripts/test-settings-contact-tax-dropdown.mjs` (Settings → Taxes default tax IVA options + save persistence; needs `LOGIN_*` / `DEMO_LOGIN_*`) |
 | `test:staff-menu-link` | `scripts/test-staff-menu-link-puppeteer.mjs` (staff Open menu → place order without PIN modal; needs open order + `LOGIN_*`) |
 
 ---
@@ -779,20 +851,23 @@ From repo root: `npm run <script> --prefix front`. From `front/`: `npm run <scri
 ## Backend / data checks (non-Puppeteer)
 
 - **Demo tables:** `docker compose exec back python -m app.seeds.check_demo_tables` (exit 0 = T01–T10 present for tenant 1).
-- **Overbooking 0025 (one empty table / full slot):** `docker compose exec back python -m app.seeds.check_overbooking_0025` (exit 0 = pass; creates/cleanup test data). Unittest: `docker compose exec back python -m tests.test_overbooking_0025 -v`. Scenario notes: `docs/0058-test-scenario-one-empty-table.md` (demo seats = 5×4 + 5×2 = 30).
+- **Overbooking 0025 (one empty table / full slot):** `docker compose exec back python -m app.seeds.check_overbooking_0025` (exit 0 = pass; creates/cleanup test data on tenant 1). Isolated pytest: `docker compose exec back python3 -m pytest tests/test_overbooking_0025.py -q` (own tenant/tables; no `seed_demo_tables`). Scenario notes: `docs/0058-test-scenario-one-empty-table.md` (demo seats = 5×4 + 5×2 = 30).
 - **Seed tables:** `docker compose exec back python -m app.seeds.seed_demo_tables` (idempotent).
 - **Seed demo products:** `docker compose exec back python -m app.seeds.seed_demo_products` (idempotent; fills missing DEMO_PRODUCTS names on partial tenants).
 - **Import products CSV (migration #321):** dry-run then apply — see [0062-pos-migration-import.md](0062-pos-migration-import.md). Example: `docker compose exec back python -m app.seeds.import_products_csv --tenant-id 1 --csv /app/fixtures/migration/sample_products.csv --dry-run`. Tests: `docker compose exec back python3 -m pytest tests/test_import_products_csv.py -q`.
 - **Demo products check:** `docker compose exec back python -m app.seeds.check_demo_products` (exit 0 = tenant 1 has all DEMO_PRODUCTS names; extra catalog rows OK).
 - **Link demo products to catalog (images on /products):** `docker compose exec back python -m app.seeds.link_demo_products_to_catalog` — links products without images to provider products that have images; deploy runs this after catalog imports.
 - **Clear orphan provider product images:** `docker compose exec back python -m app.seeds.clear_orphan_provider_product_images` — sets `ProviderProduct.image_filename` (and Product `providers/...` refs) to null when the file is missing under `uploads/providers/`, so catalog stops requesting 404 URLs.
+- **Sync Product images after catalog import:** `docker compose exec back python -m app.seeds.sync_product_images` — repairs stale `Product.image_filename` from linked `TenantProduct`/provider files (safe for custom tenant uploads). Deploy runs this automatically.
+- **Product image health (deploy):** `docker compose exec back python -m app.seeds.check_product_image_health` — fails when public menu shows an image for a linked product but `/products` would not (tenant 1 by default).
 - **Demo courier user:** `docker compose exec back python -m app.seeds.seed_demo_courier_user` — ensures tenant 1 has one `courier` role user when missing (`COURIER_EMAIL` / `COURIER_PASSWORD`, defaults `courier-test-phase1@amvara.de` / `secret`). Bootstrap / `reset_demo_data` run this **before** demo orders so Delivery samples can assign courier / `out_for_delivery`.
-- **Demo orders (Reports + Delivery):** `docker compose exec back python -m app.seeds.seed_demo_orders` — seeds tenant 1 with paid/active **table** orders over ±90 days plus a small Satisfecho Delivery mix; idempotent (skips if orders exist). Bootstrap / `reset_demo_data` run this. Optional: `./run_seeds.sh --demo-orders` from `back/`.
+- **Demo orders (Reports + Delivery):** `docker compose exec back python -m app.seeds.seed_demo_orders` — seeds tenant 1 with paid/active **table** orders over ±90 days plus a small Satisfecho Delivery mix. Idempotent: skips when Delivery samples already exist; if only table orders exist, adds the Delivery mix without wiping them. Bootstrap / `reset_demo_data` run this. Optional: `./run_seeds.sh --demo-orders` from `back/`.
 - **Demo delivery orders check:** `docker compose exec back python -m app.seeds.check_demo_delivery_orders` (exit 0 = tenant 1 has ≥1 `order_channel=satisfecho_delivery` row; soft-warns if none have `courier_user_id`).
 - **Demo waiting list:** `docker compose exec back python -m app.seeds.seed_demo_waiting_list` — seeds tenant 1 with a few `waiting` + one `notified` entry for staff Waitlist / public `/waitlist/1`; idempotent (skips if entries exist). Bootstrap / `reset_demo_data` run this.
 - **Demo waiting list check:** `docker compose exec back python -m app.seeds.check_demo_waiting_list` (exit 0 = tenant 1 has ≥1 `waiting` and ≥1 `notified` row).
 - **Demo delivery fee/zone:** `docker compose exec back python -m app.seeds.seed_demo_delivery_settings` — sets tenant 1 fee (250¢) + postal codes when unset; idempotent. Bootstrap / `reset_demo_data` run this.
 - **Demo delivery settings check:** `docker compose exec back python -m app.seeds.check_demo_delivery_settings` (exit 0 = tenant 1 has non-zero fee and/or postal/radius).
+- **008 soft watch:** `scripts/enhancement-reviewer-preflight.sh` soft-runs the five tenant-1 checks above (tables, waiting list, products, delivery orders, delivery settings) and bumps `G008_DEMO_SIGNALS` on unowned fail.
 
 See `AGENTS.md` for full seed and deploy notes.
 
@@ -872,7 +947,7 @@ GO_AHEAD_LOOP=1 DURATION_SECONDS=120 INTERVAL_SECONDS=60 SKIP_TESTS=1 ./scripts/
 | **WebSocket** | `test:websocket` | Post-login WS (ws-bridge required). |
 | **API docs** | `test:api-docs` | `/api/docs` Swagger + OpenAPI (no login). |
 | **amvara9 prod smoke** | `test:amvara9-smoke` | Default BASE_URL is production (`www.satisfecho.de`). |
-| **Settings contact tax** | `test:settings-contact-tax` | Default tax dropdown has IVA options. |
+| **Settings default tax** | `test:settings-contact-tax` | Default tax dropdown has IVA options; save persists. |
 | **Staff menu link** | `test:staff-menu-link` | Open menu from staff orders skips PIN. |
 | **Rate limiting** | `test-rate-limit.mjs`, `test-rate-limit-puppeteer.mjs` | API: 429 after limit; Puppeteer: login page shows error banner (e.g. "Too many login attempts") when rate limited. See `docs/0020-rate-limiting-production.md` for all limits (login, register, payment, public menu, upload, admin). |
 | **SaaS signup paywall** | `test-paywall.mjs` | Requires `SAAS_PAYWALL_ENABLED=true` (see `docs/0052-saas-signup-paywall.md`). Registers a new tenant, asserts `/paywall` + localized copy (no raw `PAYWALL.*`), starts free trial, confirms `/dashboard` unlocks. Skips with exit 0 when paywall is off; set `REQUIRE_PAYWALL=1` to fail instead. |

@@ -284,6 +284,20 @@ class TestTablesWithStatusOperational(PgClientTestCase):
         row = self._row()
         self.assertEqual(row["payment_status"], "paid")
 
+    def test_activated_at_exposed_when_table_active(self) -> None:
+        activated = datetime(2026, 9, 14, 12, 0, 0, tzinfo=timezone.utc)
+        table = self.session.get(models.Table, self.table_id)
+        assert table is not None
+        table.is_active = True
+        table.activated_at = activated
+        self.session.add(table)
+        self.session.commit()
+
+        row = self._row()
+        self.assertTrue(row["is_active"])
+        self.assertIsNotNone(row.get("activated_at"))
+        self.assertTrue(str(row["activated_at"]).startswith("2026-09-14T12:00:00"))
+
 
 if __name__ == "__main__":
     unittest.main()

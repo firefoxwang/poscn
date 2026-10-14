@@ -24,6 +24,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | Capture screenshots | [screenshots/README.md](screenshots/README.md) |
 | Record short promo videos (Puppeteer + copyleft bed) | [0075-promo-videos.md](0075-promo-videos.md) |
 | Security review notes (structured pass, not a pentest) | [SECURITY-REVIEW.md](SECURITY-REVIEW.md) |
+| Agent loop vs untrusted GitHub input | [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) |
 | Browse public marketing features list (`/features`, no login) | [../README.md](../README.md) Access Points / Features — route `http://localhost:4202/features`; per-feature detail pages at `/features/{slug}` (e.g. `/features/reservations`) |
 | Browse public About us (`/about`, no login; Amvara Consulting S.L.) | [../README.md](../README.md) Access Points — route `http://localhost:4202/about`; smoke: `npm run test:about --prefix front` |
 
@@ -59,7 +60,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 |-----|-------------|
 | [0011-table-reservation-user-guide.md](0011-table-reservation-user-guide.md) | Table reservations: staff flows, public booking at `/book/:tenantId`, view/cancel at `/reservation?token=...`; public waiting list at `/waitlist/:tenantId` and staff Waiting list tab. Guest feedback trends/CSV: [0064](0064-guest-feedback-analytics.md). |
 | [0014-provider-portal.md](0014-provider-portal.md) | Provider (supplier) portal at `/provider` — not the courier portal (`/courier`; see [0053](0053-satisfecho-delivery-order-channel.md)). |
-| [0015-kitchen-display.md](0015-kitchen-display.md) | Kitchen display: full-screen at `/kitchen` (and `/bar`), auto-refresh, WebSocket, optional sound; Satisfecho Delivery cards use table label “Satisfecho Delivery” (not shown once `out_for_delivery`); highlighted order/item comments (#284). |
+| [0015-kitchen-display.md](0015-kitchen-display.md) | Kitchen display: full-screen at `/kitchen` (and `/bar`); as many prep stations as needed, each product on one station so that display shows only what it must prepare; auto-refresh, WebSocket, optional sound; Satisfecho Delivery cards use table label “Satisfecho Delivery” (not shown once `out_for_delivery`); highlighted order/item comments (#284). |
 | [0016-reports.md](0016-reports.md) | Reports (Sales & Revenue): date range, summary (incl. overbooking slots when &gt; 0), by product/category/table/waiter, CSV/Excel export. |
 | [0017-billing-customers-factura.md](0017-billing-customers-factura.md) | Billing customers (Factura): register company details, search, print invoice with “Bill to”. See also VeriFactu [0018](0018-verifactu-fiscal-invoicing.md). Club loyalty builds on customer identity: [0066](0066-club-loyalty.md). |
 | [0018-verifactu-fiscal-invoicing.md](0018-verifactu-fiscal-invoicing.md) | VeriFactu-oriented fiscal invoicing: tenant `fiscal_mode` (off/test/live), hash chain, ValidarQR URL, sandbox submit, immutability + anulación; **no invented production AEAT SOAP**. See also [0065](0065-verifactu-production.md). |
@@ -102,6 +103,7 @@ This folder contains deployment guides, feature documentation, implementation pl
 | [0066-club-loyalty.md](0066-club-loyalty.md) | Club loyalty (#327/#334/#343): points/stamps, earn on paid, redeem, VIP/referral; Apple PassKit + Google Wallet issuance when platform certs/issuer configured. |
 | [0071-split-bill.md](0071-split-bill.md) | Split bill / partial payments (#318): amount-based payment legs, reconciliation API, one fiscal invoice per settled order. |
 | [0076-talk-to-pos.md](0076-talk-to-pos.md) | Talk to POS (#344): staff voice/text **navigation** demo at `/talk` (Web Speech + typed fallback; no LLM, no mutations). |
+| [0077-agent-untrusted-github-input.md](0077-agent-untrusted-github-input.md) | Agent loop: treat GitHub issues as untrusted. Do not copy secrets or host access into task files. |
 | [0050-github-issue-52-split-plan.md](0050-github-issue-52-split-plan.md) | GitHub **#52** (CLOSED): **historical** child-issue drafts / phases — do not re-file without review; prefer **0032** + shipped feature docs. |
 
 ---

@@ -173,6 +173,32 @@ async function main() {
     }
     console.log('   Providers section and Add provider button present.');
 
+    // Empty list: no NAME/TYPE table chrome. Non-empty: table with headers is present.
+    const providersTable = await page.$('[data-testid="settings-providers-table"]');
+    const headerInfo = await page.evaluate(() => {
+      const section = document.querySelector('[data-testid="settings-providers-section"]');
+      if (!section) return { thTexts: [] };
+      const thTexts = Array.from(section.querySelectorAll('thead th'))
+        .map((th) => (th.textContent || '').trim())
+        .filter(Boolean);
+      return { thTexts };
+    });
+    if (providersTable) {
+      if (headerInfo.thTexts.length < 2) {
+        console.log('   FAIL: Providers table present but NAME/TYPE headers missing.', headerInfo.thTexts);
+        await browser.close();
+        process.exit(1);
+      }
+      console.log('   Providers table present with headers:', headerInfo.thTexts.join(', '));
+    } else {
+      if (headerInfo.thTexts.length > 0) {
+        console.log('   FAIL: Empty providers list still shows table headers:', headerInfo.thTexts);
+        await browser.close();
+        process.exit(1);
+      }
+      console.log('   Empty providers list: no NAME/TYPE headers (expected).');
+    }
+
     await browser.close();
     console.log('\n>>> RESULT: Settings Providers smoke test passed.');
     process.exit(0);

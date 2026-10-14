@@ -72,6 +72,8 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
                     <th>{{ 'PLATFORM_DASHBOARD.COL_ID' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.OWNER_CONTACT' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_OWNER_LOGINS' | translate }}</th>
+                    <th>{{ 'PLATFORM_DASHBOARD.COL_OWNER_LAST_LOGIN' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_PRODUCTS' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_CREATED' | translate }}</th>
                     <th>{{ 'PLATFORM_DASHBOARD.COL_ACTIONS' | translate }}</th>
@@ -91,10 +93,18 @@ import { ApiService, PlatformInfo, PlatformMetrics, PlatformTenantSummary } from
                           <span class="platform-muted">{{ 'PLATFORM_DASHBOARD.NO_CONTACT' | translate }}</span>
                         }
                       </td>
+                      <td data-testid="owner-login-count">{{ t.owner_login_count ?? 0 }}</td>
+                      <td data-testid="owner-last-login">
+                        @if (t.owner_last_login_at) {
+                          {{ formatDate(t.owner_last_login_at) }}
+                        } @else {
+                          <span class="platform-muted">—</span>
+                        }
+                      </td>
                       <td>{{ t.product_count }}</td>
                       <td>{{ formatDate(t.created_at) }}</td>
                       <td class="actions-cell">
-                        <a [href]="publicUrl('public-menu', t.id)" target="_blank" rel="noopener noreferrer" class="action-link">
+                        <a [href]="publicUrl('public-menu', t)" target="_blank" rel="noopener noreferrer" class="action-link">
                           {{ 'PLATFORM_DASHBOARD.LINK_MENU' | translate }}
                         </a>
                         <a [routerLink]="['/platform/tenants', t.id]" class="action-link">
@@ -280,9 +290,18 @@ export class PlatformDashboardComponent implements OnInit {
     }
   }
 
-  publicUrl(segment: string, tenantId: number): string {
-    if (typeof window === 'undefined') return `/${segment}/${tenantId}`;
-    return `${window.location.origin}/${segment}/${tenantId}`;
+  publicUrl(segment: string, tenant: { id: number; public_slug?: string | null }): string {
+    if (segment === 'book' && tenant.public_slug?.trim()) {
+      const path = `/${tenant.public_slug.trim()}/book`;
+      if (typeof window === 'undefined') return path;
+      return `${window.location.origin}${path}`;
+    }
+    const ref =
+      segment === 'public-menu' && tenant.public_slug?.trim()
+        ? tenant.public_slug.trim()
+        : tenant.id;
+    if (typeof window === 'undefined') return `/${segment}/${ref}`;
+    return `${window.location.origin}/${segment}/${ref}`;
   }
 
   logout(): void {

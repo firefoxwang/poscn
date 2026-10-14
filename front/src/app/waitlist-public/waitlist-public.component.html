@@ -1,4 +1,13 @@
-<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null">
+<div class="book-page" [style.--color-bg]="tenant()?.public_background_color ?? null" [style.--hero-header-bg]="tenant()?.public_background_color ?? null" [style.--color-primary]="resolvePublicPrimaryColor(tenant()?.public_primary_color)">
+  <app-public-guest-header
+    [tenantId]="tenantId()"
+    [publicMenuRef]="tenant()?.public_slug?.trim() || tenantId()"
+    [publicBookSlug]="tenant()?.public_slug?.trim() || null"
+    [tenantName]="tenant()?.name ?? null"
+    [logoUrl]="logoUrl()"
+    [headerBackgroundColor]="tenant()?.public_background_color ?? null"
+    activePage="waitlist"
+  />
   @if (loading()) {
     <div class="loading-screen">
       <div class="loading-content">
@@ -11,7 +20,6 @@
   } @else if (success()) {
     <header class="hero-header" [class.has-bg-image]="tenant()?.header_background_filename" [style.background-image]="headerBackgroundStyle()">
       <div class="hero-overlay"></div>
-      <app-language-picker class="book-language-picker"></app-language-picker>
       <div class="hero-content">
         <div class="hero-info">
           <h1 class="restaurant-name">{{ tenant()?.name }}</h1>
@@ -23,14 +31,13 @@
         <h2 class="success-title">{{ 'WAITLIST.SUCCESS_TITLE' | translate }}</h2>
         <p class="success-message">{{ 'WAITLIST.SUCCESS_MESSAGE' | translate }}</p>
         <p class="waitlist-alt-link">
-          <a [routerLink]="['/book', tenantId()]">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
+          <a [routerLink]="bookRouterLink()">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
         </p>
       </div>
     </main>
   } @else {
     <header class="hero-header" [class.has-bg-image]="tenant()?.header_background_filename" [style.background-image]="headerBackgroundStyle()">
       <div class="hero-overlay"></div>
-      <app-language-picker class="book-language-picker"></app-language-picker>
       <div class="hero-content">
         <div class="hero-top-row">
           @if (logoUrl()) {
@@ -71,7 +78,7 @@
             {{ submitting() ? ('WAITLIST.SUBMITTING' | translate) : ('WAITLIST.SUBMIT' | translate) }}
           </button>
           <p class="waitlist-alt-link">
-            <a [routerLink]="['/book', tenantId()]">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
+            <a [routerLink]="bookRouterLink()">{{ 'WAITLIST.LINK_BOOK_TABLE' | translate }}</a>
           </p>
         </div>
       </div>

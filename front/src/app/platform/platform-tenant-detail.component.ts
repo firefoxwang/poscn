@@ -120,6 +120,8 @@ import { ApiService, PlatformTenantDetail } from '../services/api.service';
                   <th>{{ 'PLATFORM_DASHBOARD.COL_NAME' | translate }}</th>
                   <th>{{ 'PLATFORM_DASHBOARD.COL_EMAIL' | translate }}</th>
                   <th>{{ 'PLATFORM_DASHBOARD.COL_ROLE' | translate }}</th>
+                  <th>{{ 'PLATFORM_DASHBOARD.COL_LOGIN_COUNT' | translate }}</th>
+                  <th>{{ 'PLATFORM_DASHBOARD.COL_LAST_LOGIN' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -128,6 +130,14 @@ import { ApiService, PlatformTenantDetail } from '../services/api.service';
                     <td>{{ u.full_name || '—' }}</td>
                     <td><a [href]="'mailto:' + u.email">{{ u.email }}</a></td>
                     <td>{{ u.role }}</td>
+                    <td data-testid="staff-login-count">{{ u.login_count ?? 0 }}</td>
+                    <td data-testid="staff-last-login">
+                      @if (u.last_login_at) {
+                        {{ formatDate(u.last_login_at) }}
+                      } @else {
+                        <span class="platform-muted">—</span>
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -266,9 +276,17 @@ export class PlatformTenantDetailComponent implements OnInit {
   }
 
   publicUrl(segment: string): string {
-    const id = this.tenant()?.id;
+    const t = this.tenant();
+    const id = t?.id;
     if (!id || typeof window === 'undefined') return `/${segment}/${id ?? ''}`;
-    return `${window.location.origin}/${segment}/${id}`;
+    if (segment === 'book' && t?.public_slug?.trim()) {
+      return `${window.location.origin}/${t.public_slug.trim()}/book`;
+    }
+    const ref =
+      segment === 'public-menu' && t?.public_slug?.trim()
+        ? t.public_slug.trim()
+        : id;
+    return `${window.location.origin}/${segment}/${ref}`;
   }
 
   logout(): void {

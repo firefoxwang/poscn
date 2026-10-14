@@ -49,7 +49,7 @@ Unauthenticated print endpoints are not exposed. Agent routes are SaaS-paywall e
 
 ## Install / runbook
 
-1. **Create agent** in Settings → Printing (owner/admin). Copy the one-time token.
+1. **Create agent** in Settings → Printing (owner/admin). Copy the one-time token. The Printing tab links to this runbook on GitHub (`docs/0070-hardware-printing.md`).
 2. **On a LAN machine** (Pi / staff PC), set env and run:
 
 ```bash

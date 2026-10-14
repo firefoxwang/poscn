@@ -44,7 +44,8 @@
     height: 2.25rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    /* Keep light fill when public pages override --color-bg (#408) */
+    background: var(--color-subtle, var(--color-surface));
     color: var(--color-text);
     font-size: 1.25rem;
     line-height: 1;
@@ -115,7 +116,7 @@
       background 0.1s ease,
       border-color 0.1s ease,
       box-shadow 0.1s ease;
-    background: var(--color-bg);
+    background: var(--color-subtle, var(--color-surface));
     color: var(--color-text);
 
     &.dm-available {
@@ -335,7 +336,7 @@
     padding: var(--space-3);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: var(--color-subtle, var(--color-surface));
     font-size: 0.875rem;
     color: var(--color-text);
   }
@@ -354,15 +355,6 @@
     gap: var(--space-2);
   }
 
-  @media (min-width: 480px) {
-    .book-week-summary-main {
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      justify-content: space-between;
-    }
-  }
-
   .summary-kv {
     display: inline-block;
   }
@@ -373,27 +365,35 @@
     color: var(--color-text-muted);
   }
 
+  /* Left-aligned with Party size / Service / Date (issue #369). */
   .summary-time-control {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     gap: 4px;
-    min-width: 8rem;
+    width: 100%;
+    max-width: 100%;
   }
 
   .summary-time-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text-muted);
+    text-align: left;
   }
 
   .book-week-time-select {
+    display: block;
+    width: 100%;
+    max-width: 12rem;
+    box-sizing: border-box;
     font: inherit;
     padding: 6px 10px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-text);
-    max-width: 100%;
+    margin: 0;
   }
 }
 
